@@ -37,9 +37,9 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入与错误映射，共 8 个测试文件、65 个测试（Windows 跳过 2 个 POSIX-only，Ubuntu 全部执行）；本地已通过，本批 CI 待新运行。
+- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入与错误映射，共 8 个测试文件、65 个测试；Ubuntu CI 65 全过（含 2 个真实 POSIX 只读目录），Windows 63 通过 + 2 跳过。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
-- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；故障注入批次运行 44886639093 全绿，上一批基线为 44885022294。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；可复现性批次运行 44888732915 全绿，上一批基线为 44886639093。
 - CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示/20 MiB 拒绝已手工验证；Linux 桌面与会话级验证仍未做。
 - 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
 

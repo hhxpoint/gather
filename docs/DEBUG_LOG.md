@@ -165,7 +165,7 @@
 
 - **现象**：Windows 的 `chmod` 只切换只读属性，不能阻止在目录中创建临时文件。
 - **决策**：POSIX 测试在 Windows 标记 skip；Ubuntu CI 用真实 `chmod 0500` 验证 EACCES、原文件保留、旧快照保留。
-- **证据**：本地 Windows 显示 `2 skipped`；Ubuntu CI 将实际执行。
+- **证据**：本地 Windows 显示 `2 skipped`；Ubuntu CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 实际执行，65 个测试全部通过；Windows 同运行 63 通过、2 跳过，job 成功。
 - **防回归**：文档明确“真实只读目录”只在 POSIX 验证，不宣称 Windows 已覆盖。
 
 ### P1-13 调试经验需要进仓库而不是留在对话
@@ -174,6 +174,14 @@
 - **修复**：新增本日志与 `docs/VERIFICATION.md`；README、CONTRIBUTING 链接；每次修复必须追加记录。
 - **证据**：本文件与验证矩阵随 PR 提交；CI 检查文档不影响构建。
 - **防回归**：贡献规则要求涉及 bug、平台差异、CI 失败的改动更新本日志。
+
+### P1-14 Git Data API 创建的 PR 没有立即触发 CI
+
+- **现象**：PR #5 通过 Git Data API 创建后，等待 10 秒以上仍没有新的 `CI` 运行；PR 本身状态正常。
+- **排查**：确认 head SHA 与分支正确；`pull_request` workflow 无 path 过滤；前几个 API PR 都能触发，因此不是 workflow 语法问题。
+- **处理**：关闭 PR 后重新打开，触发 `reopened` 事件；运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 正常开始并全绿。
+- **根因**：未完全确定。可能是 API 创建 ref + PR 的事件投递时序/平台延迟，而不是权限或 YAML 错误。
+- **防回归**：API 创建 PR 后不要假设 CI 已触发；显式查询 run 列表；没有运行时用 close/reopen 触发并记录运行号。
 
 ---
 

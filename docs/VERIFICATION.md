@@ -51,7 +51,7 @@ Phase 1 前批 CI 基线：
 
 - 恢复批次：[44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294)（40 个测试）。
 - 故障注入批次：[44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)（63 个测试）。
-- 可复现性批次：本批 CI 运行见 PR/最新 main 运行（提交后补充）。
+- 可复现性批次：[44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)：Ubuntu 65 个测试全部通过（含 2 个真实 POSIX 只读目录测试）；Windows 63 通过、2 个 POSIX-only 跳过，job 成功。
 - Phase 0：Windows/Ubuntu [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全绿；Pages [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功。
 
 ## Windows 真实窗口矩阵
@@ -81,14 +81,14 @@ Phase 1 前批 CI 基线：
 | rename EACCES | 注入 | 临时文件清理，原文件保留 |
 | 快照替换失败 | 注入 + 真实旧快照 | 旧快照仍可读 |
 | 目录不存在 | 真实临时目录删除 | ENOENT，目录状态不变 |
-| POSIX 只读目录 | 真实 `chmod 0500` | 预期 EACCES；原文件与旧快照保留（Ubuntu CI） |
+| POSIX 只读目录 | 真实 `chmod 0500` | Ubuntu CI 通过：EACCES，原文件与旧快照保留；Windows 跳过 |
 | 20 MiB 读取 | 真实 sparse 文件 | 拒绝读取 |
 | CRLF 编码膨胀 >20 MiB | 真实字符串 | 拒绝写入 |
 | 本体外部修改 | 真实第二进程写文件 | 实时提示 + 保存拒绝 |
 | 强杀进程 | `taskkill /F` | 重启恢复快照 |
 | 真实磁盘满 | 未执行 | 未验证 |
 | 断电/掉电 | 未执行 | 未验证 |
-| 只读挂载/文件系统 | 未执行（仅 POSIX 目录 chmod） | 未完全验证 |
+| 只读挂载/文件系统 | 未执行（仅 POSIX 目录 chmod；Ubuntu CI 已通过） | 部分验证 |
 | 8 小时 dogfood | 未执行 | 未验证 |
 
 ## 未验证边界
