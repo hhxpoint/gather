@@ -33,12 +33,13 @@ npm run dev       # electron-vite dev
 
 ### 当前阶段的验证边界
 
-先把边界说清楚，不要把本地结果当成发布结论：
+先把边界说清楚，不要把 CI 绿当成发布结论：
 
-- `npm run build` 的三个 workspace 产物已在本地生成，但本次没有从干净 clone 复跑完整命令。
-- `npm test` 与 `npm run typecheck` 已在本地 Windows 通过（12 个测试、四个 tsconfig），但还没有 CI 的 Ubuntu/Windows 矩阵结果。
-- 仓库已有 `package-lock.json`，`npm ci` 具备执行条件；本次没有运行它。
-- `.github/workflows/ci.yml` 已存在，但只跑 Ubuntu；没有可引用的绿色 CI 结果，Windows 矩阵尚未配置。
+- `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
+- `npm test` 与 `npm run typecheck` 已在本地 Windows 与 CI 的 Ubuntu/Windows 矩阵通过（12 个测试、四个 tsconfig）。
+- `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；运行 44870544811 全绿。
+- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换已手工验证；Linux 桌面与会话级验证仍未做。
 
 需要单独构建时：
 
@@ -60,7 +61,7 @@ npm run build -w @gather/cli
 | `apps/desktop/preload` | 最小 contextBridge API | 不暴露 `fs`、`child_process`、任意 `ipcRenderer` |
 | `apps/desktop/renderer` | UI、状态、编辑器挂载 | 不启用 Node；不加载远程脚本/字体 |
 | `packages/cli` | `gather doctor/export/new` | 不依赖 Electron；与桌面端共享 `@gather/core` |
-| `apps/site` | 官网静态骨架 | 已有 `index.html`、`styles.css`、`build.mjs`、`package.json` 与 `dist/`；尚未部署；不要复制桌面端密钥或内部配置 |
+| `apps/site` | 官网静态骨架 | 已有 `index.html`、`styles.css`、`build.mjs`、`package.json`；已部署到 GitHub Pages；不要复制桌面端密钥或内部配置 |
 
 跨层规则：
 
@@ -173,7 +174,7 @@ PR 描述至少包含：
 - 至少一名维护者批准；安全、文件写入、许可证变更需要额外审查。
 - 不强制要求“所有平台都测过”才能合并小改动，但必须如实标注覆盖范围。
 - 维护者可以要求拆分 PR；大而全的 PR 通常退回。
-- 合并前保持 CI 绿；当前 CI 只覆盖 Ubuntu，没有 Windows 矩阵，也尚无绿色结果；不能作为绿色依据时，以本地命令输出为准，并明确说明缺口。
+- 合并前保持 CI 绿；当前 CI 已覆盖 Ubuntu 与 Windows 的类型检查、测试、构建和 CLI `doctor`，但不覆盖 GUI、IME、安装包与打印。不能作为绿色依据时，以本地命令输出为准，并明确说明缺口。
 - 不在 review 中要求贡献者提供真实用户文稿或密钥。
 
 ## 禁止伪造
@@ -199,13 +200,13 @@ PR 描述至少包含：
 
 ## 安全问题
 
-不要在公开 Issue 中披露可利用细节、用户文稿样本或密钥。仓库公开后优先使用 GitHub Security Advisories；在私下通道建立前，通过维护者 GitHub 资料页联系，不要发到公开讨论区。
+不要在公开 Issue 中披露可利用细节、用户文稿样本或密钥。仓库已公开，优先使用 GitHub Security Advisories；如果该通道不可用，通过维护者 GitHub 资料页联系，不要发到公开讨论区。
 
 收到报告后，维护者应确认范围、评估影响、准备修复与发布说明。修复前不在公开渠道复现完整利用链。
 
 ## 发布
 
-只有维护者可以发布。Phase 0 只允许维护者部署静态项目站，不发布 npm 包与安装包；当前站点尚未部署。发布前检查：
+只有维护者可以发布。Phase 0 只允许维护者部署静态项目站（已部署），不发布 npm 包与安装包。发布前检查：
 
 - `npm ci && npm run typecheck && npm test && npm run build` 全绿。
 - Windows/Linux 手工矩阵完成。
