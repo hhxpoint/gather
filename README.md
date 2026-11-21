@@ -154,15 +154,15 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地；CI 待本批运行） | 本地 Electron Node 22：9 个测试文件、75 个测试，73 通过、2 个 POSIX-only 跳过；前批 CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 为 65 个测试 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：9 个测试文件、75 个测试，73 通过、2 个 POSIX-only 跳过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) Ubuntu 75 全过、Windows 73 通过 + 2 跳过 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 恢复与 watcher 测试 | 已通过 | 快照写入/列表/读取/覆盖/丢弃/损坏文件/写删串行；外部修改、自写忽略、删除与重建、轮询差异 |
 | 故障注入测试 | 已通过 | ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理、旧快照保留、错误映射与 IPC 前缀 |
-| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 双平台通过 |
+| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198)、Pages 修复后 main [44912794744](https://github.com/hhxpoint/gather/actions/runs/44912794744) 均全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198)、Pages 修复后 main [44912794744](https://github.com/hhxpoint/gather/actions/runs/44912794744) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
@@ -170,7 +170,7 @@ Gather 不打算做这些事：
 
 这一节区分“骨架已闭环”“Phase 1 文件可靠性已证明”和“产品可发布”。勾选项是已经完成并有证据的；未勾选项都是 beta 之前的阻断，其中任何“必须”级编辑能力缺失，都不能把当前状态描述成完整编辑器。
 
-- [x] **Windows/Ubuntu CI 已复跑。** 可复现性批次运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、65 个测试、build、CLI `doctor --json`，全部成功；Ubuntu 65 全过，Windows 63 通过 + 2 个 POSIX-only 跳过。上一批基线为 [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)。
+- [x] **Windows/Ubuntu CI 已复跑。** 导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、75 个测试、build 与 CLI `doctor --json`，全部成功；Ubuntu 75 全过，Windows 73 通过 + 2 个 POSIX-only 跳过。上一批基线为 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)（65 个测试）。
 - [x] **项目站已部署。** Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功；`https://hhxpoint.github.io/gather/` 已在浏览器中验证加载，CSS 正常。
 - [x] **桌面打开/另存为已在 Windows 实际验证。** 打开仓库内 Markdown、另存为文件，并切换源码/实时预览；这不是完整 IME 或 Linux 矩阵。
 - [x] **CRLF/BOM 已可字节保真。** 真实窗口中打开 BOM + CRLF 文稿，保存后 42 字节逐字节一致；LF、无结尾换行也由单元测试覆盖。混合行尾会在保存时统一为 LF，界面会显示“混合行尾”。
@@ -393,7 +393,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 65 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 63 通过 + 2 跳过。上一批基线为 [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
+导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 75 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 73 通过 + 2 个 POSIX-only 跳过。上一批基线为 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)（Ubuntu 65 全过，Windows 63 + 2 跳过）。CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印与导出对话框；这些仍必须手工验证。
 
 ### 桌面打包（staging 已验证，安装器未产出）
 

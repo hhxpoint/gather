@@ -54,8 +54,9 @@ apps/desktop/release/win-unpacked/Gather.exe
 | `apps/desktop/test/file-errors.test.ts` | 10 | OS 错误中文映射、IPC 前缀清理 |
 | `apps/desktop/test/export-html.test.ts` | 9 | 相对图片 data URI、URL 编码文件名、目录逃逸拒绝、SVG/缺失告警、代码块不误伤、远程/data 图片、目录消失、文件名清洗 |
 
-Phase 1 前批 CI 基线：
+Phase 1 CI 基线：
 
+- 导出批次：[44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)：Ubuntu 75 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 73 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。
 - 恢复批次：[44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294)（40 个测试）。
 - 故障注入批次：[44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)（63 个测试）。
 - 可复现性批次：[44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)：Ubuntu 65 个测试全部通过（含 2 个真实 POSIX 只读目录测试）；Windows 63 通过、2 个 POSIX-only 跳过，job 成功。
