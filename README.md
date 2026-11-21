@@ -137,7 +137,7 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性批次运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性批次 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 spike [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 

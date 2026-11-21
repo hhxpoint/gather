@@ -58,6 +58,7 @@ Phase 1 前批 CI 基线：
 - 恢复批次：[44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294)（40 个测试）。
 - 故障注入批次：[44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)（63 个测试）。
 - 可复现性批次：[44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)：Ubuntu 65 个测试全部通过（含 2 个真实 POSIX 只读目录测试）；Windows 63 通过、2 个 POSIX-only 跳过，job 成功。
+- 打包 spike：[44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198)：类型检查、65 个测试、构建与 CLI 冒烟通过；CI 不执行 staging 脚本，打包运行是本机手工验证。
 - Phase 0：Windows/Ubuntu [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全绿；Pages [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功。
 
 ## Windows 真实窗口矩阵
@@ -84,6 +85,8 @@ Phase 1 前批 CI 基线：
 | 目标 | 方式 | 结果 |
 | --- | --- | --- |
 | Windows 目录包 | `npm run stage -w @gather/desktop`，复制 Electron dist + out | 通过：328 MB，`Gather.exe` 可运行并保存文稿 |
+| staging 可执行文件校验 | 本地 Windows 构建 | `Gather.exe` 210,149,888 bytes；SHA-256 `62c62d170a95aa4a3eb3df05f0d56a3654ab4344f7452e21dea1334afed7100f`（重建会变化，不是发布校验和） |
+| staging 主进程 bundle | 本地 Windows 构建 | `resources/app/out/main/index.js` 31,340 bytes；SHA-256 `261af9393c845a851dace38551183a7652b45a571c8c7f95081f2588c119df77` |
 | Windows NSIS/portable | electron-builder | 未产出：第二次远程工具请求 600 秒超时；已记录并保留配置 |
 | Linux AppImage/deb | electron-builder | 未执行（无 Linux 桌面环境） |
 | 代码签名 | — | 未做；无证书 |
