@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
 const assets = ['index.html', 'styles.css'];
+const images = join(root, '..', '..', 'docs', 'images');
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
@@ -18,5 +19,12 @@ for (const asset of assets) {
   await cp(source, join(dist, asset));
   console.log(`copied  ${asset.padEnd(12)} ${info.size.toLocaleString('en-US')} bytes`);
 }
+
+const imageInfo = await stat(images);
+if (!imageInfo.isDirectory()) {
+  throw new Error(`Expected screenshot assets at ${images}`);
+}
+await cp(images, join(dist, 'images'), { recursive: true });
+console.log(`copied  images/      from docs/images`);
 
 console.log(`built   ${dist}`);

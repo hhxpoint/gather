@@ -223,6 +223,34 @@
 - **验证**：`npm ci --dry-run --ignore-scripts` 退出 0；`npm ls electron --depth=0` 显示 `38.8.6`。
 - **防回归**：打包相关依赖必须精确版本；升级 Electron 需同时更新 package.json、lock、electronVersion 和 IME/PDF 回归记录。
 
+### P1-20 截图示例里的代码块被 shell 命令替换吞掉
+
+- **现象**：第一版截图中的示例文稿只有“一段代码”标题，没有代码块；单元测试与页面都正常。
+- **根因**：用双引号包裹 `node -e "...```ts..."` 创建 fixture，反引号被 bash 当作命令替换执行，三反引号被吃掉。
+- **修复**：改用 Write 工具直接写 Markdown fixture，重新打开文件并截图。
+- **证据**：真实截图出现 TypeScript 代码块；文件内容用 `sed` 回读确认。
+- **防回归**：生成含反引号/`$`/引号的 fixture 时不要用 shell 拼字符串；使用文件写入工具或 heredoc。
+
+### P1-21 项目站视觉核验中的滚动、懒加载与移动端问题
+
+- **现象**：
+  - headless Edge 的 `#product` 截图停在 hero，因为 CSS `scroll-behavior: smooth` 与截图时序冲突。
+  - CDP 在 reload 后立即截图，得到旧 compositor 画面/空白懒加载图片。
+  - 390px 移动端：Phase chip 在内部换行、发布状态栏挤成两三列、manifest 表头仍显示三列。
+- **根因**：QA 工具时序 + 真实响应式 CSS 缺口，不是单一页面错误。
+- **修复**：
+  - QA 脚本设置 `scrollBehavior='auto'`，用 CDP 精确滚动并等待绘制；最终采用真实截图 + headless Edge 分段检查。
+  - 移动端让 eyebrow/chip 可换行、chip 不内部断行；发布状态栏换行、移动端隐藏 manifest 表头；已重新截图确认。
+- **证据**：`/product`、`/features`、`/cli`、`/download`、`/roadmap` 桌面截图；390×844 移动端 top/product/download 截图；scrollWidth 始终等于 clientWidth。
+- **防回归**：站点改动必须同时检查桌面与 390px 移动端；截图 QA 不能只看 DOM 快照。
+
+### P1-22 项目展示仍停留在 Phase 0
+
+- **现象**：产品已经进入 Phase 1，但官网仍写“Phase 0 构建中”、没有真实截图，README 也没有产品画面。
+- **修复**：用 staging 应用真实截图重建项目站：新增产品截图区、文件安全卡片、工程证据、真实下载状态；README 顶部加入真实界面与工程证据链接。没有伪造下载、用户文稿或“AI 已上线”。
+- **证据**：项目站本地构建包含 3 张仓库内截图；桌面/移动视口检查通过；Pages 部署后补充公网运行号。
+- **防回归**：产品状态变化时同步项目站、README、DEBUG_LOG、VERIFICATION，避免“代码前进、展示落后”。
+
 ---
 
 ## 维护约定
