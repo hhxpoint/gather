@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, readdir, rm, truncate, unlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, truncate, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -147,4 +147,23 @@ describe('file limits and failures', () => {
     })).rejects.toMatchObject({ code: 'ENOENT' });
     expect(await readdir(directory)).toContain('keep.md');
   });
+
+  it.skipIf(process.platform === 'win32')(
+    'reports a real EACCES from a read-only directory without touching files',
+    async () => {
+      const blocked = join(directory, 'blocked');
+      const existing = join(blocked, 'keep.md');
+      await mkdir(blocked);
+      await writeFile(existing, 'keep\n', 'utf8');
+      try {
+        await chmod(blocked, 0o500);
+        await expect(writeMarkdownFile(join(blocked, 'new.md'), 'new\n', {
+          format: { bom: false, eol: 'lf' },
+        })).rejects.toMatchObject({ code: 'EACCES' });
+        expect(await readFile(existing, 'utf8')).toBe('keep\n');
+      } finally {
+        await chmod(blocked, 0o700);
+      }
+    },
+  );
 });
