@@ -4,7 +4,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。Phase 0 只做一件事：把桌面壳、编辑器内核、CLI 和共享核心的地基搭起来，并让每一层都能被单独验证。
 
-**当前状态：Phase 1 文件可靠性主线已落地，并补上了仓库内的调试与验证记录。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**。这些在 Windows 真实窗口和注入测试中验证过，并有 [DEBUG_LOG](docs/DEBUG_LOG.md) 与 [VERIFICATION](docs/VERIFICATION.md) 记录。**仍没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 1 文件可靠性主线已落地，并补上了仓库内的调试与验证记录与 Windows staging 目录包。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**，并产出未签名 Windows staging 目录包，实测 `Gather.exe` 可打开/保存。**仍没有签名安装包、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -41,9 +41,9 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | 许可 | 应用核心 AGPL-3.0-only（`LICENSE` 已落盘）；插件 SDK/主题以后 MIT |
 | 仓库与站点 | [github.com/hhxpoint/gather](https://github.com/hhxpoint/gather) 公开；[hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/) 已部署 |
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
-| 发布状态 | 没有安装包、没有签名、没有公开 beta；项目站仍标注 Phase 0 构建状态，文案待下一轮同步 |
+| 发布状态 | 没有签名安装包或公开 beta；有 Windows 未签名 staging 目录包（内部验证，默认图标）；项目站仍标注 Phase 0 构建状态 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
+Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试；Windows staging 目录包已实测打开/保存。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、签名安装包、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
 ## 为什么做 Gather
 
@@ -137,9 +137,9 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性批次运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性批次 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 spike [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
-| 安装包 | 未实现 | `electron-builder` 配置存在，但没有安装包产物、没有签名 |
+| 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
 ## 明确未完成项
 
@@ -170,7 +170,7 @@ Gather 不打算做这些事：
 - [ ] **没有 AI 能力。** 没有 Ollama 客户端、没有 BYOK、没有 diff 审阅、没有逐块接受/拒绝。
 - [ ] **没有 RAG。** 不在当前范围，也没有代码。
 - [ ] **没有完整导出。** 只有 HTML；PDF、DOCX 未实现。
-- [ ] **没有安装包与签名。** `electron-builder` 只配置了目标格式，没有执行过 `package`/`dist`；没有自动更新。
+- [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
 - [ ] **没有性能与可访问性基线。** 冷启动、10 万字符输入延迟、1/5 MiB 文档滚动、200% 缩放与屏幕阅读器均未测量。
 - [ ] **没有商标/域名/包名检索记录。** `gather` 与 `@gather/*` 目前只是工作名称，未做商用清障。
 
@@ -261,6 +261,7 @@ gather/
 │  │  ├─ test/atomic-write.test.ts  ENOSPC/EIO/EACCES 故障注入
 │  │  ├─ test/file-errors.test.ts   错误映射与 IPC 前缀
 │  │  ├─ electron.vite.config.ts
+│  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
 │  └─ site/                     官网静态骨架
 │     ├─ index.html             项目站首页（约 39 KB）
@@ -367,19 +368,29 @@ node packages/cli/dist/cli.js doctor --json
 
 运行 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 65 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 63 通过 + 2 跳过。上一批基线为 [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
 
-### 桌面打包（未验证）
+### 桌面打包（staging 已验证，安装器未产出）
 
-`apps/desktop/package.json` 中存在以下脚本，但它们不是 Phase 0 的完成项，也没有在本快照中执行：
+本地已有一个可运行的未签名 Windows staging 目录包：
 
 ```bash
-# 只生成未打包目录，便于本地检查
+npm run stage -w @gather/desktop
+# Windows: apps/desktop/release/win-unpacked/Gather.exe
+# Linux:   apps/desktop/release/linux-unpacked/gather
+```
+
+脚本复制已安装的 Electron `dist` 和 `out` 到 `release/*-unpacked`，写入应用 `package.json`，并生成 `STAGING-README.txt`。Windows 产物约 328 MB，其中 `resources/app` 约 3.4 MB；已实测打开、编辑、保存文稿。它使用 Electron 默认图标，不含安装器、签名或自动更新，**不能作为公开发行物**。
+
+electron-builder 的安装包脚本仍然保留：
+
+```bash
+# 未打包目录（依赖 electron-builder 工具下载）
 npm run package -w @gather/desktop
 
-# 生成安装包（Windows: nsis/portable；Linux: AppImage/deb）
+# 安装包（Windows: nsis/portable；Linux: AppImage/deb）
 npm run dist -w @gather/desktop
 ```
 
-产物目录为 `apps/desktop/release/`。没有代码签名，没有自动更新，也没有在干净虚拟机中做过安装/卸载测试。
+当前环境在 electron-builder “electron 下载完成、进入 packaging”后卡在第二个远程工具请求，600 秒超时；已关闭 `signAndEditExecutable` 并固定 `electronVersion`，仍未绕过。详细排查见 [DEBUG_LOG](docs/DEBUG_LOG.md)。没有代码签名、自动更新，也没有在干净虚拟机中做过安装/卸载测试。
 
 ## CLI 示例
 
@@ -489,10 +500,10 @@ Phase 0 的目标是让这些门槛“可被执行”，不是全部通过。任
 
 ## Windows / Linux 分发与签名成本
 
-Phase 0 的 `electron-builder` 配置已经写了目标格式，但没有构建过安装包，也没有证书：
+当前的 `electron-builder` 配置仍以正式分发为目标，但没有产出签名安装包，也没有证书：
 
-- Windows：`nsis` 安装包与 `portable` 单文件。
-- Linux：`AppImage` 与 `deb`，分类 `Office`。
+- Windows：`nsis` 安装包与 `portable` 单文件（未产出；staging 目录包已单独验证）。
+- Linux：`AppImage` 与 `deb`，分类 `Office`（未执行）。
 
 ### Windows
 
@@ -515,7 +526,7 @@ Phase 0 的 `electron-builder` 配置已经写了目标格式，但没有构建�
 - 自动更新需要签名、HTTPS 托管、版本清单与回滚策略，Phase 0 没有实现。
 - 崩溃报告如果做，必须默认关闭或明确征得同意，且不能包含文稿内容。
 
-Phase 0 不发布安装包。上面是预算与工程约束提示，不是已完成的能力。
+尚未发布签名安装包。staging 目录包只用于内部运行验证；签名、安装器、自动更新与干净 VM 测试仍是发布阻断。
 
 ## GitHub Pages 项目站
 

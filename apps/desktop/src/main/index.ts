@@ -226,6 +226,9 @@ function registerIpc(recoveryStore: RecoveryStore) {
       return false;
     }
     watchActiveFile({ path: snapshot.path, ...version });
+    // The file may have changed while Gather was closed. Confirm once now
+    // instead of waiting for the next fs event or poll tick.
+    void fileWatcher.checkNow(true);
     return true;
   });
 

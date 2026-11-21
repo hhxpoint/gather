@@ -3,11 +3,14 @@
   "version": "0.1.0-phase.0",
   "private": true,
   "description": "Gather desktop workspace",
+  "author": "Gather contributors",
+  "license": "AGPL-3.0-only",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
+    "stage": "electron-vite build && node scripts/stage-portable.mjs",
     "package": "electron-vite build && electron-builder --dir",
     "dist": "electron-vite build && electron-builder"
   },
@@ -31,6 +34,7 @@
   "build": {
     "appId": "com.gather.editor",
     "productName": "Gather",
+    "electronVersion": "38.8.6",
     "asar": true,
     "directories": {
       "output": "release"
@@ -40,6 +44,7 @@
       "package.json"
     ],
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         "nsis",
         "portable"

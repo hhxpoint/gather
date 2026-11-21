@@ -183,6 +183,37 @@
 - **根因**：未完全确定。可能是 API 创建 ref + PR 的事件投递时序/平台延迟，而不是权限或 YAML 错误。
 - **防回归**：API 创建 PR 后不要假设 CI 已触发；显式查询 run 列表；没有运行时用 close/reopen 触发并记录运行号。
 
+### P1-15 electron-builder 拒绝范围版本
+
+- **现象**：`electron-builder --dir` 报 `Electron version "^38.0.0" is a range, not a fixed version`，无法计算平台二进制。
+- **根因**：`devDependencies.electron` 使用 `^38.0.0`；electron-builder 需要精确版本，不能依赖 semver 范围。
+- **修复**：在 `apps/desktop/package.json` 的 build 配置固定 `electronVersion: 38.8.6`，并补 `author`、`license` 元数据。
+- **证据**：错误消失，builder 进入 native rebuild 与 packaging 阶段。
+- **防回归**：升级 Electron 时同时更新依赖版本与 `electronVersion`；发布构建必须使用同一个精确版本。
+
+### P1-16 electron-builder 在第二次网络下载上挂起
+
+- **现象**：electron 本体显示下载 100%、native rebuild 完成后，进程在 `packaging` 阶段无输出，600 秒后 `Timeout awaiting 'request' for 600000ms`。关闭 `signAndEditExecutable`、设置 `ELECTRON_BUILDER_OFFLINE=true` 后仍在同一阶段挂起。
+- **排查**：`%LOCALAPPDATA%/electron/Cache` 已有 Electron 38.8.6 zip；`electron-builder/Cache` 已有 NSIS 与 winCodeSign。确认不是 Electron zip 缺失；残留 npm/electron-builder 进程被手动终止。
+- **根因**：未完全确定。证据指向 electron-builder 的第二个远程工具/校验请求，而不是应用代码、类型检查或 Electron 二进制缺失。
+- **临时修复**：新增 `apps/desktop/scripts/stage-portable.mjs`，直接把已安装的 Electron `dist` + `out` 复制成 `release/win-unpacked`，重命名 exe，去掉 `default_app.asar`，写入应用 `package.json` 与 `STAGING-README.txt`。不依赖网络。
+- **证据**：产出 328 MB 目录包；`Gather.exe` 启动、打开 Markdown、编辑、保存成功；`resources/app` 仅 3.4 MB。
+- **防回归**：staging 只用于运行冒烟，不当作安装包；electron-builder 的签名安装包仍必须在网络/证书可用的环境复跑并记录。
+
+### P1-17 打包后运行时验收
+
+- **现象**：需要确认 packaged 模式下的 `__dirname`、preload、renderer、userData 与 CSP 仍然正确，而不是只在 `electron-vite` 预览下可用。
+- **修复/验证**：stage 脚本复制完整 `out` 到 `resources/app/out`；启动 `Gather.exe` 后打开/保存真实 Markdown。
+- **证据**：窗口正常加载；文件内容写回磁盘；`app.setName('Gather')` 使 userData 仍为 `%APPDATA%/Gather`。staging 说明中明确列出未签名、默认图标、无安装器/自动更新。
+- **防回归**：每次改动主进程/preload/renderer 路径后重跑 `npm run stage -w @gather/desktop` 并启动 exe；不能只跑 dev/preview。
+
+### P1-18 恢复路径后 watcher 的首次检查
+
+- **现象风险**：从恢复快照进入路径文稿时，watcher 只会在下一次 fs 事件或 2 秒轮询后检查；如果文件在应用关闭期间被改写且 stat 未变化，首次提示可能被延迟。
+- **修复**：`recovery:activate` 启动 watcher 后立即调用一次 `checkNow(true)`，强制做 SHA-256 对比。
+- **证据**：watcher 的强制检查行为已有单元测试；真实窗口中恢复后外部改写的提示路径此前已通过。
+- **防回归**：恢复/重载路径后必须做一次强制内容检查，不能只依赖被动事件。
+
 ---
 
 ## 维护约定
