@@ -107,7 +107,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [ ] 5 MiB 文档可打开、滚动、搜索；输入延迟有基线且无明显卡顿。
 - [ ] 8 小时真实写作 dogfood，无 P0/P1 数据问题。
 - [x] 原子写入故障注入（ENOSPC/EIO/EACCES/sync/rename）清理临时文件，旧快照不被覆盖；20 MiB 边界有测试。
-- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入的关键路径（8 个文件、63 个测试）；CI [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 是恢复批次基线，本批待新运行。
+- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入的关键路径（8 个文件、63 个测试）；CI [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093) 在 Ubuntu/Windows 双平台通过。
 
 ### 非目标
 
