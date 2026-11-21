@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gather — 本地优先的 Markdown 写作工作台</title>
+  <meta name="description" content="Gather 是一个本地优先、AI 修改可审阅的 Markdown 写作工作台。文件留在磁盘，CLI 与桌面端并列一等。Phase 0 构建中。">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f2ede1">
+  <link rel="canonical" href="https://hhxpoint.github.io/gather/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Gather">
+  <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
+  <meta property="og:description" content="文件留在磁盘，AI 修改先以 diff 交付审阅，CLI 与桌面端并列一等。Phase 0 构建中。">
+  <meta property="og:url" content="https://hhxpoint.github.io/gather/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='6' fill='%23162b23'/%3E%3Cpath d='M14 19c8-1 12.5 2.2 18 5.6 5.5-3.4 10-6.6 18-5.6v27c-8-1-12.5 2.2-18 5.6-5.5-3.4-10-6.6-18-5.6V19Z' fill='none' stroke='%23f1ebdd' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M32 24.6V51' fill='none' stroke='%23f1ebdd' stroke-width='2'/%3E%3C/svg%3E">
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="icon-arrow-ne" viewBox="0 0 16 16">
+      <path d="M4 12 12 4M5 4h7v7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-arrow-down" viewBox="0 0 16 16">
+      <path d="M8 3v10M3.8 8.8 8 13l4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-arrow-up" viewBox="0 0 16 16">
+      <path d="M8 13V3M3.8 7.2 8 3l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-copy" viewBox="0 0 16 16">
+      <rect x="5.25" y="5.25" width="7.5" height="7.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M10.75 5.25v-1.5a1 1 0 0 0-1-1h-5.5a1 1 0 0 0-1 1v5.5a1 1 0 0 0 1 1h1.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    </symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="frame header-inner">
+      <a class="brand" href="#top" aria-label="Gather，回到页首">
+        <svg class="brand-mark" viewBox="0 0 42 42" aria-hidden="true" focusable="false">
+          <path d="M6.75 10.4c6.8-.9 11.2 2 14.25 5.05 3.05-3.05 7.45-5.95 14.25-5.05v22.25c-6.8-.9-11.2 2-14.25 5.05-3.05-3.05-7.45-5.95-14.25-5.05V10.4Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M21 15.45v22.25M11.4 16.6h5.2M11.4 21.1h5.2M25.4 16.6h5.2M25.4 21.1h4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-lockup">
+          <span class="brand-name">Gather</span>
+          <span class="brand-sub">Local-first writing workspace</span>
+        </span>
+      </a>
+
+      <nav class="primary-nav" aria-label="主要导航">
+        <a href="#principles"><span>01</span>理念</a>
+        <a href="#features"><span>02</span>能力</a>
+        <a href="#cli"><span>03</span>CLI</a>
+        <a href="#roadmap"><span>05</span>路线图</a>
+      </nav>
+
+      <div class="header-side">
+        <a class="header-phase" href="#download">
+          <span class="status-dot" aria-hidden="true"></span>
+          Phase 0 · 构建中
+        </a>
+        <a class="header-github" href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer" aria-label="Gather GitHub 仓库（在新窗口打开）">
+          GitHub
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg>
+        </a>
+
+        <details class="nav-drawer">
+          <summary aria-label="打开导航菜单">
+            <span>菜单</span>
+            <span class="menu-mark" aria-hidden="true"><i></i><i></i></span>
+          </summary>
+          <nav aria-label="移动端导航">
+            <a href="#principles"><span>01</span>理念</a>
+            <a href="#features"><span>02</span>能力</a>
+            <a href="#cli"><span>03</span>CLI</a>
+            <a href="#download"><span>04</span>下载状态</a>
+            <a href="#roadmap"><span>05</span>路线图</a>
+            <a href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+          </nav>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-gridlines" aria-hidden="true"></div>
+      <div class="frame hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow-row">
+            <p class="eyebrow">Local-first Markdown workspace</p>
+            <span class="phase-chip">Phase 0 · 构建中</span>
+          </div>
+
+          <h1 id="hero-title">把散落的想法，<br><span>收拢成一篇。</span></h1>
+          <p class="hero-tagline"><span aria-hidden="true"></span>A quieter place to write.</p>
+          <p class="hero-lede">Gather 是一个本地优先、AI 修改可审阅的 Markdown 写作工作台。文件留在你的设备里；AI 的每一个建议，都先在 diff 中停下，等你决定。</p>
+
+          <div class="hero-actions">
+            <a class="button button--primary" href="#download">
+              查看构建状态
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"/></svg>
+            </a>
+            <a class="button button--ghost" href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer">
+              GitHub 仓库
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg>
+            </a>
+          </div>
+
+          <dl class="hero-facts">
+            <div>
+              <dt>Platforms</dt>
+              <dd>Windows · Linux · CLI</dd>
+            </div>
+            <div>
+              <dt>AI</dt>
+              <dd>Ollama + BYOK</dd>
+            </div>
+            <div>
+              <dt>Review</dt>
+              <dd>Diff before write</dd>
+            </div>
+            <div>
+              <dt>License</dt>
+              <dd>AGPL-3.0</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-demo">
+          <div class="demo-annotation" aria-hidden="true">
+            <span>Fig. 01</span>
+            <span class="annotation-rule"></span>
+            <span>Local loop</span>
+          </div>
+
+          <figure class="terminal">
+            <figcaption class="terminal-bar">
+              <span class="terminal-title"><span class="shell-mark" aria-hidden="true">&gt;_</span> gather / local shell</span>
+              <span class="terminal-phase">Phase 0</span>
+            </figcaption>
+            <div class="terminal-body">
+              <div class="term-command-row">
+                <p class="term-command"><span class="term-path" aria-hidden="true">~</span><span class="term-sigil" aria-hidden="true">$</span><code>gather doctor</code></p>
+                <button class="copy-button" type="button" data-copy="gather doctor" aria-label="复制命令：gather doctor">
+                  <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-copy"/></svg>
+                  <span class="copy-label">复制</span>
+                </button>
+              </div>
+              <pre class="terminal-output"><span class="term-key">Gather</span>      0.1.0-phase.0
+<span class="term-key">Node</span>        v22.13.0 · <span class="term-ok">supported</span>
+<span class="term-key">Platform</span>    linux-x64
+<span class="term-key">Workspace</span>   ~/field-notes
+
+<span class="term-muted">AI local</span>    Ollama · not configured
+<span class="term-muted">AI cloud</span>    BYOK · no bundled key</pre>
+
+              <div class="term-command-row term-command-row--spaced">
+                <p class="term-command"><span class="term-path" aria-hidden="true">~</span><span class="term-sigil" aria-hidden="true">$</span><code>gather export draft.md --format html -o draft.html</code></p>
+                <button class="copy-button" type="button" data-copy="gather export draft.md --format html -o draft.html" aria-label="复制命令：gather export draft.md --format html -o draft.html">
+                  <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-copy"/></svg>
+                  <span class="copy-label">复制</span>
+                </button>
+              </div>
+              <pre class="terminal-output"><span class="term-ok">exported</span>  notes/draft.html</pre>
+              <p class="term-cursor"><span aria-hidden="true">~ $</span><span class="cursor" aria-hidden="true"></span></p>
+            </div>
+            <div class="terminal-caption">
+              <span>Illustrative output</span>
+              <span>非产品截图 · 输出仅作示意</span>
+            </div>
+          </figure>
+
+          <p class="terminal-note">Phase 0 暂无公开安装包。终端内容用于说明 CLI 的交互方式，并非真实运行截图。</p>
+        </div>
+      </div>
+
+      <div class="frame hero-foot">
+        <span>Open source / AGPL-3.0</span>
+        <span class="hero-foot-rule" aria-hidden="true"></span>
+        <a href="#principles">继续阅读 <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"/></svg></a>
+      </div>
+    </section>
+
+    <section class="section principles" id="principles" aria-labelledby="principles-title">
+      <div class="frame">
+        <header class="section-head">
+          <p class="section-marker"><span>01</span> Principles</p>
+          <div class="section-heading">
+            <h2 id="principles-title">工具退后一步，<br>作者向前一步。</h2>
+            <p>Gather 不想成为另一个需要被管理的系统。它把写作留在文件里，把修改交还给你，把选择权放回工具之外。</p>
+          </div>
+        </header>
+
+        <div class="principles-layout">
+          <aside class="premise" aria-label="Gather 的默认立场">
+            <p class="micro-label">The quiet contract</p>
+            <blockquote>“文件留在磁盘，修改停在审阅线前。”</blockquote>
+            <p class="premise-copy">写作的最终决定权，始终属于写作者。Gather 只负责把材料摆好、把改动说清，然后后退。</p>
+            <div class="premise-diagram" aria-hidden="true">
+              <span>File</span>
+              <i></i>
+              <span>Diff</span>
+              <i></i>
+              <span>You</span>
+            </div>
+          </aside>
+
+          <ol class="principle-list">
+            <li>
+              <span class="principle-number">01</span>
+              <div class="principle-copy">
+                <div class="principle-title">
+                  <h3>文件优先</h3>
+                  <span>Files first</span>
+                </div>
+                <p>工作区就是你选择的一个文件夹。文稿以普通 Markdown 存在，不依赖 Gather 才能打开；备份、同步与 Git，也继续用你原本的方式。</p>
+              </div>
+            </li>
+            <li>
+              <span class="principle-number">02</span>
+              <div class="principle-copy">
+                <div class="principle-title">
+                  <h3>可审阅的 AI</h3>
+                  <span>Reviewable diffs</span>
+                </div>
+                <p>模型先提交候选改动，Gather 再以 diff 呈现增删。你可以逐处接受、拒绝或整次放弃；没有静默覆盖。完整的审阅流程计划在 Phase 1 落地。</p>
+              </div>
+            </li>
+            <li>
+              <span class="principle-number">03</span>
+              <div class="principle-copy">
+                <div class="principle-title">
+                  <h3>本地 + BYOK</h3>
+                  <span>Local &amp; your key</span>
+                </div>
+                <p>选择本地 Ollama，或接入自己的模型 Key。Gather 不内置付费 API，不默认把文稿交给云端，也不绑定某个模型供应商。</p>
+              </div>
+            </li>
+            <li>
+              <span class="principle-number">04</span>
+              <div class="principle-copy">
+                <div class="principle-title">
+                  <h3>CLI 一等公民</h3>
+                  <span>CLI, first-class</span>
+                </div>
+                <p>同一套文件，同一条审阅边界。终端既能检查环境，也能导出内容；计划在 Phase 1 提供的 <code>gather ask</code> 会进入同一个入口。</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="section features" id="features" aria-labelledby="features-title">
+      <div class="frame">
+        <header class="section-head">
+          <p class="section-marker"><span>02</span> Capabilities</p>
+          <div class="section-heading">
+            <h2 id="features-title">每项能力，<br>都留一道确认线。</h2>
+            <p>从磁盘上的文件到终端里的命令，Gather 的工作方式只有一条主线：你始终知道发生了什么，也始终能撤回。</p>
+          </div>
+        </header>
+
+        <div class="feature-grid">
+          <article class="feature-card feature-card--workspace">
+            <header class="card-top">
+              <span class="card-index">01 / Workspace</span>
+              <span class="card-badge">Open format</span>
+            </header>
+            <div class="workspace-art" aria-hidden="true">
+              <svg viewBox="0 0 240 180">
+                <path class="art-line art-line--faint" d="M19 43h71l16 18h114v101H19z"/>
+                <path class="art-line" d="M38 64h72l13 15h89v65H38z"/>
+                <path class="art-line" d="M66 82h73l11 12h45v42H66z"/>
+                <path class="art-line" d="M84 99h43M84 111h61M84 123h34"/>
+                <circle class="art-accent" cx="188" cy="98" r="4"/>
+                <path class="art-line art-line--faint" d="M176 146h33M176 152h19"/>
+              </svg>
+            </div>
+            <div class="card-content">
+              <h3>文件夹，<br>就是工作区。</h3>
+              <p>打开一个文件夹，就打开全部文稿。Markdown 原文始终留在磁盘上，任何编辑器都能继续写，Git 也能照常工作。</p>
+            </div>
+            <footer class="card-foot">
+              <span>Plain text / portable by default</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
+
+          <article class="feature-card feature-card--ai">
+            <header class="card-top">
+              <span class="card-index">02 / AI editing</span>
+              <span class="card-badge card-badge--future">Phase 1 · 计划</span>
+            </header>
+            <div class="card-content">
+              <h3>AI 写提案，<br>你写定稿。</h3>
+              <p>AI 的每项修改先以 diff 出现。逐段接受，整次退回，或继续追问。写入只发生在你明确确认之后。</p>
+            </div>
+            <div class="diff-figure" aria-hidden="true">
+              <div class="diff-figure-head">
+                <span>draft.md</span>
+                <span>proposal 01</span>
+              </div>
+              <div class="diff-line diff-line--context">
+                <span>12</span>
+                <span>写作把散落的念头</span>
+              </div>
+              <div class="diff-line diff-line--remove">
+                <span>13</span>
+                <span>变成另一种噪音。</span>
+              </div>
+              <div class="diff-line diff-line--add">
+                <span>13</span>
+                <span>收拢成清楚的句子。</span>
+              </div>
+              <div class="diff-figure-foot">
+                <span class="diff-signal" aria-hidden="true"></span>
+                等待你的审阅
+              </div>
+            </div>
+            <footer class="card-foot">
+              <span>Review required</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
+
+          <article class="feature-card feature-card--models">
+            <header class="card-top">
+              <span class="card-index">03 / Models</span>
+              <span class="card-badge card-badge--future">Phase 1 · 计划</span>
+            </header>
+            <div class="model-mark" aria-hidden="true">
+              <span class="model-node">Local</span>
+              <i></i>
+              <span class="model-node model-node--accent">BYOK</span>
+            </div>
+            <div class="card-content">
+              <h3>本地或自带 Key，<br>由你接入。</h3>
+              <p>连接本地 Ollama，或使用自己的模型 Key。没有捆绑的付费 API，也没有锁死的模型路线。</p>
+            </div>
+            <footer class="card-foot">
+              <span>Ollama / bring your own key</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
+
+          <article class="feature-card feature-card--cli">
+            <header class="card-top">
+              <span class="card-index">04 / CLI</span>
+              <span class="card-badge">Phase 0 · scaffold</span>
+            </header>
+            <div class="card-content">
+              <h3>终端，<br>同样完整。</h3>
+              <p><code>gather doctor</code> 检查环境，<code>gather export</code> 输出 HTML。命令与桌面端共用一套文件与审阅规则，自动化不必另起炉灶。</p>
+            </div>
+            <div class="prompt-figure" aria-hidden="true">
+              <span>$</span>
+              <span>gather doctor</span>
+              <i></i>
+            </div>
+            <footer class="card-foot">
+              <span>First-class terminal</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
+
+          <article class="feature-card feature-card--format">
+            <header class="card-top">
+              <span class="card-index">05 / Portability</span>
+              <span class="card-badge">Open format</span>
+            </header>
+            <div class="export-mark" aria-hidden="true">
+              <svg viewBox="0 0 180 120">
+                <path class="art-line" d="M22 14h78l22 22v70H22z"/>
+                <path class="art-line art-line--faint" d="M99 14v23h23M43 58h52M43 72h38M43 86h46"/>
+                <path class="art-line art-accent" d="M132 64h29M151 54l10 10-10 10"/>
+              </svg>
+            </div>
+            <div class="card-content">
+              <h3>格式开放，<br>来去自由。</h3>
+              <p>源文件是可读的 Markdown，Phase 0 的 CLI 已铺设 HTML 导出路径。支持更多格式，也不该以关住文件为代价。</p>
+            </div>
+            <footer class="card-foot">
+              <span>Markdown in / HTML out, today</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cli" id="cli" aria-labelledby="cli-title">
+      <div class="cli-gridlines" aria-hidden="true"></div>
+      <div class="frame">
+        <header class="section-head section-head--inverse">
+          <p class="section-marker"><span>03</span> CLI</p>
+          <div class="section-heading">
+            <h2 id="cli-title">命令行里，<br>也有同一张书桌。</h2>
+            <p>Gather 的 CLI 是一等入口，不是桌面端的配件。它读写同一批文件，也遵守同一条审阅边界。</p>
+          </div>
+        </header>
+
+        <div class="cli-layout">
+          <aside class="cli-aside">
+            <p class="micro-label">First-class terminal</p>
+            <p class="cli-statement">从环境检查到内容导出，再到计划中的 AI 修改，所有路径都从同一个本地工作区出发。</p>
+            <dl class="cli-facts">
+              <div>
+                <dt>Files</dt>
+                <dd>同一个本地工作区</dd>
+              </div>
+              <div>
+                <dt>Review</dt>
+                <dd>写入前仍由你确认</dd>
+              </div>
+              <div>
+                <dt>Access</dt>
+                <dd>Phase 0 · 源码中</dd>
+              </div>
+            </dl>
+            <a class="text-link text-link--inverse" href="https://github.com/hhxpoint/gather/tree/main/packages/cli" target="_blank" rel="noopener noreferrer">
+              查看 CLI 源码
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg>
+            </a>
+          </aside>
+
+          <ol class="command-list">
+            <li class="command-item">
+              <div class="command-meta">
+                <span class="command-number">01</span>
+                <span class="phase-label">Phase 0 · CLI scaffold</span>
+              </div>
+              <div class="command-content">
+                <div class="command-line">
+                  <span class="command-prompt" aria-hidden="true">$</span>
+                  <code>gather doctor</code>
+                  <button class="copy-button copy-button--inverse" type="button" data-copy="gather doctor" aria-label="复制命令：gather doctor">
+                    <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-copy"/></svg>
+                    <span class="copy-label">复制</span>
+                  </button>
+                </div>
+                <p>检查 Node、平台、当前工作目录与 AI 配置边界。先弄清环境，再开始写作。</p>
+              </div>
+            </li>
+
+            <li class="command-item">
+              <div class="command-meta">
+                <span class="command-number">02</span>
+                <span class="phase-label">Phase 0 · CLI scaffold</span>
+              </div>
+              <div class="command-content">
+                <div class="command-line">
+                  <span class="command-prompt" aria-hidden="true">$</span>
+                  <code>gather export draft.md --format html -o draft.html</code>
+                  <button class="copy-button copy-button--inverse" type="button" data-copy="gather export draft.md --format html -o draft.html" aria-label="复制命令：gather export draft.md --format html -o draft.html">
+                    <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-copy"/></svg>
+                    <span class="copy-label">复制</span>
+                  </button>
+                </div>
+                <p>把 Markdown 导出为独立 HTML。Phase 0 只支持 HTML；PDF、DOCX 等格式留到后续阶段评估。</p>
+              </div>
+            </li>
+
+            <li class="command-item command-item--planned">
+              <div class="command-meta">
+                <span class="command-number">03</span>
+                <span class="phase-label phase-label--future">Phase 1 · 计划中</span>
+              </div>
+              <div class="command-content">
+                <div class="command-line">
+                  <span class="command-prompt" aria-hidden="true">$</span>
+                  <code>gather ask <span class="command-string">"收紧第二段，但保留语气"</span></code>
+                </div>
+                <p>把写作请求交给 Ollama 或自有 Key 的模型。提案进入 diff 审阅，不直接覆盖文件。此命令尚未实现，计划于 Phase 1 提供。</p>
+                <div class="command-flow" aria-hidden="true">
+                  <span>Proposal</span>
+                  <i>→</i>
+                  <span>Diff</span>
+                  <i>→</i>
+                  <span>Your call</span>
+                </div>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <p class="cli-footnote">
+          <span>Note</span>
+          Phase 0 的 CLI 代码已在仓库中打底，但尚无公开发行版、二进制或 npm 包。<code>doctor</code> 与 <code>export</code> 位于源码脚手架中；<code>ask</code> 属于 Phase 1 计划。
+        </p>
+        <noscript><p class="cli-noscript">JavaScript 未启用：命令文本可直接选中复制。</p></noscript>
+      </div>
+    </section>
+
+    <section class="section downloads" id="download" aria-labelledby="download-title">
+      <div class="frame">
+        <header class="section-head">
+          <p class="section-marker"><span>04</span> Builds</p>
+          <div class="section-heading">
+            <h2 id="download-title">现在，<br>还没有下载。</h2>
+            <p>Phase 0 仍在构建正式安装包。这里不伪造下载链接；准备好之后，Windows、Linux 与 CLI 会首先出现在 GitHub Releases。</p>
+          </div>
+        </header>
+
+        <div class="release-status-bar">
+          <span class="micro-label">Release channel</span>
+          <span>GitHub Releases</span>
+          <span class="release-status-bar-state"><i class="status-dot" aria-hidden="true"></i>Phase 0 · 构建中</span>
+        </div>
+
+        <div class="release-manifest">
+          <div class="manifest-head" aria-hidden="true">
+            <span>Distribution</span>
+            <span>Channel</span>
+            <span>Status</span>
+          </div>
+          <ul class="release-list">
+            <li class="release-row">
+              <div class="release-target">
+                <span class="release-glyph" aria-hidden="true">W</span>
+                <div>
+                  <h3>Windows</h3>
+                  <p>Desktop application</p>
+                </div>
+              </div>
+              <p class="release-channel"><span>Channel</span>First release wave</p>
+              <div class="release-state">
+                <span class="release-note">尚无可用安装包</span>
+                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="Windows：Phase 0 构建中。前往 GitHub Releases 查看构建进展">
+                  <span class="release-button-status"><i aria-hidden="true"></i>Phase 0 · 构建中</span>
+                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                </a>
+              </div>
+            </li>
+            <li class="release-row">
+              <div class="release-target">
+                <span class="release-glyph" aria-hidden="true">L</span>
+                <div>
+                  <h3>Linux</h3>
+                  <p>Desktop application</p>
+                </div>
+              </div>
+              <p class="release-channel"><span>Channel</span>First release wave</p>
+              <div class="release-state">
+                <span class="release-note">尚无可用安装包</span>
+                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="Linux：Phase 0 构建中。前往 GitHub Releases 查看构建进展">
+                  <span class="release-button-status"><i aria-hidden="true"></i>Phase 0 · 构建中</span>
+                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                </a>
+              </div>
+            </li>
+            <li class="release-row">
+              <div class="release-target">
+                <span class="release-glyph release-glyph--code" aria-hidden="true">&gt;_</span>
+                <div>
+                  <h3>CLI</h3>
+                  <p>Terminal workspace</p>
+                </div>
+              </div>
+              <p class="release-channel"><span>Channel</span>First release wave</p>
+              <div class="release-state">
+                <span class="release-note">源码中，尚无发行包</span>
+                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="CLI：Phase 0 构建中。前往 GitHub Releases 查看构建进展">
+                  <span class="release-button-status"><i aria-hidden="true"></i>Phase 0 · 构建中</span>
+                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <p class="manifest-caption">三个入口都指向同一个 GitHub Releases 发布页，目前不会触发任何下载。</p>
+
+        <div class="release-facts">
+          <div>
+            <p class="micro-label">Desktop shell</p>
+            <p>Phase 0 默认使用 Electron。Tauri 是待验证的候选，而不是既成承诺。</p>
+          </div>
+          <div>
+            <p class="micro-label">First wave</p>
+            <p>首发计划覆盖 Windows、Linux 与 CLI；具体格式与时间会在验证后公布。</p>
+          </div>
+          <div>
+            <p class="micro-label">Source today</p>
+            <p>CLI 脚手架已在仓库中。尚无公开二进制、安装器或 npm 发行包。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section roadmap" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="frame">
+        <header class="section-head">
+          <p class="section-marker"><span>05</span> Roadmap</p>
+          <div class="section-heading">
+            <h2 id="roadmap-title">方向写下来，<br>日期不虚构。</h2>
+            <p>以下顺序是当前意图，不是发布日期承诺。完成状态以代码与发布页为准，而不是这张路线图。</p>
+          </div>
+        </header>
+
+        <ol class="roadmap-track">
+          <li class="roadmap-stage roadmap-stage--current">
+            <div class="stage-top">
+              <span class="stage-node" aria-hidden="true"></span>
+              <span class="stage-time">Now</span>
+            </div>
+            <p class="stage-code">Phase 0 / Foundation</p>
+            <h3>打地基</h3>
+            <p class="stage-copy">先把文件、编辑器内核与两端入口的关系摆正。没有公开安装包，也不拿未完成的能力当卖点。</p>
+            <ul class="stage-list">
+              <li>编辑器内核与本地文件</li>
+              <li>Electron 桌面壳</li>
+              <li>CLI 脚手架</li>
+              <li>Phase 0 官网</li>
+            </ul>
+            <span class="stage-state">进行中 / In progress</span>
+          </li>
+
+          <li class="roadmap-stage">
+            <div class="stage-top">
+              <span class="stage-node" aria-hidden="true"></span>
+              <span class="stage-time">Next</span>
+            </div>
+            <p class="stage-code">Phase 1 / Preview</p>
+            <h3>让审阅闭环</h3>
+            <p class="stage-copy">把 AI 提案、diff 呈现与明确接受连成完整路径，并给首批验证者可运行的构建。</p>
+            <ul class="stage-list">
+              <li><code>gather ask</code> 与可审阅 diff</li>
+              <li>Ollama + BYOK 接入</li>
+              <li>Windows / Linux 早期测试构建</li>
+            </ul>
+            <span class="stage-state">计划中 / Planned</span>
+          </li>
+
+          <li class="roadmap-stage">
+            <div class="stage-top">
+              <span class="stage-node" aria-hidden="true"></span>
+              <span class="stage-time">Later</span>
+            </div>
+            <p class="stage-code">Phase 2 / Release</p>
+            <h3>把路走稳</h3>
+            <p class="stage-copy">只有在安全、可维护和可理解之后，才谈更广的发布。Tauri 仍会在真实约束下评估。</p>
+            <ul class="stage-list">
+              <li>公开安装包与发布流程</li>
+              <li>更多导出格式</li>
+              <li>Tauri 候选验证</li>
+            </ul>
+            <span class="stage-state">方向 / Direction</span>
+          </li>
+        </ol>
+
+        <p class="roadmap-note"><span>Note</span> 路线图描述产品意图，不构成平台、日期或功能承诺。Tauri 尚未改变 Phase 0 的 Electron 默认路线。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="privacy">
+    <div class="frame">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a class="brand brand--inverse" href="#top" aria-label="Gather，回到页首">
+            <svg class="brand-mark" viewBox="0 0 42 42" aria-hidden="true" focusable="false">
+              <path d="M6.75 10.4c6.8-.9 11.2 2 14.25 5.05 3.05-3.05 7.45-5.95 14.25-5.05v22.25c-6.8-.9-11.2 2-14.25 5.05-3.05-3.05-7.45-5.95-14.25-5.05V10.4Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+              <path d="M21 15.45v22.25M11.4 16.6h5.2M11.4 21.1h5.2M25.4 16.6h5.2M25.4 21.1h4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-lockup">
+              <span class="brand-name">Gather</span>
+              <span class="brand-sub">Local-first writing workspace</span>
+            </span>
+          </a>
+          <p class="footer-tagline">A quieter place to write.</p>
+          <p class="footer-copy">把散落的想法，收拢成一篇。Phase 0 仍在构建，不声称已经发布。</p>
+        </div>
+
+        <div class="footer-links">
+          <section aria-labelledby="footer-project">
+            <h2 id="footer-project">Project</h2>
+            <a href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+            <a href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+            <a href="https://github.com/hhxpoint/gather/tree/main/packages/cli" target="_blank" rel="noopener noreferrer">CLI source <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+          </section>
+
+          <section aria-labelledby="footer-license">
+            <h2 id="footer-license">License</h2>
+            <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">AGPL-3.0-only <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+            <p>Gather 的代码以 AGPL-3.0 开放。修改与分发请遵循许可证条款。</p>
+          </section>
+
+          <section class="footer-privacy" aria-labelledby="footer-privacy-title">
+            <h2 id="footer-privacy-title">Privacy <span>占位说明</span></h2>
+            <p>当前页面不使用 Cookie、外部字体、外部图片或追踪器。正式产品发布前，会补齐完整的隐私说明。</p>
+            <p class="privacy-mark">No trackers / No external assets</p>
+          </section>
+        </div>
+      </div>
+
+      <div class="footer-base">
+        <span>© 2026 Gather contributors</span>
+        <span class="footer-phase"><i class="status-dot" aria-hidden="true"></i>Phase 0 · 构建中</span>
+        <a class="footer-top-link" href="#top">回到顶部 <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-up"/></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+
+  <script>
+    (() => {
+      const copyStatus = document.querySelector('#copy-status');
+
+      async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+
+        const field = document.createElement('textarea');
+        field.value = text;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand('copy');
+        field.remove();
+        if (!copied) throw new Error('Copy failed');
+      }
+
+      document.querySelectorAll('.copy-button[data-copy]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const command = button.dataset.copy;
+          const label = button.querySelector('.copy-label');
+          if (!command || !label) return;
+
+          try {
+            await copyText(command);
+            const previous = label.textContent;
+            label.textContent = '已复制';
+            button.dataset.copied = 'true';
+            if (copyStatus) copyStatus.textContent = `已复制命令：${command}`;
+            window.setTimeout(() => {
+              label.textContent = previous;
+              delete button.dataset.copied;
+            }, 1800);
+          } catch {
+            if (copyStatus) copyStatus.textContent = '复制失败，请手动选择命令文本。';
+          }
+        });
+      });
+
+      const drawer = document.querySelector('.nav-drawer');
+      if (drawer) {
+        drawer.querySelectorAll('a').forEach((link) => {
+          link.addEventListener('click', () => { drawer.open = false; });
+        });
+
+        document.addEventListener('click', (event) => {
+          if (drawer.open && !drawer.contains(event.target)) drawer.open = false;
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && drawer.open) {
+            drawer.open = false;
+            drawer.querySelector('summary')?.focus();
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

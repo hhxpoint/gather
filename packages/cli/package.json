@@ -1,0 +1,20 @@
+{
+  "name": "@gather/cli",
+  "version": "0.1.0-phase.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Gather command line workspace",
+  "bin": {
+    "gather": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@gather/core": "0.1.0-phase.0",
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}

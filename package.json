@@ -1,0 +1,30 @@
+{
+  "name": "gather",
+  "version": "0.1.0-phase.0",
+  "private": true,
+  "type": "module",
+  "description": "Gather, a local-first Markdown writing workspace with reviewable AI and a first-class CLI.",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @gather/desktop",
+    "build": "npm run build -w @gather/desktop && npm run build -w @gather/site && npm run build -w @gather/cli",
+    "test": "vitest run",
+    "typecheck": "tsc -p packages/core/tsconfig.json --noEmit && tsc -p packages/editor/tsconfig.json --noEmit && tsc -p apps/desktop/tsconfig.json --noEmit && tsc -p packages/cli/tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  },
+  "overrides": {
+    "@lezer/common": "1.5.5"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@gather/site",
+  "version": "0.1.0-phase.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 0 website for Gather, the local-first Markdown workspace.",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
