@@ -4,7 +4,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。Phase 0 只做一件事：把桌面壳、编辑器内核、CLI 和共享核心的地基搭起来，并让每一层都能被单独验证。
 
-**当前状态：Phase 1 文件可靠性第一批已落地，仍不是可安装的发行版。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。Phase 0 的 Windows/Ubuntu CI、项目站、桌面打开/另存为已闭环；本阶段又加入了 **CRLF/BOM 保真、SHA-256 + 尺寸的保存冲突拒绝、打开新文件重置撤销栈、生产 CSP 与导航拦截**。这些在 Windows 真实窗口中验证过，并新增了文件 I/O 与文本格式测试。**仍没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、实时外部变更提示、自动保存/崩溃恢复、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 1 文件可靠性两批已落地，仍不是可安装的发行版。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。Phase 0 的 Windows/Ubuntu CI、项目站、桌面打开/另存为已闭环；第一批加入 **CRLF/BOM 保真、SHA-256 + 尺寸的保存冲突拒绝、打开新文件重置撤销栈、生产 CSP 与导航拦截**；第二批加入 **自动恢复快照、强杀后恢复、实时外部变更提示、显式磁盘重载**。这些在 Windows 真实窗口中验证过，并新增了文件 I/O、恢复存储与 watcher 测试。**仍没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -42,7 +42,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
 | 发布状态 | 没有安装包、没有签名、没有公开 beta；项目站仍标注 Phase 0 构建状态，文案待下一轮同步 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 的第一批文件安全也已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口。仍未做到：IME/Linux 桌面矩阵、实时外部变更提示、自动保存/崩溃恢复、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
+Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 前两批文件安全已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
 ## 为什么做 Gather
 
@@ -76,13 +76,16 @@ Gather 不打算做这些事：
 | Electron 主窗口 | 已验证（本地 Windows） | 1200×820，最小 760×520，单实例锁；生产构建可加载 |
 | 打开 Markdown | 已验证（本地 Windows） | 系统文件对话框打开仓库内 Markdown 并渲染成功 |
 | 保存 / 另存为 | 已验证（本地 Windows） | 保留 LF/CRLF 与 BOM；临时文件写入 + `fsync` + `rename`；另存为恢复路径已验证 |
-| 外部修改保护 | 已验证（本地 Windows） | 保存前比较原文件 SHA-256 与字节数；冲突时拒绝覆盖，提供“另存为/重新打开” |
+| 外部修改保护 | 已验证（本地 Windows） | 保存前比较 SHA-256/尺寸；冲突时拒绝覆盖，可载入磁盘版本或另存为 |
+| 实时外部变更提示 | 已验证（本地 Windows） | 目录 watcher + 2 秒 stat 轮询；内容 SHA-256 确认后提示，删除也会提示 |
+| 自动恢复快照 | 已验证（本地 Windows） | 停止输入约 2.2 秒或持续编辑 15 秒后写入 userData；原子写入、最多 20 份 |
+| 崩溃恢复 | 已验证（本地 Windows） | 强杀后重启显示恢复横幅；恢复路径/未命名文稿并“尚未保存”，保存或丢弃后清理 |
+| 磁盘重载 | 已验证（本地 Windows） | 外部修改后可显式载入磁盘版本；未保存修改需确认，恢复快照随后重建 |
 | 文件大小保护 | 已落盘，未验证异常路径 | 单文件上限 20 MiB，超出时拒绝打开/保存；尚未跑磁盘满、只读目录等矩阵 |
 | 进程隔离 | 已落盘 | `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false` |
 | 应用菜单 | 已落盘 | 文件、视图、帮助菜单；打开/保存/另存为/切换预览 |
 | 快捷键 | 部分验证 | `Ctrl/Cmd+O`、`Ctrl/Cmd+S` 已实际操作；Shift+S / Shift+P 未逐项实测 |
-| 未保存提示 | 部分 | 标题栏脏标记、打开其他文件前确认、`beforeunload`；没有崩溃恢复 |
-| 实时外部变更提示 | 未实现 | 没有文件 watcher；保存时仍会拒绝覆盖外部修改 |
+| 未保存提示 | 部分 | 标题栏脏标记、打开其他文件前确认、`beforeunload`；恢复快照见上一行 |
 | CSP 与导航防护 | CSP 已验证，导航已落盘 | 生产 `file://` 响应注入 CSP，内联脚本实测被阻止；新窗口/跨页导航被拦截 |
 
 ### 编辑器（`packages/editor`）
@@ -122,14 +125,15 @@ Gather 不打算做这些事：
 
 | 项目 | 状态 | 说明 |
 | --- | --- | --- |
-| 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/file-io.test.ts` |
+| 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地以 Electron Node 22：4 个测试文件、29 个测试；CI [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 Ubuntu/Windows 复跑通过 |
-| 文件 I/O 测试 | 已通过（本地 + CI） | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一 |
-| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 双平台通过 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：6 个测试文件、40 个测试；CI [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 在 Ubuntu/Windows 复跑通过 |
+| 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一 |
+| 恢复与 watcher 测试 | 已通过 | 快照写入/列表/读取/覆盖/丢弃/损坏文件/写删串行；外部修改、自写忽略、删除与重建、轮询差异 |
+| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；Phase 1 运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；Phase 1 恢复批次运行 [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 未实现 | `electron-builder` 配置存在，但没有安装包产物、没有签名 |
 
@@ -137,7 +141,7 @@ Gather 不打算做这些事：
 
 这一节区分“骨架已闭环”“Phase 1 文件可靠性已证明”和“产品可发布”。勾选项是已经完成并有证据的；未勾选项都是 beta 之前的阻断，其中任何“必须”级编辑能力缺失，都不能把当前状态描述成完整编辑器。
 
-- [x] **Windows/Ubuntu CI 已复跑。** Phase 1 运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、29 个测试、build、CLI `doctor --json`，全部成功；Phase 0 基线为 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811)。
+- [x] **Windows/Ubuntu CI 已复跑。** 恢复批次运行 [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、40 个测试、build、CLI `doctor --json`，全部成功；上一批基线为 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162)。
 - [x] **项目站已部署。** Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功；`https://hhxpoint.github.io/gather/` 已在浏览器中验证加载，CSS 正常。
 - [x] **桌面打开/另存为已在 Windows 实际验证。** 打开仓库内 Markdown、另存为文件，并切换源码/实时预览；这不是完整 IME 或 Linux 矩阵。
 - [x] **CRLF/BOM 已可字节保真。** 真实窗口中打开 BOM + CRLF 文稿，保存后 42 字节逐字节一致；LF、无结尾换行也由单元测试覆盖。混合行尾会在保存时统一为 LF，界面会显示“混合行尾”。
@@ -147,8 +151,14 @@ Gather 不打算做这些事：
 - [ ] **IME 未做真机矩阵。** Windows 微软拼音/搜狗、Linux Fcitx5/IBus、X11/Wayland 下的丢字、重复上屏、候选框定位、组合期间预览抖动都还没有记录。
 - [ ] **Linux 桌面未运行验收。** 只有 Ubuntu CI 的构建与 CLI `doctor`，没有在图形会话中启动 Electron、打开文件、测试菜单与打印。
 - [ ] **混合行尾不能逐行保真。** 纯 LF、纯 CRLF、BOM 可 round-trip；CRLF 与 LF 混排的文件保存时会统一为 LF，界面会提示，但还不能保留每一行的原始行尾。
-- [ ] **没有实时外部变更提示。** 只有保存时的冲突拒绝；文件在打开期间被外部修改时不会主动通知，也没有合并视图。
-- [ ] **没有自动保存与崩溃恢复。** 只有未保存提示；强制杀进程、磁盘满、只读目录等异常矩阵也未跑。
+- [x] **自动恢复快照与强杀恢复。** 停止输入约 2.2 秒或持续编辑 15 秒后写入 `userData/recovery`（Windows 为 `%APPDATA%/Gather/recovery`）；强杀后重启显示恢复横幅，恢复路径与未命名文稿均可继续编辑并保存。
+- [x] **实时外部变更提示。** 目录 watcher + 2 秒 stat 轮询，SHA-256 确认后提示；支持载入磁盘版本、另存为、稍后；删除/移动也会提示。
+- [ ] **恢复快照有延迟。** 最新约 2.2 秒内的输入可能不在快照里；持续输入最长 15 秒落一次。它不是逐键持久化，也不是版本历史。
+- [ ] **没有冲突合并。** 外部修改只能整体载入磁盘版本或另存为，不能逐段合并两边内容。
+- [ ] **恢复快照未加密且上限 20 份。** 内容存放在操作系统账户下的 userData，依赖本机账户权限；没有单独的加密或口令。磁盘满、只读目录、断电模拟仍未跑。
+- [ ] **IME 未做真机矩阵。** Windows 微软拼音/搜狗、Linux Fcitx5/IBus、X11/Wayland 下的丢字、重复上屏、候选框定位、组合期间预览抖动都还没有记录。
+- [ ] **Linux 桌面未运行验收。** 只有 Ubuntu CI 的构建与 CLI `doctor`，没有在图形会话中启动 Electron、打开文件、测试菜单与打印。
+- [ ] **混合行尾不能逐行保真。** 纯 LF、纯 CRLF、BOM 可 round-trip；CRLF 与 LF 混排的文件保存时会统一为 LF，界面会提示，但还不能保留每一行的原始行尾。
 - [ ] **没有依赖漏洞扫描与签名构建。** CSP/导航已补，但依赖审计、安装包签名、自动更新校验仍未做。
 - [ ] **没有 AI 能力。** 没有 Ollama 客户端、没有 BYOK、没有 diff 审阅、没有逐块接受/拒绝。
 - [ ] **没有 RAG。** 不在当前范围，也没有代码。
@@ -220,6 +230,8 @@ Electron 在所有目标平台使用同一套 Chromium，中文输入法、字�
 
 打开文件时，主进程读取原始字节，记录 `mtimeMs`、字节数与 SHA-256，并把 BOM/行尾风格作为元数据交给渲染层；编辑器内部始终使用 LF。保存时先按原格式编码，再检查目标文件是否仍与打开时一致；一致才写临时文件、`fsync`、二次检查并 `rename`。不一致则返回冲突，渲染层显示横幅，原文件不会被覆盖。完整取舍与混合行尾规则见 [ADR 0003](docs/adr/0003-file-safety.md)。
 
+未保存内容会以原子 JSON 快照写入 `userData/recovery`（Windows 为 `%APPDATA%/Gather/recovery`）：文件路径生成稳定 ID，未命名文稿使用 UUID；停止输入约 2.2 秒或持续编辑 15 秒落一次，最多 20 份。保存或用户明确丢弃后清理。当前文件同时由目录 `fs.watch` 与 2 秒 stat 轮询监视，内容 SHA-256 确认后才通知；渲染层提供载入磁盘版本、另存为与稍后处理。恢复/监视的边界见 [ADR 0004](docs/adr/0004-recovery-and-watcher.md)。
+
 ## 目录结构
 
 ```text
@@ -228,10 +240,14 @@ gather/
 │  ├─ desktop/                  Electron 桌面应用
 │  │  ├─ src/main/index.ts      主进程：窗口、菜单、文件 IPC、CSP、导航
 │  │  ├─ src/main/file-io.ts    UTF-8 校验、CRLF/BOM、原子写入、冲突检测
+│  │  ├─ src/main/file-watcher.ts  当前文件外部变更监视（fs.watch + 轮询）
+│  │  ├─ src/main/recovery.ts   恢复快照存储（userData、SHA-256 ID、20 份上限）
 │  │  ├─ src/shared/files.ts    主进程/preload/renderer 共享文件类型
 │  │  ├─ src/preload/index.ts   最小 contextBridge API
 │  │  ├─ src/renderer/          React 渲染进程
 │  │  ├─ test/file-io.test.ts   临时目录真实写盘与冲突测试
+│  │  ├─ test/file-watcher.test.ts  外部变更/删除/自写忽略
+│  │  ├─ test/recovery.test.ts  快照读写、覆盖、丢弃与损坏文件
 │  │  ├─ electron.vite.config.ts
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
 │  └─ site/                     官网静态骨架
@@ -323,7 +339,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（4 个测试文件、29 个测试）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（6 个测试文件、40 个测试）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -333,7 +349,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 Ubuntu 与 Windows 全部步骤成功（Ubuntu 约 22 秒，Windows 约 49 秒），覆盖本阶段 29 个测试。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
+运行 [44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294) 在 Ubuntu 与 Windows 全部步骤成功，覆盖本批 40 个测试；上一批基线为 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162)。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
 
 ### 桌面打包（未验证）
 
@@ -426,8 +442,8 @@ node packages/cli/dist/cli.js export notes/today.md --format pdf
 | P0-10 | 中英文计数、行数 | 应该 | 已落盘 |
 | P0-11 | CRLF/BOM 字节保真 | 必须 | 已验证（纯 LF/CRLF/BOM；混合行尾统一为 LF） |
 | P0-12 | 中文 IME（Windows 微软拼音/搜狗；Linux Fcitx5/IBus） | 必须 | 未验证 |
-| P0-13 | 外部文件变更检测与冲突提示 | 必须 | 部分（保存时拒绝覆盖；无实时提示） |
-| P0-14 | 自动保存/崩溃恢复/备份 | 必须 | 未实现 |
+| P0-13 | 外部文件变更检测与冲突提示 | 必须 | 已验证（实时提示 + 保存拒绝 + 载入磁盘） |
+| P0-14 | 自动保存/崩溃恢复/备份 | 必须 | 部分（自动恢复快照与强杀恢复；不自动写原文件） |
 | P0-15 | 打开新文件时重置撤销栈 | 必须 | 已验证（Windows） |
 | P0-16 | 5 MiB 文档输入延迟与滚动性能 | 应该 | 未验证 |
 | P0-17 | 表格、图片、链接的预览呈现 | 应该 | 未实现 |
@@ -443,7 +459,7 @@ P0 的“必须”项没有全部满足，因此当前快照不能称为可发�
 
 | 门槛 | 可验证标准 | 当前 |
 | --- | --- | --- |
-| 数据安全 | 强制杀进程、断电模拟、磁盘满、只读目录、并发保存后，原文可恢复；0 丢失 | 原子写入 + fsync + digest 冲突拒绝已验证；恢复/备份未实现 |
+| 数据安全 | 强制杀进程、断电模拟、磁盘满、只读目录、并发保存后，原文可恢复；0 丢失 | 原子写入 + digest 冲突拒绝 + 恢复快照已实测；断电/磁盘满/只读目录未跑 |
 | 字节保真 | 未修改的文稿打开再保存，字节一致；CRLF、BOM、无结尾换行、frontmatter、表格、HTML 块纳入 golden corpus | LF/CRLF/BOM/无结尾换行已测；混合行尾会归一；frontmatter 等 corpus 未建 |
 | 编辑正确性 | 撤销/重做、选区、跨行命令、嵌套标记、emoji、CJK 标点的单元与属性测试通过 | 只有少量纯函数测试 |
 | IME | Windows 微软拼音/搜狗、Linux Fcitx5/IBus 在 X11 与 Wayland 下无丢字、无重复、候选框定位正确、组合期间预览不跳动 | 未验证 |
@@ -506,10 +522,11 @@ https://hhxpoint.github.io/gather/
 
 开发、测试、提交规范、数据安全与 AI 隐私要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。Phase 1 最需要帮助的方向：
 
-- 在 Windows 10/11 与 Linux（X11/Wayland）上做真实运行与 IME 测试，并记录系统、输入法、版本。
+- Windows 10/11 与 Linux（X11/Wayland）上做真实运行与 IME 测试，并记录系统、输入法、版本。
 - 在 Linux 图形会话中复跑桌面打开/保存/打印矩阵，并补充 CLI `new/export` 的 CI 覆盖。
 - 为 Markdown 保真扩展 golden corpus：frontmatter、表格、HTML 块、CJK、emoji、超长行、混合行尾策略。
-- 设计外部文件 watcher、自动保存与崩溃恢复，并验证强制杀进程/磁盘满/只读目录。
+- 为外部变更设计逐段合并/差异视图；当前只能整体载入磁盘或另存为。
+- 为恢复快照设计可选加密、清理策略，并跑磁盘满、只读目录、断电模拟与 8 小时 dogfood。
 
 不接受：伪造测试结果、伪造截图、把未验证的 AI 能力写进文档、提交真实用户文稿或密钥、引入默认上传/遥测。
 
@@ -519,14 +536,14 @@ https://hhxpoint.github.io/gather/
 
 - 文稿保存在用户选择的本地文件，不使用云端数据库，不要求账号。
 - 当前桌面端没有遥测、分析 SDK 或远程字体/脚本。CLI 不发起网络请求。
-- 保存采用临时文件 + `fsync` + `rename`，降低半写文件风险；保存前比较 SHA-256 与字节数，外部修改时拒绝覆盖。仍没有自动备份与崩溃恢复，重要文稿应使用 `git` 或外部备份。
+- 保存采用临时文件 + `fsync` + `rename`，保存前比较 SHA-256 与字节数，外部修改时拒绝覆盖。未保存内容会定期写入 `userData/recovery`（Windows 为 `%APPDATA%/Gather/recovery`），强杀后可恢复；快照未加密，依赖操作系统账户权限，最多保留 20 份。重要文稿仍应使用 `git` 或外部备份。
 - 单文件上限 20 MiB；CLI 没有同样的上限，处理大文件时需要自行注意内存。
 
 ### Electron 加固现状
 
 已启用：`contextIsolation`、`sandbox`、关闭 `nodeIntegration`、最小 preload API、文件类型/大小/UTF-8 校验、HTML 白名单清洗、生产 CSP、导航与新窗口拦截、IPC 保存参数校验。
 
-仍缺少：依赖漏洞扫描、签名构建、自动更新校验、实时外部变更通知。不要因为“本地优先”就认为桌面端没有攻击面；打开不受信任的 Markdown 仍然会经过解析与 HTML 渲染。
+仍缺少：依赖漏洞扫描、签名构建、自动更新校验、恢复快照加密。不要因为“本地优先”就认为桌面端没有攻击面；打开不受信任的 Markdown 仍然会经过解析与 HTML 渲染。
 
 ### AI 隐私原则（Phase 2 才实现）
 

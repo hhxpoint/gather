@@ -102,6 +102,32 @@ export async function readMarkdownFile(path: string): Promise<OpenedFile> {
   };
 }
 
+/**
+ * Cheap version probe for the active-file watcher. A missing path returns null;
+ * files above the editor limit get a sentinel digest so callers can still
+ * notice that the destination changed without reading an unbounded file.
+ */
+export async function readFileVersion(path: string): Promise<FileVersion | null> {
+  const target = assertPath(path);
+  let info;
+  try {
+    info = await stat(target);
+  } catch (error) {
+    if (isErrno(error, 'ENOENT')) return null;
+    throw error;
+  }
+  if (!info.isFile()) return null;
+  if (info.size > MAX_BYTES) {
+    return { mtimeMs: info.mtimeMs, size: info.size, digest: 'too-large' };
+  }
+  const buffer = await readFile(target);
+  return {
+    mtimeMs: info.mtimeMs,
+    size: buffer.length,
+    digest: digestBytes(buffer),
+  };
+}
+
 interface Conflict {
   ok: false;
   reason: 'conflict';
