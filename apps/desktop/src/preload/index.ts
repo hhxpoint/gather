@@ -1,17 +1,17 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
-
-export interface OpenedFile {
-  path: string;
-  name: string;
-  content: string;
-}
+import type {
+  OpenedFile,
+  SaveAsRequest,
+  SaveOutcome,
+  SaveRequest,
+} from '../shared/files';
 
 const api = {
   openFile: (): Promise<OpenedFile | null> => ipcRenderer.invoke('file:open'),
-  saveFile: (path: string, content: string): Promise<{ path: string; name: string } | null> =>
-    ipcRenderer.invoke('file:save', { path, content }),
-  saveFileAs: (content: string): Promise<{ path: string; name: string } | null> =>
-    ipcRenderer.invoke('file:saveAs', { content }),
+  saveFile: (request: SaveRequest): Promise<SaveOutcome> =>
+    ipcRenderer.invoke('file:save', request),
+  saveFileAs: (request: SaveAsRequest): Promise<SaveOutcome | null> =>
+    ipcRenderer.invoke('file:saveAs', request),
   onMenuAction: (listener: (action: string) => void) => {
     const handler = (_event: IpcRendererEvent, action: string) => listener(action);
     ipcRenderer.on('menu-action', handler);
@@ -24,3 +24,11 @@ const api = {
 contextBridge.exposeInMainWorld('gather', api);
 
 export type GatherApi = typeof api;
+export type {
+  OpenedFile,
+  SaveAsRequest,
+  SaveOutcome,
+  SaveRequest,
+  SavedFile,
+  FileVersion,
+} from '../shared/files';

@@ -4,7 +4,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    // @gather/core is TypeScript source in this workspace, so bundle it into
+    // the main process instead of asking Node to resolve its .ts entry.
+    plugins: [externalizeDepsPlugin({ exclude: ['@gather/core'] })],
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
