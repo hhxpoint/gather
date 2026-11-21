@@ -40,8 +40,25 @@ button { font: inherit; cursor: pointer; }
 .gather-editor { height: 100%; }
 .gather-editor .cm-editor { height: 100%; background: var(--paper); }
 .gather-editor .cm-scroller { scrollbar-gutter: stable; }
+.recovery-banner { padding: 10px 22px; border-bottom: 1px solid #d7e2cb; background: #eef4e7; color: #40543d; font-size: 12px; line-height: 1.45; }
+.recovery-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.recovery-heading strong { font-weight: 600; }
+.recovery-heading span { color: #74836c; font-size: 10px; }
+.recovery-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 5px; max-height: 150px; overflow: auto; }
+.recovery-item { display: flex; align-items: center; gap: 12px; padding: 6px 8px; border: 1px solid #dde7d3; border-radius: 7px; background: #f8fbf4; }
+.recovery-meta { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.recovery-meta strong { font-weight: 600; color: #3d513a; }
+.recovery-meta small { color: #7a8872; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recovery-actions { display: flex; gap: 6px; margin-left: auto; flex: 0 0 auto; }
+.recovery-actions button { border: 1px solid #c3d4b6; border-radius: 6px; background: #fcfef9; color: #496044; padding: 4px 9px; font-size: 11px; }
+.recovery-actions button:hover { border-color: #99b389; background: #f1f7eb; }
 .conflict-banner { display: flex; align-items: center; gap: 16px; padding: 9px 22px; border-bottom: 1px solid #e7d2c1; background: #f8eee5; color: #7d5038; font-size: 12px; line-height: 1.5; }
 .conflict-banner strong { font-weight: 600; }
+.external-banner { display: flex; align-items: center; gap: 16px; padding: 9px 22px; border-bottom: 1px solid #d3dfc6; background: #eef3e7; color: #486044; font-size: 12px; line-height: 1.5; }
+.external-banner strong { font-weight: 600; }
+.external-banner .conflict-actions button { border-color: #c1d3b4; background: #fbfdf8; color: #486044; }
+.external-banner .conflict-actions button:hover { border-color: #92ad81; background: #f4f9ef; }
+.external-banner .conflict-actions .conflict-dismiss:hover { background: #e2ecd9; }
 .conflict-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex: 0 0 auto; }
 .conflict-actions button { border: 1px solid #d9bfa9; border-radius: 6px; background: #fffaf4; color: #7d5038; padding: 5px 9px; font-size: 11px; }
 .conflict-actions button:hover { border-color: #b99174; background: #fffdf9; }
@@ -60,7 +77,10 @@ button { font: inherit; cursor: pointer; }
   .quiet-button { font-size: 0; gap: 0; padding: 8px; }
   .editor-toolbar { padding-inline: 12px; }
   .toolbar-note { display: none; }
-  .conflict-banner { flex-wrap: wrap; gap: 8px; padding-inline: 14px; }
+  .conflict-banner, .external-banner { flex-wrap: wrap; gap: 8px; padding-inline: 14px; }
   .conflict-actions { margin-left: 0; }
+  .recovery-banner { padding-inline: 14px; }
+  .recovery-item { align-items: flex-start; flex-wrap: wrap; }
+  .recovery-actions { margin-left: 0; }
   .app-footer { padding-inline: 14px; gap: 8px; }
 }

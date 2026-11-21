@@ -37,10 +37,10 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 当前包含 core、editor 与桌面文件 I/O，共 4 个测试文件、29 个测试；本地与 CI 的 Ubuntu/Windows 矩阵均已通过（Phase 1 运行 44882005162）。
+- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照与 watcher，共 6 个测试文件、40 个测试；本地已通过，本批 CI 待新运行。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
-- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；Phase 1 运行 44882005162 全绿，Phase 0 基线为 44870544811。
-- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝已手工验证；Linux 桌面与会话级验证仍未做。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；上一批运行 44882005162 全绿，Phase 0 基线为 44870544811。
+- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示已手工验证；Linux 桌面与会话级验证仍未做。
 - 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
 
 需要单独构建时：
@@ -89,6 +89,16 @@ npm run build -w @gather/cli
 - `packages/core/test/text-format.test.ts`：LF/CRLF/BOM、混合行尾、无结尾换行、跨 IPC 格式校验。
 - `packages/editor/test/text-commands.test.ts`：`toggleWrap`、`toggleLinePrefix`、`insertAroundSelection`。
 - `apps/desktop/test/file-io.test.ts`：临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一。
+- `apps/desktop/test/recovery.test.ts`：路径/未命名快照、覆盖、列表、读取、丢弃、损坏文件与路径 ID。
+- `apps/desktop/test/file-watcher.test.ts`：外部修改、自写忽略、删除与重建、轮询差异。
+
+提交恢复/文件监视相关改动时，至少覆盖：
+
+- 强杀后快照仍在、原文件未被改写；恢复后保存会清理快照。
+- 打开另一个文件不会删除旧快照。
+- 自身保存不会触发外部修改提示；外部修改只通知一次。
+- 文件删除、移动、重建后的状态；未命名文稿恢复后另存为。
+- 快照超过 20 份、损坏 JSON、无权限目录等边界。
 
 提交编辑相关改动时，至少覆盖：
 
@@ -110,18 +120,19 @@ Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进�
 | Linux | Ubuntu 22.04/24.04 或 Fedora 当前稳定版；Fcitx5 或 IBus；X11 与 Wayland 至少各一次 |
 | 输入 | 中文组合输入、标点、emoji、撤销、候选框定位、长按重复 |
 | 文件 | 新建、打开、另存、只读目录、20 MiB 边界、CRLF 文件、无结尾换行 |
+| 恢复/外部 | 编辑后强杀并重启、恢复路径/未命名快照、外部改写/删除/重建、载入磁盘版本、保存期间继续输入 |
 | 显示 | 100% 与 200% 缩放、窗口最小尺寸、长行折行 |
 
 没有条件执行的平台写“未测试”，不要用“应该没问题”代替。
 
 ## 数据安全规则
 
-- **不丢稿优先于一切。** 任何保存路径都必须先写临时文件、`fsync`、再原子替换；保存前比较打开时的 SHA-256/尺寸，外部修改时拒绝覆盖；失败时保留原文件。
+- **不丢稿优先于一切。** 任何保存路径都必须先写临时文件、`fsync`、再原子替换；保存前比较打开时的 SHA-256/尺寸，外部修改时拒绝覆盖；失败时保留原文件。未保存内容必须进入恢复快照，不许只留在内存。
 - **不做静默格式转换。** 编码、行尾、BOM、空行的改变必须是显式操作，或在文档中明确说明。当前混合行尾会在保存时统一为 LF，界面必须提示。
 - 不在用户未确认时删除、移动、重命名文件；CLI `new` 使用 `wx` 拒绝覆盖，保持这个行为。
 - 文件大小上限（桌面端 20 MiB）必须有清晰错误信息；提高上限需要性能和内存测试。
-- 处理外部文件变更时要提示冲突，不能后写者静默覆盖。当前尚未实现，相关 PR 优先。
-- 不把文稿内容写入日志、临时文件名、错误上报或测试快照。测试使用合成文本。
+- 处理外部文件变更时要提示冲突并保留双方内容；不允许后写者静默覆盖，也不允许自动重载丢掉编辑器内容。
+- 恢复快照属于用户文稿数据：不得写日志、不得上传、不得提交进仓库；测试使用合成文本。
 - 不引入云同步作为“顺手功能”。本地优先是架构约束，不是设置项。
 
 ## AI 与隐私规则
