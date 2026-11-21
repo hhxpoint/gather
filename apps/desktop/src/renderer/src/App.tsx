@@ -5,12 +5,15 @@ import {
   Download,
   Eye,
   EyeOff,
+  FileCode2,
   FileDown,
   FileText,
   Heading2,
   Italic,
   Link2,
   List,
+  LoaderCircle,
+  Printer,
   Quote,
   Save,
   SquarePen,
@@ -20,6 +23,7 @@ import { describeTextFormat } from '@gather/core/text-format';
 import { MarkdownEditor, countText, type MarkdownEditorHandle } from '@gather/editor';
 import { errorMessage } from '../../shared/errors';
 import type {
+  ExportFormat,
   ExternalChange,
   FileVersion,
   OpenedFile,
@@ -66,6 +70,16 @@ interface Actions {
   save: () => Promise<void>;
   saveAs: () => Promise<void>;
   togglePreview: () => void;
+  exportPdf: () => Promise<void>;
+  exportHtml: () => Promise<void>;
+}
+
+const EXPORT_LABELS: Record<ExportFormat, string> = { pdf: 'PDF', html: 'HTML' };
+
+function formatBytes(value: number): string {
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(value < 10 * 1024 ? 1 : 0)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function savedStatus(file: SavedFile): string {
@@ -99,6 +113,7 @@ export default function App() {
   const [externalChange, setExternalChange] = useState<ExternalChange | null>(null);
   const [recoveries, setRecoveries] = useState<RecoverySnapshot[]>([]);
   const [snapshotAt, setSnapshotAt] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const editorRef = useRef<MarkdownEditorHandle>(null);
   const actionsRef = useRef<Actions | null>(null);
   const docRef = useRef(doc);
@@ -114,6 +129,7 @@ export default function App() {
   const snapshotInFlightRef = useRef(false);
   const savingRef = useRef(false);
   const saveEpochRef = useRef(0);
+  const exportInFlightRef = useRef(false);
 
   const title = path ? path.split(/[\\/]/).pop() ?? '未命名' : '未命名文稿';
   const counts = countText(doc);
@@ -343,11 +359,47 @@ export default function App() {
     }
   }
 
+  async function exportAs(format: ExportFormat) {
+    if (!window.gather) { setStatus('请在 Electron 桌面端导出文稿'); return; }
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setExporting(format);
+    setStatus(`正在生成 ${EXPORT_LABELS[format]}…`);
+    try {
+      const result = await window.gather.exportDocument({
+        format,
+        markdown: editorRef.current?.getText() ?? docRef.current,
+        suggestedName: title,
+      });
+      if (result.canceled) {
+        setStatus('已取消导出');
+        return;
+      }
+      const name = result.path?.split(/[\\/]/).pop() ?? `${title}.${format}`;
+      const imageNote = result.warnings.length
+        ? ` · ${result.warnings.length} 条图片提示（${result.warnings[0]}）`
+        : '';
+      setStatus(`已导出 ${name} · ${formatBytes(result.bytes ?? 0)}${imageNote}`);
+    } catch (error) {
+      setStatus(errorMessage(error, `导出 ${EXPORT_LABELS[format]} 失败`));
+    } finally {
+      exportInFlightRef.current = false;
+      setExporting(null);
+    }
+  }
+
   function togglePreview() {
     setLivePreview(value => !value);
   }
 
-  actionsRef.current = { open, save, saveAs, togglePreview };
+  actionsRef.current = {
+    open,
+    save,
+    saveAs,
+    togglePreview,
+    exportPdf: () => exportAs('pdf'),
+    exportHtml: () => exportAs('html'),
+  };
 
   useEffect(() => {
     if (!window.gather) return;
@@ -397,6 +449,8 @@ export default function App() {
       if (action === 'save') void actions.save();
       if (action === 'saveAs') void actions.saveAs();
       if (action === 'togglePreview') actions.togglePreview();
+      if (action === 'exportPdf') void actions.exportPdf();
+      if (action === 'exportHtml') void actions.exportHtml();
     });
   }, []);
 
@@ -471,7 +525,24 @@ export default function App() {
         <button onClick={() => editorRef.current?.insert('\n```\n\n```\n')} title="代码块" aria-label="代码块"><SquarePen size={15} /></button>
         <span className="toolbar-rule" />
         <button onClick={() => void saveAs()} title="另存为" aria-label="另存为"><Download size={15} /></button>
-        <div className="toolbar-note">Markdown · UTF-8</div>
+        <span className="toolbar-rule" />
+        <button
+          onClick={() => void exportAs('pdf')}
+          title="导出 PDF (Ctrl/Cmd+Shift+E)"
+          aria-label="导出 PDF"
+          disabled={exporting !== null}
+        >
+          {exporting === 'pdf' ? <LoaderCircle className="spin" size={15} /> : <Printer size={15} />}
+        </button>
+        <button
+          onClick={() => void exportAs('html')}
+          title="导出 HTML"
+          aria-label="导出 HTML"
+          disabled={exporting !== null}
+        >
+          {exporting === 'html' ? <LoaderCircle className="spin" size={15} /> : <FileCode2 size={15} />}
+        </button>
+        <div className="toolbar-note">Markdown · UTF-8 · PDF/HTML 导出</div>
       </div>
 
       {recoveries.length > 0 && (

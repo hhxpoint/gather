@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照。Windows、Linux 与 CLI。">
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f2ede1">
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gather">
   <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
-  <meta property="og:description" content="本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照。">
+  <meta property="og:description" content="本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。">
   <meta property="og:url" content="https://hhxpoint.github.io/gather/">
   <meta property="og:image" content="https://hhxpoint.github.io/gather/images/gather-external-change.png">
   <meta property="og:image:width" content="2560">
@@ -128,7 +128,7 @@
             </div>
             <div>
               <dt>Evidence</dt>
-              <dd>65 tests · dual CI</dd>
+              <dd>75 tests · dual CI</dd>
             </div>
             <div>
               <dt>License</dt>
@@ -441,6 +441,25 @@
               <span class="foot-rule" aria-hidden="true"></span>
             </footer>
           </article>
+
+          <article class="feature-card feature-card--export">
+            <header class="card-top">
+              <span class="card-index">06 / Export</span>
+              <span class="card-badge">Phase 1 · 已验证</span>
+            </header>
+            <div class="card-content">
+              <h3>写下的内容，<br>可以带得走。</h3>
+              <p>桌面端把当前文稿导出为 A4 PDF，或含本地图片的独立 HTML。中文、表格与代码块走同一条清洗后的渲染链路；相对路径本地图片会限制在文稿目录内，转为 data URI 后一起带走。</p>
+            </div>
+            <div class="export-preview" aria-hidden="true">
+              <img src="images/gather-pdf-export.png" alt="" width="952" height="1348" loading="lazy" decoding="async">
+              <span class="export-tag">A4 / PDF · 4 pages</span>
+            </div>
+            <footer class="card-foot">
+              <span>PDF / local-image HTML / A4</span>
+              <span class="foot-rule" aria-hidden="true"></span>
+            </footer>
+          </article>
         </div>
       </div>
     </section>
@@ -513,7 +532,7 @@
                     <span class="copy-label">复制</span>
                   </button>
                 </div>
-                <p>把 Markdown 导出为独立 HTML。当前 CLI 只支持 HTML；PDF、DOCX 等格式留到后续阶段评估。</p>
+                <p>把 Markdown 导出为独立 HTML。桌面端已支持 PDF 与含本地图片的 HTML；CLI 目前仍只支持 HTML，DOCX 尚未实现。</p>
               </div>
             </li>
 
@@ -650,7 +669,7 @@
           </div>
           <div class="evidence-grid">
             <a href="https://github.com/hhxpoint/gather/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer">
-              <strong>65</strong>
+              <strong>75</strong>
               <span>tests · Ubuntu &amp; Windows CI</span>
             </a>
             <a href="https://github.com/hhxpoint/gather/blob/main/docs/DEBUG_LOG.md" target="_blank" rel="noopener noreferrer">
@@ -705,11 +724,12 @@
             </div>
             <p class="stage-code">Phase 1 / Reliability</p>
             <h3>把文件安全做实</h3>
-            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照与失败注入逐项做成测试和证据。</p>
+            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照、失败注入与可带走的导出逐项做成测试和证据。</p>
             <ul class="stage-list">
               <li>CRLF / BOM / 原子写入</li>
               <li>外部修改拒绝与恢复快照</li>
               <li>强杀恢复、真实 watcher</li>
+              <li>A4 PDF / 含本地图片的 HTML</li>
               <li>未签名 staging 与工程日志</li>
             </ul>
             <span class="stage-state">进行中 / In progress</span>

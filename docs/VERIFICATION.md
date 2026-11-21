@@ -40,11 +40,11 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 ## 自动化测试清单
 
-当前 8 个测试文件、65 个测试（Windows 上 2 个 POSIX-only 测试跳过；Ubuntu CI 全部执行）：
+当前 9 个测试文件、75 个测试（Windows 上 73 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
 
 | 文件 | 数量 | 覆盖 |
 | --- | --- | --- |
-| `packages/core/test/markdown.test.ts` | 6 | GFM、HTML 清洗、链接/图片协议、文档模板、计数 |
+| `packages/core/test/markdown.test.ts` | 7 | GFM、HTML 清洗、链接/图片协议、A4 打印规则、文档模板、计数 |
 | `packages/core/test/text-format.test.ts` | 10 | LF/CRLF/BOM、混合行尾、无结尾换行、跨 IPC 校验 |
 | `packages/editor/test/text-commands.test.ts` | 6 | 选区包装、行前缀、插入 |
 | `apps/desktop/test/file-io.test.ts` | 11 | 真实临时目录 round-trip、外部修改拒绝、Save As、20 MiB、POSIX 只读目录 |
@@ -52,6 +52,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 | `apps/desktop/test/recovery.test.ts` | 9 | 快照读写/覆盖/丢弃/损坏/写删串行、注入失败、POSIX 只读目录 |
 | `apps/desktop/test/atomic-write.test.ts` | 9 | ENOSPC/EIO/EACCES、sync/close/rename 失败清理 |
 | `apps/desktop/test/file-errors.test.ts` | 10 | OS 错误中文映射、IPC 前缀清理 |
+| `apps/desktop/test/export-html.test.ts` | 9 | 相对图片 data URI、URL 编码文件名、目录逃逸拒绝、SVG/缺失告警、代码块不误伤、远程/data 图片、目录消失、文件名清洗 |
 
 Phase 1 前批 CI 基线：
 
@@ -79,6 +80,35 @@ Phase 1 前批 CI 基线：
 - 原子写入重构后正常保存成功，目标目录无临时文件残留。
 - CDP 实测生产 `file://` 响应带 CSP，内联脚本被 `script-src-elem` 阻止。
 - Windows staged 目录包 `Gather.exe` 启动，打开 Markdown、编辑、保存成功；`resources/app` 路径、preload、renderer、userData 均正常。
+- 最终 staging 构建打开合成文稿，通过文件菜单快捷键 `Ctrl+Shift+E` 打开导出 PDF 对话框；保存为 418,240 bytes。
+- 同一窗口工具栏导出 HTML，保存为 273,742 bytes；状态栏分别显示“已导出 export-demo.pdf · 408 KB”“已导出 export-demo.html · 267 KB”。
+
+## 导出与 PDF 矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| PDF 页面 | 隐藏 `BrowserWindow` + `printToPDF`，A4，`preferCSSPageSize` | 4 页；`%PDF-1.4` 头；418,240 bytes |
+| PDF 文字 | `pdfjs-dist` `getTextContent()` | 4 页中文完整：标题、表格单元格、代码块、段落、列表 |
+| PDF 视觉 | `pdfjs-dist` + `@napi-rs/canvas` 渲染 PNG | 页面 1/3 可见中文标题、GFM 表格、页边距与嵌入的本地截图 |
+| PDF 工具误判 | `pdftotext -layout` | 仅抽到 Latin，中文为空；被 `pdfjs-dist` 结果推翻，不据此判定 PDF 缺字 |
+| HTML 本地图片嵌入 | 文本检查 | 1 个 `data:image/png;base64`；0 个 `src="assets/gather-editor.png"`；1 个 `<table>`；`@page` 规则存在 |
+| HTML 视觉 | headless Chrome 打开导出的 HTML 并截图 | 中文标题、表格、代码块和图片正常，无缺失资源图标 |
+| 图片目录逃逸 | 单元测试（真实临时目录） | Windows 绝对路径告警、不嵌入；目录外 symlink 也会经 `realpath` 拒绝 |
+| 非位图/缺失/目录消失 | 单元测试 | SVG、缺失文件、文稿目录删除都只产生告警，HTML 仍导出 |
+| 导出写盘 | 真实窗口 + 原子写 | 目标文件生成；失败路径复用临时文件 + fsync + rename，不留下半文件 |
+| 远程图片 | 设计边界 | 不内嵌为 data URI；打开 HTML 或打印 PDF 时依赖网络；本次合成文稿未依赖远程图 |
+| DOCX / CLI PDF | 未实现 | 不应在站点或 README 声称可用 |
+
+PDF 验收复现命令（PDF 渲染依赖已有 `pdfjs-dist`/`@napi-rs/canvas`；本仓库不把它们加入运行时依赖）：
+
+```bash
+# 文本与页面回渲染
+ELECTRON_RUN_AS_NODE=1 ./node_modules/electron/dist/electron.exe \
+  /path/to/render-pdf.mjs
+
+# 仓库内展示图来自真实 PDF 页面，不是 HTML 截图
+docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
+```
 
 ## 展示与站点
 
@@ -92,6 +122,9 @@ Phase 1 前批 CI 基线：
 | 公网 Pages | build / deploy 两个 job | [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功；build 14s、deploy 9s |
 | 公网内容 | in-app Browser + headless Edge | Phase 1 标题、产品/能力/构建/路线图与 3 张截图均上线 |
 | 公网截图资源 | `fetch` 三张图片 | HTTP 200，`image/png`，201,493 / 195,748 / 219,209 bytes，与仓库一致 |
+| 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
+| 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
+| 窄屏 QA 误判 | headless Chrome `--window-size=390` | 实际布局视口最小 500，截图被裁切；不作为移动端溢出证据 |
 
 ## 打包矩阵
 
@@ -134,7 +167,9 @@ Phase 1 前批 CI 基线：
 - 200% 缩放、屏幕阅读器、全键盘可达性。
 - 安装包（NSIS/portable/AppImage/deb）、签名、自动更新、回滚。
 - 真实满盘、只读挂载、断电、网络文件系统、文件锁。
-- AI/RAG、PDF/DOCX、Tauri bake-off。
+- AI/RAG、DOCX、CLI PDF、Tauri bake-off。
+- 远程图片离线导出、页眉/页脚/页码/目录、不同平台字体一致性。
+- 导出 20 MiB 边界、真实磁盘满时 PDF/HTML 写盘、只读目标目录。
 
 ## 维护
 

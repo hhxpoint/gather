@@ -30,6 +30,14 @@ describe('markdown rendering', () => {
     expect(html).toContain('<h1>Hello</h1>');
   });
 
+  it('keeps A4 page rules and table headers for PDF export', () => {
+    const html = renderDocumentHtml('| A | B |\n| - | - |\n| 1 | 2 |');
+    expect(html).toContain('@page { size: A4;');
+    expect(html).toContain('thead { display: table-header-group; }');
+    expect(html).toContain('break-inside: avoid');
+    expect(html).toContain('<thead>');
+  });
+
   it('escapes standalone values', () => {
     expect(escapeHtml('<&"\'')).toBe('&lt;&amp;&quot;&#39;');
   });

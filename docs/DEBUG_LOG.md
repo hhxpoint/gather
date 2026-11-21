@@ -262,6 +262,43 @@
 - **证据**：修复后 Pages 运行 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功；build 14s、deploy 9s；artifact 在 job 边界之后查询；公网页面与 3 张截图资源均已核验。
 - **防回归**：Pages 永远保持 upload 与 deploy 跨 job；不要在同一 job 里重跑以“修复”找不到 artifact 的错误。
 
+### P1-24 桌面 PDF/HTML 导出：本地图片、原子写与真实 PDF 回读
+
+- **现象/需求**：桌面端只能保存 Markdown；CLI 只能导出 HTML。用户需要把当前编辑器内容导出为 PDF 或可独立分享的 HTML，且中文、GFM 表格、代码块和本地图片不能丢。
+- **设计约束**：不引入 Pandoc/LaTeX/付费服务；渲染层不接触 Node 文件系统；导出不能使用相对路径把任意本地文件交给 Chromium；失败不能留下半文件。
+- **实现**：
+  - 主进程复用 `renderDocumentHtml` 的清洗结果；HTML 直接写目标文件，PDF 用隐藏 `BrowserWindow` 加载临时 HTML 后 `printToPDF`（A4、`preferCSSPageSize`、背景、tagged PDF）。
+  - 本地相对图片在清洗后的 HTML 中扫描 `<img>`，只嵌入 png/jpg/jpeg/gif/webp/avif/bmp；`realpath` 后必须仍在文稿目录，单图 8 MiB、整篇 24 MiB；目录外/SVG/缺失/超预算只告警。
+  - 导出 IPC 校验格式、20 MiB Markdown 与文件名；目标文件走临时文件 + fsync + rename；工具栏与文件菜单各自触发同一条 IPC。
+- **实际踩坑**：
+  - 隐藏窗口如果使用 `data:` URL，大图片会让 URL 过长且不利于本地图片；改为系统临时目录中的 HTML 文件，完成后递归清理。
+  - `pdftotext` 只能抽到 Latin 文本，中文变成空白/乱码；这是验证工具的编码/CMap 读取问题，不是 PDF 缺字。改用 `pdfjs-dist` + `@napi-rs/canvas` 回渲染：4 页都能抽出完整中文，且页面图像可见中文、表格和图片。
+  - Windows 原生文件对话框不接受正斜杠路径；自动化最初用 `C:/...` 得到“文件名无效”，改用反斜杠后成功。这是 QA 脚本问题，不是导出实现问题。
+- **证据**：
+  - 真实窗口：打开合成文稿 `export-demo.md`，导出 `export-demo.pdf` 418,240 bytes；`pdfjs-dist` 抽取 4 页中文文本并渲染 PNG，页面含标题、表格、代码块与本地截图。
+  - 同文稿 HTML 273,742 bytes；1 个 `data:image/png;base64`，0 个 `src="assets/gather-editor.png"`，1 个 `<table>`，`@page` 规则存在；headless Chrome 打开 HTML 截图通过。
+  - 工具栏显示“已导出 export-demo.pdf · 408 KB”“已导出 export-demo.html · 267 KB”；文件菜单显示“导出 PDF… Ctrl+Shift+E”“导出 HTML…”。
+  - 本地测试 9 个文件、75 个测试，73 通过 + 2 个 POSIX-only 跳过；新增 9 个导出边界测试。
+- **防回归**：导出目标必须继续走原子替换；本地图片必须同时有目录逃逸、缺失、SVG、代码块误伤与数据 URI 测试；改打印 CSS 或 Electron 主版本后必须用真实中文文稿重新生成 PDF 并用 PDF 渲染器回读，不能只看 HTML。
+
+### P1-25 PDF 验证不能只看 pdftotext 或浏览器直接截图
+
+- **现象**：
+  - `pdftotext -layout export-demo.pdf` 只留下 Latin 字符，中文全部为空，容易被误判为“PDF 中文没写进去”。
+  - Chrome headless 直接打开 `file:///...pdf` 截图得到深色空白，属于内置 PDF viewer 在 headless 下的渲染限制。
+- **根因**：Poppler 对该 Chromium 打印 PDF 的 CMap/编码抽取不完整；headless Chrome 的 PDF viewer 不保证在截图模式下绘制。
+- **修复/验证路径**：用 `pdfjs-dist` 的 `getTextContent()` 抽取文本，用 `@napi-rs/canvas` 渲染页面为 PNG 后人工检查；两者都显示完整中文、表格、代码块与图片。
+- **证据**：4 页文本抽取通过；`pdf-render-1.png` / `pdf-render-3.png` 可见标题、表格与嵌入截图；仓库内展示图 `docs/images/gather-pdf-export.png` 即该真实渲染结果。
+- **防回归**：PDF 验收至少包含“文本抽取 + 页面渲染”两条证据；不要用单一命令行工具的失败否定整个 PDF。
+
+### P1-26 新增导出卡片把 Features Grid 在窄屏撑宽
+
+- **现象**：新增 `06 / Export` 卡片后，390px 检查截图里所有能力卡片的右侧被裁掉；卡片内部的 PDF 预览也把行高撑得很大，标题被挤到很下面。
+- **根因**：卡片内部使用 Grid，图片的固有宽度（952px）参与 min-content 计算；子项没有 `min-width: 0`，导致外层单列 Grid 被撑到图片宽度。图片的固有高宽比也参与了 1fr 行的最小高度计算。
+- **修复**：给导出卡、内容列和预览容器加 `min-width: 0`；预览容器改为固定 `height: 300px`（平板上 230px、手机 210px），图片继续 `object-fit: cover` + `object-position: top`；移动端使用 `minmax(0, 1fr)`。
+- **证据**：headless Chrome 的 `--window-size=390` 实际布局视口最小为 500，截图被裁切，容易误判；改用 CDP `Emulation.setDeviceMetricsOverride` 真实 390×844 后 `scrollWidth = clientWidth = 390`，四张图片 `naturalWidth` 均非零，导出卡片完整显示；桌面 1440 视口 `scrollWidth = clientWidth = 1422`。
+- **防回归**：新增含图片的卡片必须在 390px 用 CDP 设备模拟检查，不能只用 headless `--window-size`；Grid 子项默认 `min-width: auto`，放图片时必须显式归零。
+
 ---
 
 ## 维护约定
