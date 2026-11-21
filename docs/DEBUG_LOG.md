@@ -251,6 +251,17 @@
 - **证据**：项目站本地构建包含 3 张仓库内截图；桌面/移动视口检查通过；Pages 部署后补充公网运行号。
 - **防回归**：产品状态变化时同步项目站、README、DEBUG_LOG、VERIFICATION，避免“代码前进、展示落后”。
 
+### P1-23 Pages 部署在 upload 与 deploy 同 job 时找不到 artifact
+
+- **现象**：Phase 1 站点合并后，Pages build 成功、`upload-pages-artifact@v3` 成功，但 `deploy-pages@v4` 连续两次报 `No artifacts named "github-pages"`；REST API 确认 artifact 已存在（569,502 bytes），GitHub Status 显示 Actions/Pages operational。
+- **根因**：已知的 artifact 列表最终一致性竞态。upload 与 deploy 在同一个 job 里紧挨着执行，deploy 按名字查询时 upload 刚 finalize，列表可能还没可见；重跑同一 layout 会再上传一个同名 artifact，反而触发 “Multiple artifacts”。参考 `actions/deploy-pages#451`。
+- **修复**：
+  - 把 Pages 拆成 `build`（checkout、npm ci、站点构建、configure-pages、upload）与 `deploy`（`needs: build`、environment、deploy-pages）两个 job。
+  - 升级到 Node 24 原生 major：checkout@v5、setup-node@v5、configure-pages@v6、upload-pages-artifact@v5、deploy-pages@v5。
+  - 同步把 CI 的 checkout/setup-node 升到 v5，消除 Node 20 deprecation 警告。
+- **证据**：修复后 Pages 运行（待补充）成功；artifact 在 job 边界之后查询；不再需要重跑失败 job。
+- **防回归**：Pages 永远保持 upload 与 deploy 跨 job；不要在同一 job 里重跑以“修复”找不到 artifact 的错误。
+
 ---
 
 ## 维护约定
