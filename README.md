@@ -124,12 +124,12 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/file-io.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地） | 本地以 Electron Node 22 执行：4 个测试文件、29 个测试通过；涵盖 CRLF/BOM、混合行尾、原子写入、冲突拒绝 |
-| 文件 I/O 测试 | 已通过（本地） | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一 |
-| 类型检查 | 已通过（本地 + Phase 0 CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；Phase 0 CI 双平台通过，本阶段变更待新 CI 复跑 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地以 Electron Node 22：4 个测试文件、29 个测试；CI [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 Ubuntu/Windows 复跑通过 |
+| 文件 I/O 测试 | 已通过（本地 + CI） | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一 |
+| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；Phase 1 运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 未实现 | `electron-builder` 配置存在，但没有安装包产物、没有签名 |
 
@@ -137,7 +137,7 @@ Gather 不打算做这些事：
 
 这一节区分“骨架已闭环”“Phase 1 文件可靠性已证明”和“产品可发布”。勾选项是已经完成并有证据的；未勾选项都是 beta 之前的阻断，其中任何“必须”级编辑能力缺失，都不能把当前状态描述成完整编辑器。
 
-- [x] **Windows/Ubuntu CI 已复跑。** 运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、test、build、CLI `doctor --json`，全部成功。
+- [x] **Windows/Ubuntu CI 已复跑。** Phase 1 运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、29 个测试、build、CLI `doctor --json`，全部成功；Phase 0 基线为 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811)。
 - [x] **项目站已部署。** Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功；`https://hhxpoint.github.io/gather/` 已在浏览器中验证加载，CSS 正常。
 - [x] **桌面打开/另存为已在 Windows 实际验证。** 打开仓库内 Markdown、另存为文件，并切换源码/实时预览；这不是完整 IME 或 Linux 矩阵。
 - [x] **CRLF/BOM 已可字节保真。** 真实窗口中打开 BOM + CRLF 文稿，保存后 42 字节逐字节一致；LF、无结尾换行也由单元测试覆盖。混合行尾会在保存时统一为 LF，界面会显示“混合行尾”。
@@ -333,7 +333,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全部步骤成功（Ubuntu 约 26 秒，Windows 约 57 秒）。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
+运行 [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 Ubuntu 与 Windows 全部步骤成功（Ubuntu 约 22 秒，Windows 约 49 秒），覆盖本阶段 29 个测试。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
 
 ### 桌面打包（未验证）
 

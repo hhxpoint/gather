@@ -106,7 +106,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [ ] Windows 与 Linux IME 矩阵签字；无丢字/重复上屏/候选框错位。
 - [ ] 5 MiB 文档可打开、滚动、搜索；输入延迟有基线且无明显卡顿。
 - [ ] 8 小时真实写作 dogfood，无 P0/P1 数据问题。
-- [x] 单元测试覆盖 core/editor/桌面文件 I/O 的关键路径（4 个文件、29 个测试）；CI 双平台在 Phase 0 已绿，本阶段待新运行。
+- [x] 单元测试覆盖 core/editor/桌面文件 I/O 的关键路径（4 个文件、29 个测试）；CI [44882005162](https://github.com/hhxpoint/gather/actions/runs/44882005162) 在 Ubuntu/Windows 双平台通过。
 
 ### 非目标
 
