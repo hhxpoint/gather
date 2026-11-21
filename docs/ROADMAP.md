@@ -48,7 +48,8 @@
 
 - [x] `npm ci` 在 Windows 11 与 Ubuntu 24.04 成功（GitHub Actions 双平台）。
 - [x] `npm run typecheck`、`npm test`、`npm run build` 全绿（双平台 CI）。
-- [x] `npm run dev` 打开窗口；打开、编辑、保存、另存为可用（Windows 手工验证）。
+- [x] Electron 窗口可启动；打开、另存为、源码/实时预览切换可用（Windows 生产构建手工验证）。
+- [ ] `npm run dev` 开发模式与“编辑后保存”的专项矩阵尚未单独记录；当前只验证了打开与另存路径。
 - [ ] 1 MiB Markdown 打开/保存后内容不丢；20 MiB 边界有明确错误（尚未跑异常矩阵）。
 - [x] CLI 三条命令退出码正确；`export --format pdf` 明确失败而不是静默输出 HTML（Windows 本地验证；CI 只覆盖 `doctor`）。
 - [x] 官网骨架可构建，Pages URL 可访问。
