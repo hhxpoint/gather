@@ -82,7 +82,18 @@ export function renderDocumentHtml(markdown: string, title = 'Gather'): string {
     img { max-width: 100%; height: auto; border-radius: 6px; }
     hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
     input[type=checkbox] { accent-color: var(--sage); }
-    @media print { body { background: #fff; } article { max-width: none; padding: 0; min-height: 0; } a { color: inherit; text-decoration: none; } }
+    tr, blockquote, img { break-inside: avoid; }
+    thead { display: table-header-group; }
+    h1, h2, h3 { break-after: avoid-page; }
+    @page { size: A4; margin: 19mm 17mm 21mm; }
+    @media print {
+      body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      article { max-width: none; padding: 0; min-height: 0; }
+      a { color: inherit; text-decoration: none; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+      table { font-size: .9em; }
+      h2 { border-top: 0; }
+    }
   </style>
 </head>
 <body>

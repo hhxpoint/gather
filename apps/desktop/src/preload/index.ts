@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 import type {
+  DocumentExportRequest,
+  DocumentExportResult,
   ExternalChange,
   OpenedFile,
   RecoveryPayload,
@@ -17,6 +19,8 @@ const api = {
   saveFileAs: (request: SaveAsRequest): Promise<SaveOutcome | null> =>
     ipcRenderer.invoke('file:saveAs', request),
   reloadActiveFile: (): Promise<OpenedFile> => ipcRenderer.invoke('file:reloadActive'),
+  exportDocument: (request: DocumentExportRequest): Promise<DocumentExportResult> =>
+    ipcRenderer.invoke('document:export', request),
   listRecoveries: (): Promise<RecoverySnapshot[]> => ipcRenderer.invoke('recovery:list'),
   readRecovery: (id: string): Promise<RestoredRecovery | null> =>
     ipcRenderer.invoke('recovery:read', id),
@@ -46,6 +50,9 @@ contextBridge.exposeInMainWorld('gather', api);
 
 export type GatherApi = typeof api;
 export type {
+  DocumentExportRequest,
+  DocumentExportResult,
+  ExportFormat,
   ExternalChange,
   FileVersion,
   OpenedFile,

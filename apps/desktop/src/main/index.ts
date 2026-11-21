@@ -6,7 +6,9 @@ import { readFileVersion, readMarkdownFile, writeMarkdownFile } from './file-io'
 import { ActiveFileWatcher } from './file-watcher';
 import { toUserFacingFileError } from './file-errors';
 import { RecoveryStore } from './recovery';
+import { exportDocument } from './document-export';
 import type {
+  DocumentExportRequest,
   ExternalChange,
   FileVersion,
   RecoveryPayload,
@@ -85,6 +87,25 @@ function parseSaveAsRequest(payload: unknown): SaveAsRequest {
     recoveryId: record.recoveryId === null || record.recoveryId === undefined
       ? null
       : record.recoveryId,
+  };
+}
+
+function parseDocumentExportRequest(payload: unknown): DocumentExportRequest {
+  const record = asRecord(payload);
+  if (record.format !== 'pdf' && record.format !== 'html') {
+    throw new Error('导出格式无效。');
+  }
+  if (typeof record.markdown !== 'string') throw new Error('缺少待导出的文稿内容。');
+  if (Buffer.byteLength(record.markdown, 'utf8') > 20 * 1024 * 1024) {
+    throw new Error('文稿超过 20 MiB，暂不支持导出。');
+  }
+  if (typeof record.suggestedName !== 'string' || !record.suggestedName.trim()) {
+    throw new Error('缺少导出文件名。');
+  }
+  return {
+    format: record.format,
+    markdown: record.markdown,
+    suggestedName: record.suggestedName.slice(0, 200),
   };
 }
 
@@ -204,6 +225,12 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return file;
   });
 
+  handleIpc('document:export', async (_event, payload: unknown) => {
+    const request = parseDocumentExportRequest(payload);
+    if (!mainWindow || mainWindow.isDestroyed()) throw new Error('主窗口不可用，无法导出。');
+    return exportDocument(mainWindow, request, activeFilePath);
+  });
+
   handleIpc('recovery:list', async () => recoveryStore.list());
 
   handleIpc('recovery:read', async (_event, id: unknown) => {
@@ -254,6 +281,9 @@ function createMenu() {
         { label: '打开…', accelerator: 'CmdOrCtrl+O', click: () => sendMenu('open') },
         { label: '保存', accelerator: 'CmdOrCtrl+S', click: () => sendMenu('save') },
         { label: '另存为…', accelerator: 'CmdOrCtrl+Shift+S', click: () => sendMenu('saveAs') },
+        { type: 'separator' },
+        { label: '导出 PDF…', accelerator: 'CmdOrCtrl+Shift+E', click: () => sendMenu('exportPdf') },
+        { label: '导出 HTML…', click: () => sendMenu('exportHtml') },
         { type: 'separator' },
         { role: 'quit', label: '退出' },
       ],

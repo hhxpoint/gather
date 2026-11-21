@@ -34,6 +34,9 @@ button { font: inherit; cursor: pointer; }
 .editor-toolbar { min-height: 47px; display: flex; align-items: center; gap: 3px; padding: 7px 22px; border-bottom: 1px solid var(--rule); color: var(--muted); background: #f7f7f0; }
 .editor-toolbar button { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #74816b; }
 .editor-toolbar button:hover { background: #e9ede1; color: var(--sage); }
+.editor-toolbar button:disabled { opacity: .45; cursor: default; background: transparent; color: #74816b; }
+.spin { animation: gather-spin 1s linear infinite; }
+@keyframes gather-spin { to { transform: rotate(360deg); } }
 .toolbar-rule { width: 1px; height: 17px; background: var(--rule); margin: 0 7px; }
 .toolbar-note { margin-left: auto; color: #a0a995; font-size: 10px; letter-spacing: .4px; }
 .editor-surface { flex: 1; min-height: 0; background: #f1f0e9; }

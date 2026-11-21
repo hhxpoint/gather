@@ -82,3 +82,21 @@ export type ExternalChange =
       path: string;
     };
 
+export type ExportFormat = 'pdf' | 'html';
+
+export interface DocumentExportRequest {
+  format: ExportFormat;
+  /** Current editor text, not the last saved copy. */
+  markdown: string;
+  /** Used for the document title and the save-dialog filename. */
+  suggestedName: string;
+}
+
+export interface DocumentExportResult {
+  canceled: boolean;
+  path?: string;
+  bytes?: number;
+  /** Local images that could not be embedded; the export still completed. */
+  warnings: string[];
+}
+
