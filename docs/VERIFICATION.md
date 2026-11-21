@@ -89,7 +89,9 @@ Phase 1 前批 CI 基线：
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
-| 公网 Pages | 本批合并后部署 | 待补充运行号与线上截图资源核验 |
+| 公网 Pages | build / deploy 两个 job | [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功；build 14s、deploy 9s |
+| 公网内容 | in-app Browser + headless Edge | Phase 1 标题、产品/能力/构建/路线图与 3 张截图均上线 |
+| 公网截图资源 | `fetch` 三张图片 | HTTP 200，`image/png`，201,493 / 195,748 / 219,209 bytes，与仓库一致 |
 
 ## 打包矩阵
 

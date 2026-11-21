@@ -248,7 +248,7 @@
 
 - **现象**：产品已经进入 Phase 1，但官网仍写“Phase 0 构建中”、没有真实截图，README 也没有产品画面。
 - **修复**：用 staging 应用真实截图重建项目站：新增产品截图区、文件安全卡片、工程证据、真实下载状态；README 顶部加入真实界面与工程证据链接。没有伪造下载、用户文稿或“AI 已上线”。
-- **证据**：项目站本地构建包含 3 张仓库内截图；桌面/移动视口检查通过；Pages 部署后补充公网运行号。
+- **证据**：项目站本地构建包含 3 张仓库内截图；桌面/移动视口检查通过；Pages 运行 44912794773 后，公网 Phase 1 页面、3 张截图与资源字节数已核验。
 - **防回归**：产品状态变化时同步项目站、README、DEBUG_LOG、VERIFICATION，避免“代码前进、展示落后”。
 
 ### P1-23 Pages 部署在 upload 与 deploy 同 job 时找不到 artifact
@@ -259,7 +259,7 @@
   - 把 Pages 拆成 `build`（checkout、npm ci、站点构建、configure-pages、upload）与 `deploy`（`needs: build`、environment、deploy-pages）两个 job。
   - 升级到 Node 24 原生 major：checkout@v5、setup-node@v5、configure-pages@v6、upload-pages-artifact@v5、deploy-pages@v5。
   - 同步把 CI 的 checkout/setup-node 升到 v5，消除 Node 20 deprecation 警告。
-- **证据**：修复后 Pages 运行（待补充）成功；artifact 在 job 边界之后查询；不再需要重跑失败 job。
+- **证据**：修复后 Pages 运行 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功；build 14s、deploy 9s；artifact 在 job 边界之后查询；公网页面与 3 张截图资源均已核验。
 - **防回归**：Pages 永远保持 upload 与 deploy 跨 job；不要在同一 job 里重跑以“修复”找不到 artifact 的错误。
 
 ---

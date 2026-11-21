@@ -155,7 +155,7 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性批次 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 spike [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198)、Pages 修复后 main [44912794744](https://github.com/hhxpoint/gather/actions/runs/44912794744) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
@@ -558,8 +558,8 @@ https://hhxpoint.github.io/gather/
 说明：
 
 - 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`，并从 `docs/images` 复制真实产品截图。
-- `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行，执行 `npm ci`、构建站点、上传 `apps/site/dist` 并部署。
-- 2026-11-21 已完成 Phase 1 站点改版：真实产品截图区、文件安全、工程证据、真实下载状态与 Phase 1 路线图；旧 Phase 0 页面曾通过公网验证。
+- `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行；build 与 deploy 拆成两个 job，避免 artifact 列表竞态，并使用 Node 24 action majors。运行 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功。
+- 2026-11-21 已完成 Phase 1 站点改版并上线：真实产品截图区、文件安全、工程证据、真实下载状态与 Phase 1 路线图。公网页面已确认标题、样式与 3 张截图；截图资源 HTTP 200，字节数与仓库一致。
 - 站点明确写着“Phase 1、没有公开下载”，没有伪造下载按钮、版本号或用户文稿。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
