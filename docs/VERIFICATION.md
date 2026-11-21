@@ -80,6 +80,17 @@ Phase 1 前批 CI 基线：
 - CDP 实测生产 `file://` 响应带 CSP，内联脚本被 `script-src-elem` 阻止。
 - Windows staged 目录包 `Gather.exe` 启动，打开 Markdown、编辑、保存成功；`resources/app` 路径、preload、renderer、userData 均正常。
 
+## 展示与站点
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 3 张真实截图：编辑器、恢复快照、外部修改拦截；无窗口装饰、无真实用户路径 |
+| 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
+| 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
+| 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
+| 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
+| 公网 Pages | 本批合并后部署 | 待补充运行号与线上截图资源核验 |
+
 ## 打包矩阵
 
 | 目标 | 方式 | 结果 |

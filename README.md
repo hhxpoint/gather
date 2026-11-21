@@ -1,13 +1,16 @@
 # Gather
 
+[![CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)
+
 > 本地优先、AI 修改可审阅的 Markdown 写作工作台。
 
-Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。Phase 0 只做一件事：把桌面壳、编辑器内核、CLI 和共享核心的地基搭起来，并让每一层都能被单独验证。
+Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。当前阶段先把本地文件、编辑器内核与“不丢稿”做成可复查的工程基础，再接入 AI 审阅。
 
-**当前状态：Phase 1 文件可靠性主线已落地，并补上了仓库内的调试与验证记录与 Windows staging 目录包。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**，并产出未签名 Windows staging 目录包，实测 `Gather.exe` 可打开/保存。**仍没有签名安装包、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 1 文件可靠性主线已落地，并补上了真实界面、仓库内调试日志与 Windows staging 目录包。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**，并产出未签名 Windows staging 目录包，实测 `Gather.exe` 可打开/保存。**仍没有签名安装包、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
+- [真实界面](#真实界面)
 - [项目状态](#项目状态)
 - [为什么做 Gather](#为什么做-gather)
 - [当前能力](#当前能力)
@@ -27,12 +30,27 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 - [License](#license)
 - [Trademark 注意](#trademark-注意)
 
+## 真实界面
+
+以下截图来自 Phase 1 的 Windows 构建，不是效果图。示例文稿与公开示例路径均为合成内容。
+
+<img src="docs/images/gather-editor.png" alt="Gather 编辑器真实截图：Markdown 标题、引用、列表与 TypeScript 代码块，页脚显示字符数、行数和 UTF-8 编码" width="880">
+
+*Markdown 原文是唯一真相；标题、引用与代码块由装饰层呈现，不产生第二份文档模型。*
+
+| 崩溃恢复快照 | 外部修改拦截 |
+| --- | --- |
+| <img src="docs/images/gather-recovery.png" alt="Gather 恢复快照横幅：发现一个未保存的恢复快照，提供恢复与丢弃" width="420"> | <img src="docs/images/gather-external-change.png" alt="Gather 外部修改拦截横幅：载入磁盘版本、另存为、关闭" width="420"> |
+| 强杀进程后重启，未保存内容仍在；恢复后仍需主动保存。 | 外部程序改写文件时保存会被拒绝，由你决定载入磁盘还是另存为。 |
+
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0004](docs/adr)。
+
 ## 项目状态
 
 | 项目 | 现状 |
 | --- | --- |
 | 阶段 | Phase 1（文件可靠性进行中；Phase 0 骨架与 CI 已闭环） |
-| 版本 | `0.1.0-phase.0`（公开源码仓库，未发布安装包或 npm 包） |
+| 版本 | `0.1.0-phase.0`（公开源码仓库；有未签名 staging，未发布签名安装包或 npm 包） |
 | 目标平台 | Windows 10/11；Linux（Ubuntu/Debian/Fedora，X11 与 Wayland） |
 | 桌面壳 | Electron 38 + electron-vite 4（Phase 0 默认） |
 | 编辑器核心 | CodeMirror 6 + Lezer |
@@ -41,7 +59,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | 许可 | 应用核心 AGPL-3.0-only（`LICENSE` 已落盘）；插件 SDK/主题以后 MIT |
 | 仓库与站点 | [github.com/hhxpoint/gather](https://github.com/hhxpoint/gather) 公开；[hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/) 已部署 |
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
-| 发布状态 | 没有签名安装包或公开 beta；有 Windows 未签名 staging 目录包（内部验证，默认图标）；项目站仍标注 Phase 0 构建状态 |
+| 发布状态 | 没有签名安装包或公开 beta；有 Windows 未签名 staging 目录包（内部验证，默认图标）；项目站已更新为 Phase 1 展示 |
 
 Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试；Windows staging 目录包已实测打开/保存。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、签名安装包、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
@@ -289,6 +307,7 @@ gather/
 │  ├─ adr/0004-recovery-and-watcher.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
+│  ├─ images/                   真实产品截图（README 与站点共用）
 │  └─ ROADMAP.md
 ├─ .github/workflows/
 │  ├─ ci.yml                    Ubuntu + Node 24：ci/typecheck/test/build
@@ -538,12 +557,12 @@ https://hhxpoint.github.io/gather/
 
 说明：
 
-- 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`。
-- `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行，执行 `npm ci`、构建站点、上传 `apps/site/dist` 并部署。运行 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 已成功。
-- 2026-11-21 已在浏览器中打开公网 URL，确认标题、样式表、hero、CLI 示例与 Phase 0 下载状态正常渲染；没有发现横向溢出。
-- 站点当前明确写着“Phase 0、没有可下载安装包”，没有伪造下载按钮、截图或版本号。安装包未来走 GitHub Releases，不塞进 Pages。
+- 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`，并从 `docs/images` 复制真实产品截图。
+- `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行，执行 `npm ci`、构建站点、上传 `apps/site/dist` 并部署。
+- 2026-11-21 已完成 Phase 1 站点改版：真实产品截图区、文件安全、工程证据、真实下载状态与 Phase 1 路线图；旧 Phase 0 页面曾通过公网验证。
+- 站点明确写着“Phase 1、没有公开下载”，没有伪造下载按钮、版本号或用户文稿。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
-- 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`。若仓库改名，HTML、工作流与本文档必须同步修改。
+- 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
 
 ## 调试与验证记录
 
