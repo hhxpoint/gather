@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, open, readdir, rename, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { RecoveryStore, recoveryIdForPath } from '../src/main/recovery';
+import type { AtomicWriterOps } from '../src/main/atomic-write';
 import type { FileVersion, RecoveryPayload } from '../src/shared/files';
 
 let root = '';
@@ -92,6 +93,33 @@ describe('recovery snapshots', () => {
     await store.discardPath(String(two.path));
     expect(await store.list()).toEqual([]);
     expect(await store.read(one.id)).toBeNull();
+  });
+
+  it('keeps the previous snapshot when a replacement write fails', async () => {
+    const first = await store.write(payload({ content: 'safe\n' }));
+    let fail = false;
+    const ops: AtomicWriterOps = {
+      open: async (path, flags, mode) => {
+        if (fail) {
+          const error = new Error('ENOSPC') as NodeJS.ErrnoException;
+          error.code = 'ENOSPC';
+          throw error;
+        }
+        return open(path, flags, mode);
+      },
+      rename,
+      unlink,
+    };
+    const failingStore = new RecoveryStore(join(root, 'recovery'), ops);
+
+    fail = true;
+    await expect(failingStore.write(payload({ content: 'lost\n' })))
+      .rejects.toMatchObject({ code: 'ENOSPC' });
+    fail = false;
+
+    const restored = await failingStore.read(first.id);
+    expect(restored?.content).toBe('safe\n');
+    expect(await failingStore.list()).toHaveLength(1);
   });
 
   it('serializes a discard after an in-flight write', async () => {

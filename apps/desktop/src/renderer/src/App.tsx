@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { describeTextFormat } from '@gather/core/text-format';
 import { MarkdownEditor, countText, type MarkdownEditorHandle } from '@gather/editor';
+import { errorMessage } from '../../shared/errors';
 import type {
   ExternalChange,
   FileVersion,
@@ -163,7 +164,7 @@ export default function App() {
       setSnapshotAt(snapshot.savedAt);
     } catch (error) {
       setSnapshotAt(null);
-      setStatus(error instanceof Error ? `恢复快照失败：${error.message}` : '恢复快照失败');
+      setStatus(`恢复快照失败：${errorMessage(error, '未知错误')}`);
     } finally {
       snapshotInFlightRef.current = false;
     }
@@ -191,7 +192,7 @@ export default function App() {
       setStatus(`已打开 ${file.name} · ${describeTextFormat(file.format)}${note}`);
       void window.gather.listRecoveries().then(setRecoveries).catch(() => undefined);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '打开失败');
+      setStatus(errorMessage(error, '打开失败'));
     }
   }
 
@@ -224,7 +225,7 @@ export default function App() {
         setStatus(`已保存 ${result.file.name} 的旧版本，仍有新修改未保存`);
       }
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '保存失败');
+      setStatus(errorMessage(error, '保存失败'));
     } finally {
       savingRef.current = false;
       if (dirtyRef.current) {
@@ -264,7 +265,7 @@ export default function App() {
         setStatus(`已保存 ${result.file.name} 的旧版本，仍有新修改未保存`);
       }
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '另存失败');
+      setStatus(errorMessage(error, '另存失败'));
     } finally {
       savingRef.current = false;
       if (dirtyRef.current) {
@@ -294,7 +295,7 @@ export default function App() {
       setRecoveries(list => list.filter(item => item.path !== file.path));
       setStatus(`已载入磁盘版本 ${file.name} · ${describeTextFormat(file.format)}`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '重新载入失败');
+      setStatus(errorMessage(error, '重新载入失败'));
     }
   }
 
@@ -325,7 +326,7 @@ export default function App() {
       void window.gather.activateRecovery(restored.id).catch(() => undefined);
       setStatus(`已恢复 ${restored.name} · 尚未保存`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '恢复失败');
+      setStatus(errorMessage(error, '恢复失败'));
     }
   }
 
@@ -338,7 +339,7 @@ export default function App() {
       setRecoveries(list => list.filter(item => item.id !== snapshot.id));
       setStatus(`已丢弃 ${snapshot.name} 的恢复快照`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '丢弃恢复快照失败');
+      setStatus(errorMessage(error, '丢弃恢复快照失败'));
     }
   }
 
@@ -354,7 +355,7 @@ export default function App() {
     window.gather.listRecoveries().then(items => {
       if (!cancelled) setRecoveries(items);
     }).catch(error => {
-      if (!cancelled) setStatus(error instanceof Error ? error.message : '读取恢复快照失败');
+      if (!cancelled) setStatus(errorMessage(error, '读取恢复快照失败'));
     });
     return () => { cancelled = true; };
   }, []);

@@ -1,8 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, session, shell } from 'electron';
+import type { IpcMainInvokeEvent } from 'electron';
 import { join } from 'node:path';
 import { normalizeTextFormat } from '@gather/core/text-format';
 import { readFileVersion, readMarkdownFile, writeMarkdownFile } from './file-io';
 import { ActiveFileWatcher } from './file-watcher';
+import { toUserFacingFileError } from './file-errors';
 import { RecoveryStore } from './recovery';
 import type {
   ExternalChange,
@@ -128,7 +130,20 @@ function stopActiveFileWatcher() {
 }
 
 function registerIpc(recoveryStore: RecoveryStore) {
-  ipcMain.handle('file:open', async () => {
+  const handleIpc = (
+    channel: string,
+    listener: (event: IpcMainInvokeEvent, payload: unknown) => Promise<unknown>,
+  ) => {
+    ipcMain.handle(channel, async (event, payload: unknown) => {
+      try {
+        return await listener(event, payload);
+      } catch (error) {
+        throw toUserFacingFileError(error);
+      }
+    });
+  };
+
+  handleIpc('file:open', async () => {
     const result = await dialog.showOpenDialog(mainWindow!, {
       title: '打开 Markdown 文稿',
       properties: ['openFile'],
@@ -140,7 +155,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return file;
   });
 
-  ipcMain.handle('file:save', async (_event, payload: unknown) => {
+  handleIpc('file:save', async (_event, payload: unknown) => {
     const request = parseSaveRequest(payload);
     const outcome = await writeMarkdownFile(request.path, request.content, {
       format: request.format,
@@ -157,7 +172,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return outcome;
   });
 
-  ipcMain.handle('file:saveAs', async (_event, payload: unknown) => {
+  handleIpc('file:saveAs', async (_event, payload: unknown) => {
     const request = parseSaveAsRequest(payload);
     const result = await dialog.showSaveDialog(mainWindow!, {
       title: '保存 Markdown 文稿',
@@ -181,7 +196,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return outcome;
   });
 
-  ipcMain.handle('file:reloadActive', async () => {
+  handleIpc('file:reloadActive', async () => {
     if (!activeFilePath) throw new Error('当前没有可重新载入的文件。');
     const file = await readMarkdownFile(activeFilePath);
     watchActiveFile(file);
@@ -189,14 +204,14 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return file;
   });
 
-  ipcMain.handle('recovery:list', async () => recoveryStore.list());
+  handleIpc('recovery:list', async () => recoveryStore.list());
 
-  ipcMain.handle('recovery:read', async (_event, id: unknown) => {
+  handleIpc('recovery:read', async (_event, id: unknown) => {
     if (typeof id !== 'string') throw new Error('恢复快照 ID 无效。');
     return recoveryStore.read(id);
   });
 
-  ipcMain.handle('recovery:activate', async (_event, id: unknown) => {
+  handleIpc('recovery:activate', async (_event, id: unknown) => {
     if (typeof id !== 'string') throw new Error('恢复快照 ID 无效。');
     const snapshot = await recoveryStore.read(id);
     if (!snapshot) return false;
@@ -214,11 +229,11 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return true;
   });
 
-  ipcMain.handle('recovery:write', async (_event, payload: unknown) => {
+  handleIpc('recovery:write', async (_event, payload: unknown) => {
     return recoveryStore.write(parseRecoveryPayload(payload));
   });
 
-  ipcMain.handle('recovery:discard', async (_event, id: unknown) => {
+  handleIpc('recovery:discard', async (_event, id: unknown) => {
     if (typeof id !== 'string') throw new Error('恢复快照 ID 无效。');
     await recoveryStore.discard(id);
   });

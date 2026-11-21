@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { isUtf8 } from 'node:buffer';
-import { open, readFile, rename, stat, unlink } from 'node:fs/promises';
-import type { FileHandle } from 'node:fs/promises';
+import { readFile, stat, unlink } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 import {
   decodeText,
@@ -15,6 +14,7 @@ import type {
   SaveOutcome,
   SavedFile,
 } from '../shared/files';
+import { renameTemporaryFile, writeTemporaryFile } from './atomic-write';
 
 export const MAX_BYTES = 20 * 1024 * 1024;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/;
@@ -205,13 +205,8 @@ export async function writeMarkdownFile(
   // atomic rename. This narrows the window where another process can slip in
   // between the conflict check and the replacement.
   const temporary = join(dirname(target), `.${basename(target)}.gather-${randomUUID()}.tmp`);
-  let handle: FileHandle | undefined;
   try {
-    handle = await open(temporary, 'wx', 0o600);
-    await handle.writeFile(encoded);
-    await handle.sync();
-    await handle.close();
-    handle = undefined;
+    await writeTemporaryFile(temporary, encoded);
 
     if (expected) {
       const conflict = await checkExternalChange(target, expected);
@@ -220,9 +215,8 @@ export async function writeMarkdownFile(
         return conflict;
       }
     }
-    await rename(temporary, target);
+    await renameTemporaryFile(temporary, target);
   } catch (error) {
-    await handle?.close().catch(() => undefined);
     await unlink(temporary).catch(() => undefined);
     throw error;
   }
