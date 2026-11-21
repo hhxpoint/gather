@@ -1,8 +1,8 @@
-import { mkdtemp, readFile, readdir, rm, unlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, truncate, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { readMarkdownFile, writeMarkdownFile } from '../src/main/file-io';
+import { MAX_BYTES, readMarkdownFile, writeMarkdownFile } from '../src/main/file-io';
 
 let directory = '';
 
@@ -115,5 +115,36 @@ describe('desktop file saving', () => {
 
     expect(result.ok).toBe(true);
     expect(await readFile(path, 'utf8')).toBe('a\nb\nc\n');
+  });
+});
+
+describe('file limits and failures', () => {
+  it('rejects files over 20 MiB before reading them', async () => {
+    const path = notePath('too-big.md');
+    await writeFile(path, '');
+    await truncate(path, MAX_BYTES + 1);
+
+    await expect(readMarkdownFile(path)).rejects.toThrow(/20 MiB/);
+  });
+
+  it('rejects encoded output that expands over 20 MiB', async () => {
+    const path = notePath('expand.md');
+    const text = 'a\n'.repeat(Math.ceil(MAX_BYTES * 0.4));
+    expect(Buffer.byteLength(text, 'utf8')).toBeLessThan(MAX_BYTES);
+
+    await expect(writeMarkdownFile(path, text, {
+      format: { bom: false, eol: 'crlf' },
+    })).rejects.toThrow(/编码后超过 20 MiB/);
+  });
+
+  it('rejects directories and missing parent directories', async () => {
+    await writeFile(notePath('keep.md'), 'keep\n');
+    await expect(readMarkdownFile(directory)).rejects.toThrow(/Markdown 文件/);
+
+    const missing = join(directory, 'missing', 'note.md');
+    await expect(writeMarkdownFile(missing, 'new\n', {
+      format: { bom: false, eol: 'lf' },
+    })).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(await readdir(directory)).toContain('keep.md');
   });
 });

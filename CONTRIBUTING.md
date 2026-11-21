@@ -37,10 +37,10 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照与 watcher，共 6 个测试文件、40 个测试；本地与 CI 双平台均已通过（恢复批次运行 44885022294）。
+- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入与错误映射，共 8 个测试文件、63 个测试；本地与 CI 双平台均已通过（故障注入批次运行 44886639093）。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
-- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；恢复批次运行 44885022294 全绿，上一批基线为 44882005162。
-- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示已手工验证；Linux 桌面与会话级验证仍未做。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；故障注入批次运行 44886639093 全绿，上一批基线为 44885022294。
+- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示/20 MiB 拒绝已手工验证；Linux 桌面与会话级验证仍未做。
 - 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
 
 需要单独构建时：
@@ -91,6 +91,8 @@ npm run build -w @gather/cli
 - `apps/desktop/test/file-io.test.ts`：临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一。
 - `apps/desktop/test/recovery.test.ts`：路径/未命名快照、覆盖、列表、读取、丢弃、损坏文件与路径 ID。
 - `apps/desktop/test/file-watcher.test.ts`：外部修改、自写忽略、删除与重建、轮询差异。
+- `apps/desktop/test/atomic-write.test.ts`：ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理与原子替换。
+- `apps/desktop/test/file-errors.test.ts`：文件系统错误映射与 Electron IPC 前缀清理。
 
 提交恢复/文件监视相关改动时，至少覆盖：
 
@@ -121,6 +123,7 @@ Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进�
 | 输入 | 中文组合输入、标点、emoji、撤销、候选框定位、长按重复 |
 | 文件 | 新建、打开、另存、只读目录、20 MiB 边界、CRLF 文件、无结尾换行 |
 | 恢复/外部 | 编辑后强杀并重启、恢复路径/未命名快照、外部改写/删除/重建、载入磁盘版本、保存期间继续输入 |
+| 失败路径 | ENOSPC/EACCES/只读、20 MiB 边界、保存目录消失；确认原文件与恢复快照保持不变 |
 | 显示 | 100% 与 200% 缩放、窗口最小尺寸、长行折行 |
 
 没有条件执行的平台写“未测试”，不要用“应该没问题”代替。
@@ -131,6 +134,7 @@ Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进�
 - **不做静默格式转换。** 编码、行尾、BOM、空行的改变必须是显式操作，或在文档中明确说明。当前混合行尾会在保存时统一为 LF，界面必须提示。
 - 不在用户未确认时删除、移动、重命名文件；CLI `new` 使用 `wx` 拒绝覆盖，保持这个行为。
 - 文件大小上限（桌面端 20 MiB）必须有清晰错误信息；提高上限需要性能和内存测试。
+- 写入失败必须清理临时文件且不替换原文件；ENOSPC/EACCES/EROFS/EBUSY 等错误要映射为可操作提示，不能把 Electron IPC 前缀直接丢给用户。
 - 处理外部文件变更时要提示冲突并保留双方内容；不允许后写者静默覆盖，也不允许自动重载丢掉编辑器内容。
 - 恢复快照属于用户文稿数据：不得写日志、不得上传、不得提交进仓库；测试使用合成文本。
 - 不引入云同步作为“顺手功能”。本地优先是架构约束，不是设置项。

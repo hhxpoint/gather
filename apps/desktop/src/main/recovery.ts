@@ -1,6 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, readdir, rename, unlink } from 'node:fs/promises';
-import type { FileHandle } from 'node:fs/promises';
+import { mkdir, readFile, readdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { normalizeTextFormat } from '@gather/core/text-format';
 import type {
@@ -9,6 +8,11 @@ import type {
   RecoverySnapshot,
   RestoredRecovery,
 } from '../shared/files';
+import {
+  nodeAtomicWriterOps,
+  replaceFileAtomically,
+  type AtomicWriterOps,
+} from './atomic-write';
 
 const SNAPSHOT_VERSION = 1;
 const MAX_SNAPSHOT_FILES = 20;
@@ -149,7 +153,10 @@ function validatePayload(payload: RecoveryPayload): RecoveryPayload {
 export class RecoveryStore {
   private queue: Promise<void> = Promise.resolve();
 
-  constructor(private readonly directory: string) {}
+  constructor(
+    private readonly directory: string,
+    private readonly atomicOps: AtomicWriterOps = nodeAtomicWriterOps,
+  ) {}
 
   async init(): Promise<void> {
     await mkdir(this.directory, { recursive: true, mode: 0o700 });
@@ -170,23 +177,6 @@ export class RecoveryStore {
     return join(this.directory, `${assertId(id)}.json`);
   }
 
-  private async writeFileAtomic(target: string, content: string): Promise<void> {
-    const temporary = `${target}.tmp-${randomUUID()}`;
-    let handle: FileHandle | undefined;
-    try {
-      handle = await open(temporary, 'wx', 0o600);
-      await handle.writeFile(content, 'utf8');
-      await handle.sync();
-      await handle.close();
-      handle = undefined;
-      await rename(temporary, target);
-    } catch (error) {
-      await handle?.close().catch(() => undefined);
-      await unlink(temporary).catch(() => undefined);
-      throw error;
-    }
-  }
-
   async write(payload: RecoveryPayload): Promise<RecoverySnapshot> {
     const safe = validatePayload(payload);
     const id = safe.path
@@ -203,7 +193,7 @@ export class RecoveryStore {
       savedAt: new Date().toISOString(),
     };
     return this.runExclusive(async () => {
-      await this.writeFileAtomic(this.fileFor(id), JSON.stringify(stored));
+      await replaceFileAtomically(this.fileFor(id), JSON.stringify(stored), this.atomicOps);
       await this.pruneUnlocked();
       return toMetadata(stored);
     });

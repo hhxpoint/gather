@@ -68,7 +68,7 @@ Gather 的承诺是“文件留在磁盘，作者做最后决定”。Phase 0 �
 
 - 不清除脏状态；
 - 显示横幅，明确“未覆盖原文件”；
-- 提供“另存为…”与“重新打开”；
+- 提供“载入磁盘版本”与“另存为…”；
 - 不允许静默重试覆盖。
 
 另存为不要求旧版本指纹，因为用户在系统保存对话框中已确认目标路径；但写入仍走同一套 UTF-8 校验、原子写入与格式恢复。
@@ -81,19 +81,32 @@ Gather 的承诺是“文件留在磁盘，作者做最后决定”。Phase 0 �
 - 新文稿从位置 0 开始；
 - 重建不触发 `onChange`，不会把打开动作误标为编辑。
 
+### 6. 失败清理与错误映射
+
+原子写入抽到 `atomic-write.ts`，并允许测试注入 open/write/sync/close/rename 失败：
+
+- 临时文件写入、`fsync`、关闭或重命名任一步失败，都尝试删除临时文件；
+- 目标文件只在最后 `rename` 成功时替换；
+- 恢复快照使用同一套原子写入；替换失败时旧快照保留；
+- `ENOSPC`、`EACCES`、`EPERM`、`EROFS`、`EBUSY`、`ENOENT`、`EIO` 映射为中文可操作提示；
+- 主进程所有文件/恢复 IPC 通过统一 wrapper 映射错误；渲染层去掉 Electron 的 `Error invoking remote method` 前缀；
+- 20 MiB 上限在读取前、写入前、按原行尾编码后各检查一次，避免 CRLF 膨胀绕过限制。
+
 ## 代价与约束
 
 - 每次保存多一次完整读取与 SHA-256，最大 20 MiB；这是可接受的本地成本。
 - 临时文件与目标同目录，要求目录可写；只读目录会失败且不覆盖原文件。
 - rename 后文件权限为新临时文件的权限（POSIX 为 0600）；尚未保留原文件 mode/owner。
 - 混合行尾只能统一，不能逐行保真；未来若需要，必须引入行级元数据或明确拒绝编辑。
-- 没有实时 watcher：外部修改只在保存时被拒绝，不会主动提示或合并。
-- 没有自动保存/崩溃恢复；强杀进程仍可能丢失未保存编辑。
+- 实时 watcher 与恢复快照由 [ADR 0004](0004-recovery-and-watcher.md) 实现；本 ADR 负责保存时的最后一道防线。
+- 恢复快照有 2.2 秒/15 秒节奏，强杀仍可能丢失最近输入；它不是逐键持久化。
 
 ## 验证
 
 - `packages/core/test/text-format.test.ts`：LF、CRLF、BOM、无结尾换行、混合行尾、跨 IPC 校验。
-- `apps/desktop/test/file-io.test.ts`：真实临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一。
+- `apps/desktop/test/file-io.test.ts`：真实临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界。
+- `apps/desktop/test/atomic-write.test.ts`：ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理。
+- `apps/desktop/test/file-errors.test.ts`：错误映射与 IPC 前缀清理。
 - Windows 生产窗口手工验证：
   - BOM + CRLF 文稿保存后 42 字节逐字节一致；
   - 编辑上一篇后打开新文件，Ctrl+Z 不会回到上一篇；
