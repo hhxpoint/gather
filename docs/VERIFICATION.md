@@ -28,6 +28,12 @@ npm test
 
 npm run build
 node packages/cli/dist/cli.js doctor --json
+
+# 未签名便携目录包（不依赖 electron-builder 网络工具）
+npm run stage -w @gather/desktop
+
+# Windows 产物
+apps/desktop/release/win-unpacked/Gather.exe
 ```
 
 本地 `npm test` 需要 Node 22/24；系统 Node 20 会在 `sanitize-html` 的 ESM 依赖链或 Vitest reporter 上失败。
@@ -71,6 +77,19 @@ Phase 1 前批 CI 基线：
 - 打开另一个文件后旧恢复快照保留在 userData。
 - 原子写入重构后正常保存成功，目标目录无临时文件残留。
 - CDP 实测生产 `file://` 响应带 CSP，内联脚本被 `script-src-elem` 阻止。
+- Windows staged 目录包 `Gather.exe` 启动，打开 Markdown、编辑、保存成功；`resources/app` 路径、preload、renderer、userData 均正常。
+
+## 打包矩阵
+
+| 目标 | 方式 | 结果 |
+| --- | --- | --- |
+| Windows 目录包 | `npm run stage -w @gather/desktop`，复制 Electron dist + out | 通过：328 MB，`Gather.exe` 可运行并保存文稿 |
+| Windows NSIS/portable | electron-builder | 未产出：第二次远程工具请求 600 秒超时；已记录并保留配置 |
+| Linux AppImage/deb | electron-builder | 未执行（无 Linux 桌面环境） |
+| 代码签名 | — | 未做；无证书 |
+| 自定义图标 | — | 未做；staging 使用 Electron 默认图标 |
+| 安装/卸载/升级/回滚 | — | 未做 |
+| 自动更新 | — | 未实现 |
 
 ## 失败与恢复矩阵
 

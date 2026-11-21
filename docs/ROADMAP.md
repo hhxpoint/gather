@@ -2,7 +2,7 @@
 
 这份路线图描述的是**范围与验收门槛**，不是发布日期承诺。所有时间从 Phase 0 启动起算，按“一人全职、每周可稳定投入”估算；兼职、团队、外部依赖都会改变结果。
 
-当前快照（2026-11-21）处于 Phase 1：Phase 0 的干净环境 CI、项目站、桌面基础打开/保存已闭环；Phase 1 已完成 CRLF/BOM 保真、保存时冲突拒绝、打开文件重置撤销栈、生产 CSP、自动恢复快照、实时外部变更提示、原子写入故障注入、POSIX 只读目录测试，以及仓库内调试/验证记录。IME/Linux 桌面矩阵、冲突合并、Windows 只读/真实满盘/断电矩阵与安装包仍未完成。剩余收尾项见 [README 的明确未完成项](../README.md#明确未完成项)。
+当前快照（2026-11-21）处于 Phase 1：Phase 0 的干净环境 CI、项目站、桌面基础打开/保存已闭环；Phase 1 已完成 CRLF/BOM 保真、保存时冲突拒绝、打开文件重置撤销栈、生产 CSP、自动恢复快照、实时外部变更提示、原子写入故障注入、POSIX 只读目录测试、Windows staging 目录包，以及仓库内调试/验证记录。IME/Linux 桌面矩阵、冲突合并、Windows 只读/真实满盘/断电矩阵、签名安装包仍未完成。剩余收尾项见 [README 的明确未完成项](../README.md#明确未完成项)。
 
 ## 总览
 
@@ -107,6 +107,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [ ] 5 MiB 文档可打开、滚动、搜索；输入延迟有基线且无明显卡顿。
 - [ ] 8 小时真实写作 dogfood，无 P0/P1 数据问题。
 - [x] 原子写入故障注入（ENOSPC/EIO/EACCES/sync/rename）清理临时文件，旧快照不被覆盖；20 MiB 边界有测试。
+- [x] Windows 未签名 staging 目录包可启动、打开/编辑/保存；`resources/app`、preload、renderer、userData 正常（安装器/签名/图标未完成）。
 - [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入的关键路径（8 个文件、65 个测试）；CI [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915) 在 Ubuntu 65 全过、Windows 63 通过 + 2 跳过。
 
 ### 非目标
