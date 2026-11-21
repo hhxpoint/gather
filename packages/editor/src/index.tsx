@@ -15,6 +15,8 @@ export interface MarkdownEditorProps {
   onChange: (value: string) => void;
   livePreview?: boolean;
   placeholder?: string;
+  /** Increment when a different document is loaded to reset undo history. */
+  documentVersion?: number;
 }
 
 export interface MarkdownEditorHandle {
@@ -28,16 +30,54 @@ export interface MarkdownEditorHandle {
 const previewCompartment = new Compartment();
 
 export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(function MarkdownEditor(
-  { value, onChange, livePreview = true, placeholder: placeholderText = '从一句话开始。' },
+  { value, onChange, livePreview = true, placeholder: placeholderText = '从一句话开始。', documentVersion = 0 },
   ref,
 ) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const syncingRef = useRef(false);
+  const documentVersionRef = useRef(documentVersion);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const livePreviewRef = useRef(livePreview);
   livePreviewRef.current = livePreview;
+
+  function createExtensions() {
+    return [
+      history(),
+      drawSelection(),
+      dropCursor(),
+      highlightActiveLine(),
+      bracketMatching(),
+      highlightSelectionMatches(),
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+      markdown({ base: markdownLanguage, codeLanguages: languages }),
+      EditorView.lineWrapping,
+      EditorState.tabSize.of(2),
+      EditorView.contentAttributes.of({
+        spellcheck: 'true',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+      }),
+      keymap.of([
+        ...defaultKeymap,
+        ...historyKeymap,
+        ...searchKeymap,
+        indentWithTab,
+      ]),
+      gatherTheme,
+      placeholder(placeholderText),
+      previewCompartment.of(livePreviewRef.current ? livePreviewExtensions : []),
+      EditorView.updateListener.of(update => {
+        if (!update.docChanged) return;
+        if (syncingRef.current) {
+          syncingRef.current = false;
+          return;
+        }
+        onChangeRef.current(update.state.doc.toString());
+      }),
+    ];
+  }
 
   useEffect(() => {
     const host = hostRef.current;
@@ -45,40 +85,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
     const view = new EditorView({
       state: EditorState.create({
         doc: value,
-        extensions: [
-          history(),
-          drawSelection(),
-          dropCursor(),
-          highlightActiveLine(),
-          bracketMatching(),
-          highlightSelectionMatches(),
-          syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-          markdown({ base: markdownLanguage, codeLanguages: languages }),
-          EditorView.lineWrapping,
-          EditorState.tabSize.of(2),
-          EditorView.contentAttributes.of({
-            spellcheck: 'true',
-            autocorrect: 'off',
-            autocapitalize: 'off',
-          }),
-          keymap.of([
-            ...defaultKeymap,
-            ...historyKeymap,
-            ...searchKeymap,
-            indentWithTab,
-          ]),
-          gatherTheme,
-          placeholder(placeholderText),
-          previewCompartment.of(livePreviewRef.current ? livePreviewExtensions : []),
-          EditorView.updateListener.of(update => {
-            if (!update.docChanged) return;
-            if (syncingRef.current) {
-              syncingRef.current = false;
-              return;
-            }
-            onChangeRef.current(update.state.doc.toString());
-          }),
-        ],
+        extensions: createExtensions(),
       }),
       parent: host,
     });
@@ -95,11 +102,25 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
     const view = viewRef.current;
     if (!view) return;
     const current = view.state.doc.toString();
+
+    if (documentVersion !== documentVersionRef.current) {
+      documentVersionRef.current = documentVersion;
+      // Rebuilding the state is the only reliable way to discard the previous
+      // document's undo history, selections and plugin state.
+      view.setState(EditorState.create({
+        doc: value,
+        selection: { anchor: 0 },
+        extensions: createExtensions(),
+      }));
+      view.focus();
+      return;
+    }
+
     if (current !== value) {
       syncingRef.current = true;
       view.dispatch({ changes: { from: 0, to: current.length, insert: value } });
     }
-  }, [value]);
+  }, [value, documentVersion]);
 
   useEffect(() => {
     const view = viewRef.current;

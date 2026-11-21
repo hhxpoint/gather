@@ -40,6 +40,13 @@ button { font: inherit; cursor: pointer; }
 .gather-editor { height: 100%; }
 .gather-editor .cm-editor { height: 100%; background: var(--paper); }
 .gather-editor .cm-scroller { scrollbar-gutter: stable; }
+.conflict-banner { display: flex; align-items: center; gap: 16px; padding: 9px 22px; border-bottom: 1px solid #e7d2c1; background: #f8eee5; color: #7d5038; font-size: 12px; line-height: 1.5; }
+.conflict-banner strong { font-weight: 600; }
+.conflict-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex: 0 0 auto; }
+.conflict-actions button { border: 1px solid #d9bfa9; border-radius: 6px; background: #fffaf4; color: #7d5038; padding: 5px 9px; font-size: 11px; }
+.conflict-actions button:hover { border-color: #b99174; background: #fffdf9; }
+.conflict-actions .conflict-dismiss { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; padding: 0; border-color: transparent; background: transparent; }
+.conflict-actions .conflict-dismiss:hover { background: #f1e0d2; }
 .app-footer { min-height: 32px; display: flex; align-items: center; gap: 14px; padding: 0 24px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; background: #f7f7f0; }
 .footer-spacer { flex: 1; }
 .state-dot { width: 6px; height: 6px; border-radius: 50%; background: #7f9b6a; }
@@ -53,5 +60,7 @@ button { font: inherit; cursor: pointer; }
   .quiet-button { font-size: 0; gap: 0; padding: 8px; }
   .editor-toolbar { padding-inline: 12px; }
   .toolbar-note { display: none; }
+  .conflict-banner { flex-wrap: wrap; gap: 8px; padding-inline: 14px; }
+  .conflict-actions { margin-left: 0; }
   .app-footer { padding-inline: 14px; gap: 8px; }
 }

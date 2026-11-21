@@ -1,32 +1,49 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
-import { randomUUID } from 'node:crypto';
-import { readFile, rename, stat, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { app, BrowserWindow, dialog, ipcMain, Menu, session, shell } from 'electron';
+import { join } from 'node:path';
+import { normalizeTextFormat } from '@gather/core/text-format';
+import { readMarkdownFile, writeMarkdownFile } from './file-io';
+import type { SaveAsRequest, SaveRequest } from '../shared/files';
 
-const MAX_BYTES = 20 * 1024 * 1024;
 const isDev = Boolean(process.env.ELECTRON_RENDERER_URL);
 let mainWindow: BrowserWindow | null = null;
 
-function assertText(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('Expected a text value.');
-  if (Buffer.byteLength(value, 'utf8') > MAX_BYTES) throw new Error('文件超过 20 MiB，暂不支持在 Gather 中打开。');
-  return value;
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('保存请求格式无效。');
+  }
+  return value as Record<string, unknown>;
 }
 
-async function readMarkdown(path: string) {
-  const info = await stat(path);
-  if (!info.isFile()) throw new Error('请选择一个 Markdown 文件。');
-  if (info.size > MAX_BYTES) throw new Error('文件超过 20 MiB，暂不支持在 Gather 中打开。');
-  const content = await readFile(path, 'utf8');
-  return { path, content, name: basename(path) };
+function parseSaveRequest(payload: unknown): SaveRequest {
+  const record = asRecord(payload);
+  if (typeof record.path !== 'string' || !record.path) throw new Error('缺少保存路径。');
+  if (typeof record.content !== 'string') throw new Error('缺少文稿内容。');
+  if (
+    typeof record.mtimeMs !== 'number'
+    || !Number.isFinite(record.mtimeMs)
+    || typeof record.size !== 'number'
+    || !Number.isInteger(record.size)
+    || typeof record.digest !== 'string'
+  ) {
+    throw new Error('缺少文件版本信息，请重新打开文稿后再保存。');
+  }
+  return {
+    path: record.path,
+    content: record.content,
+    format: normalizeTextFormat(record.format),
+    mtimeMs: record.mtimeMs,
+    size: record.size,
+    digest: record.digest,
+  };
 }
 
-async function writeMarkdown(path: string, content: string) {
-  const text = assertText(content);
-  const temporary = `${path}.gather-${randomUUID()}.tmp`;
-  await writeFile(temporary, text, 'utf8');
-  await rename(temporary, path);
-  return { path, name: basename(path) };
+function parseSaveAsRequest(payload: unknown): SaveAsRequest {
+  const record = asRecord(payload);
+  if (typeof record.content !== 'string') throw new Error('缺少文稿内容。');
+  return {
+    content: record.content,
+    format: normalizeTextFormat(record.format),
+  };
 }
 
 function registerIpc() {
@@ -37,22 +54,30 @@ function registerIpc() {
       filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd', 'txt'] }],
     });
     if (result.canceled || !result.filePaths[0]) return null;
-    return readMarkdown(result.filePaths[0]);
+    return readMarkdownFile(result.filePaths[0]);
   });
 
-  ipcMain.handle('file:save', async (_event, payload: { path: string; content: string }) => {
-    if (!payload || typeof payload.path !== 'string' || !payload.path) throw new Error('缺少保存路径。');
-    return writeMarkdown(payload.path, payload.content);
+  ipcMain.handle('file:save', async (_event, payload: unknown) => {
+    const request = parseSaveRequest(payload);
+    return writeMarkdownFile(request.path, request.content, {
+      format: request.format,
+      expected: {
+        mtimeMs: request.mtimeMs,
+        size: request.size,
+        digest: request.digest,
+      },
+    });
   });
 
-  ipcMain.handle('file:saveAs', async (_event, payload: { content: string }) => {
+  ipcMain.handle('file:saveAs', async (_event, payload: unknown) => {
+    const request = parseSaveAsRequest(payload);
     const result = await dialog.showSaveDialog(mainWindow!, {
       title: '保存 Markdown 文稿',
       defaultPath: 'untitled.md',
       filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
     });
     if (result.canceled || !result.filePath) return null;
-    return writeMarkdown(result.filePath, payload.content);
+    return writeMarkdownFile(result.filePath, request.content, { format: request.format });
   });
 }
 
@@ -88,11 +113,68 @@ function createMenu() {
     {
       label: '帮助',
       submenu: [
-        { label: 'Gather Phase 0', enabled: false },
+        { label: 'Gather Phase 1 · 文件可靠性', enabled: false },
         { label: '项目主页', click: () => sendMenu('home') },
       ],
     },
   ]));
+}
+
+function openExternalLink(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      void shell.openExternal(parsed.toString());
+    }
+  } catch {
+    // Invalid or non-web URLs stay blocked.
+  }
+}
+
+function isInternalNavigation(currentUrl: string, nextUrl: string): boolean {
+  try {
+    const current = new URL(currentUrl);
+    const next = new URL(nextUrl);
+    if (current.protocol !== next.protocol) return false;
+    if (current.protocol === 'file:') return current.pathname === next.pathname;
+    return current.origin === next.origin;
+  } catch {
+    return false;
+  }
+}
+
+function hardenWindow(window: BrowserWindow) {
+  const contents = window.webContents;
+  contents.setWindowOpenHandler(({ url }) => {
+    openExternalLink(url);
+    return { action: 'deny' };
+  });
+  contents.on('will-navigate', (event, url) => {
+    if (isInternalNavigation(contents.getURL(), url)) return;
+    event.preventDefault();
+    openExternalLink(url);
+  });
+  contents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+  });
+}
+
+function applyProductionCsp() {
+  session.defaultSession.webRequest.onHeadersReceived(
+    { urls: ['file://*/*'] },
+    (details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+              + "img-src 'self' data:; font-src 'self'; connect-src 'self'; "
+              + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+          ],
+        },
+      });
+    },
+  );
 }
 
 function createWindow() {
@@ -111,6 +193,7 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  hardenWindow(mainWindow);
   mainWindow.once('ready-to-show', () => mainWindow?.show());
   mainWindow.on('closed', () => { mainWindow = null; });
   if (isDev) {
@@ -130,6 +213,7 @@ if (!lock) {
     mainWindow.focus();
   });
   app.whenReady().then(() => {
+    if (!isDev) applyProductionCsp();
     registerIpc();
     createMenu();
     createWindow();

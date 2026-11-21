@@ -1,6 +1,6 @@
 # Contributing to Gather
 
-Gather 还在 Phase 0。当前目标是让桌面壳、编辑器、CLI、共享核心、官网骨架、测试与 CI 成为一个可重复运行的闭环；不是堆功能，也不是先做发布会。提交之前请先接受两个前提：
+Gather 已进入 Phase 1 文件可靠性阶段。当前目标是让桌面壳、编辑器、CLI、共享核心、官网、测试与 CI 成为一个可重复运行的闭环，并把“不丢稿”从口号变成可验证机制；不是堆功能，也不是先做发布会。提交之前请先接受两个前提：
 
 1. **Markdown 文件是唯一真相。** 任何会让文稿在用户不知情时改变字节、结构或位置的设计，都需要单独讨论。
 2. **AI 修改必须可审阅。** 不存在“自动帮用户改完”的快捷键。模型输出只能进入 diff，逐块接受或拒绝后才落盘。
@@ -8,10 +8,11 @@ Gather 还在 Phase 0。当前目标是让桌面壳、编辑器、CLI、共享�
 ## 当前阶段可以贡献什么
 
 - Windows 10/11 与 Linux（Ubuntu/Debian/Fedora，X11/Wayland）上的真实运行与输入法测试。
-- Markdown 保真 fixture：CRLF、BOM、frontmatter、表格、HTML 块、CJK、emoji、超长行、无结尾换行。
-- 编辑器纯函数与渲染清洗的测试。
-- Electron 安全加固：CSP、导航拦截、IPC 校验、依赖审计。
-- 官网骨架（`apps/site`）与 GitHub Pages 工作流。
+- Markdown 保真 corpus：frontmatter、表格、HTML 块、CJK、emoji、超长行、混合行尾策略。
+- 编辑器纯函数、文件 I/O 与渲染清洗的测试。
+- Electron 安全加固：依赖审计、自动更新校验、文件 watcher 权限边界。
+- 自动保存、崩溃恢复与备份策略的设计和故障注入测试。
+- 官网内容与 GitHub Pages 工作流。
 - 文档纠错：命令必须与仓库脚本一致，不能写不存在的 `npm run`。
 
 Phase 0 不接受：RAG、云同步、多人协作、内置付费模型、自动改稿、遥测/分析 SDK。这些不是“以后加个开关”就能解决的问题，先把文件安全和编辑可靠性做完。
@@ -36,10 +37,11 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 与 `npm run typecheck` 已在本地 Windows 与 CI 的 Ubuntu/Windows 矩阵通过（12 个测试、四个 tsconfig）。
+- `npm test` 当前包含 core、editor 与桌面文件 I/O，共 4 个测试文件、29 个测试；本地与 CI 的 Ubuntu/Windows 矩阵均已通过（Phase 0）；Phase 1 变更需等新 CI 运行。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
 - `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；运行 44870544811 全绿。
-- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换已手工验证；Linux 桌面与会话级验证仍未做。
+- CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝已手工验证；Linux 桌面与会话级验证仍未做。
+- 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
 
 需要单独构建时：
 
@@ -57,7 +59,7 @@ npm run build -w @gather/cli
 | --- | --- | --- |
 | `packages/core` | Markdown 渲染、HTML 模板、计数 | 纯 TypeScript；不得引入 Electron、DOM、React、文件系统 |
 | `packages/editor` | CodeMirror 6 封装、预览装饰、文本命令 | 可以有 DOM/React；不得直接读文件或调用 Electron |
-| `apps/desktop/main` | 窗口、菜单、文件对话框、原子写入、IPC | 文件系统与权限只在这里；校验所有 IPC 入参 |
+| `apps/desktop/main` | 窗口、菜单、文件对话框、file-io、IPC | 文件系统与权限只在这里；校验所有 IPC 入参；保存必须走 file-io 的原子写入与冲突检查 |
 | `apps/desktop/preload` | 最小 contextBridge API | 不暴露 `fs`、`child_process`、任意 `ipcRenderer` |
 | `apps/desktop/renderer` | UI、状态、编辑器挂载 | 不启用 Node；不加载远程脚本/字体 |
 | `packages/cli` | `gather doctor/export/new` | 不依赖 Electron；与桌面端共享 `@gather/core` |
@@ -81,10 +83,12 @@ npm run build -w @gather/cli
 
 ## 测试
 
-测试文件放在 `packages/**/test/**/*.test.ts`，由根 `vitest.config.ts` 匹配。当前只有：
+测试文件放在 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts`，由根 `vitest.config.ts` 匹配。当前有：
 
 - `packages/core/test/markdown.test.ts`：GFM、HTML 清洗、链接/图片协议、文档模板、计数。
+- `packages/core/test/text-format.test.ts`：LF/CRLF/BOM、混合行尾、无结尾换行、跨 IPC 格式校验。
 - `packages/editor/test/text-commands.test.ts`：`toggleWrap`、`toggleLinePrefix`、`insertAroundSelection`。
+- `apps/desktop/test/file-io.test.ts`：临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一。
 
 提交编辑相关改动时，至少覆盖：
 
@@ -112,8 +116,8 @@ Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进�
 
 ## 数据安全规则
 
-- **不丢稿优先于一切。** 任何保存路径都必须先写临时文件，再原子替换；失败时保留原文件。
-- 不做静默格式转换。编码、行尾、BOM、空行的改变必须是显式操作，或在文档中明确说明。
+- **不丢稿优先于一切。** 任何保存路径都必须先写临时文件、`fsync`、再原子替换；保存前比较打开时的 SHA-256/尺寸，外部修改时拒绝覆盖；失败时保留原文件。
+- **不做静默格式转换。** 编码、行尾、BOM、空行的改变必须是显式操作，或在文档中明确说明。当前混合行尾会在保存时统一为 LF，界面必须提示。
 - 不在用户未确认时删除、移动、重命名文件；CLI `new` 使用 `wx` 拒绝覆盖，保持这个行为。
 - 文件大小上限（桌面端 20 MiB）必须有清晰错误信息；提高上限需要性能和内存测试。
 - 处理外部文件变更时要提示冲突，不能后写者静默覆盖。当前尚未实现，相关 PR 优先。
