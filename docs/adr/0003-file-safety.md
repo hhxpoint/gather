@@ -104,7 +104,7 @@ Gather 的承诺是“文件留在磁盘，作者做最后决定”。Phase 0 �
 ## 验证
 
 - `packages/core/test/text-format.test.ts`：LF、CRLF、BOM、无结尾换行、混合行尾、跨 IPC 校验。
-- `apps/desktop/test/file-io.test.ts`：真实临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界。
+- `apps/desktop/test/file-io.test.ts`：真实临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界、POSIX 只读目录真实 EACCES。
 - `apps/desktop/test/atomic-write.test.ts`：ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理。
 - `apps/desktop/test/file-errors.test.ts`：错误映射与 IPC 前缀清理。
 - Windows 生产窗口手工验证：

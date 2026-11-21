@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, open, readdir, rename, rm, unlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, open, readdir, rename, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -121,6 +121,22 @@ describe('recovery snapshots', () => {
     expect(restored?.content).toBe('safe\n');
     expect(await failingStore.list()).toHaveLength(1);
   });
+
+  it.skipIf(process.platform === 'win32')(
+    'keeps the previous snapshot when the recovery directory is read-only',
+    async () => {
+      const first = await store.write(payload({ content: 'safe\n' }));
+      const recoveryDir = join(root, 'recovery');
+      try {
+        await chmod(recoveryDir, 0o500);
+        await expect(store.write(payload({ content: 'blocked\n' })))
+          .rejects.toMatchObject({ code: 'EACCES' });
+      } finally {
+        await chmod(recoveryDir, 0o700);
+      }
+      expect((await store.read(first.id))?.content).toBe('safe\n');
+    },
+  );
 
   it('serializes a discard after an in-flight write', async () => {
     const p = payload({ content: 'late autosave\n' });

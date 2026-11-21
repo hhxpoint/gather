@@ -60,7 +60,7 @@
 | 项 | 状态 |
 | --- | --- |
 | 桌面/编辑器/CLI/核心源码 | 已落盘；单元测试/类型检查双平台 CI 通过；CLI 冒烟通过；Windows 桌面打开/另存为已验收 |
-| 测试源码 | 已落盘（8 个文件、63 个测试，含桌面文件 I/O、恢复、watcher 与故障注入） |
+| 测试源码 | 已落盘（8 个文件、65 个测试，含桌面文件 I/O、恢复、watcher 与故障注入） |
 | 依赖声明（vitest/typescript） | 已声明并安装 |
 | 锁文件 | 已生成；`npm ci` 已在双平台 CI 运行成功 |
 | 测试/类型检查 | 本地 Windows 与 Ubuntu/Windows CI 均通过 |
@@ -107,7 +107,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [ ] 5 MiB 文档可打开、滚动、搜索；输入延迟有基线且无明显卡顿。
 - [ ] 8 小时真实写作 dogfood，无 P0/P1 数据问题。
 - [x] 原子写入故障注入（ENOSPC/EIO/EACCES/sync/rename）清理临时文件，旧快照不被覆盖；20 MiB 边界有测试。
-- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入的关键路径（8 个文件、63 个测试）；CI [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093) 在 Ubuntu/Windows 双平台通过。
+- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入的关键路径（8 个文件、65 个测试；Windows 跳过 2 个 POSIX-only）；CI 44886639093 是前批基线，本批待新运行。
 
 ### 非目标
 

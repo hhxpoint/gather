@@ -89,7 +89,7 @@ Phase 1 的退出条件要求：模拟杀进程后至少恢复到最后一次自
 
 ## 验证
 
-- `apps/desktop/test/recovery.test.ts`：路径/未命名快照、覆盖、列表、读取、丢弃、损坏文件、写删串行与写入失败隔离。
+- `apps/desktop/test/recovery.test.ts`：路径/未命名快照、覆盖、列表、读取、丢弃、损坏文件、写删串行、写入失败隔离与 POSIX 只读目录。
 - `apps/desktop/test/file-watcher.test.ts`：外部修改、自写忽略、删除与重建、轮询差异。
 - `apps/desktop/test/atomic-write.test.ts`：ENOSPC/EIO/EACCES 与 sync/rename 失败清理。
 - Windows 生产窗口手工验证：
@@ -99,7 +99,7 @@ Phase 1 的退出条件要求：模拟杀进程后至少恢复到最后一次自
   - 未命名文稿快照可在重启后恢复，并通过另存为落盘。
   - 外部改写/删除被实时提示；载入磁盘版本成功。
   - 打开另一文件后，旧未保存快照仍保留。
-- CI：Ubuntu/Windows Node 24，63 个测试、构建与 CLI 冒烟（运行 44886639093）。
+- CI：Ubuntu/Windows Node 24，65 个测试（Windows 跳过 2 个 POSIX-only）、构建与 CLI 冒烟；前批运行 44886639093，本批待补。
 
 ## 未解决
 

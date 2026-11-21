@@ -4,7 +4,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。Phase 0 只做一件事：把桌面壳、编辑器内核、CLI 和共享核心的地基搭起来，并让每一层都能被单独验证。
 
-**当前状态：Phase 1 文件可靠性三批已落地，仍不是可安装的发行版。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。第一批加入 **CRLF/BOM 保真、SHA-256 + 尺寸的保存冲突拒绝、打开新文件重置撤销栈、生产 CSP 与导航拦截**；第二批加入 **自动恢复快照、强杀后恢复、实时外部变更提示、显式磁盘重载**；第三批加入 **原子写入故障注入、磁盘/权限错误映射、20 MiB 边界与 IPC 错误清理**。这些在 Windows 真实窗口和注入测试中验证过。**仍没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/磁盘满矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 1 文件可靠性主线已落地，并补上了仓库内的调试与验证记录。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**。这些在 Windows 真实窗口和注入测试中验证过，并有 [DEBUG_LOG](docs/DEBUG_LOG.md) 与 [VERIFICATION](docs/VERIFICATION.md) 记录。**仍没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 PDF/DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -21,6 +21,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 - [工业级质量门槛](#工业级质量门槛)
 - [Windows / Linux 分发与签名成本](#windows--linux-分发与签名成本)
 - [GitHub Pages 项目站](#github-pages-项目站)
+- [调试与验证记录](#调试与验证记录)
 - [贡献](#贡献)
 - [安全与隐私](#安全与隐私)
 - [License](#license)
@@ -42,7 +43,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
 | 发布状态 | 没有安装包、没有签名、没有公开 beta；项目站仍标注 Phase 0 构建状态，文案待下一轮同步 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 前三批文件安全已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/磁盘满矩阵、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
+Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
 ## 为什么做 Gather
 
@@ -129,7 +130,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：8 个测试文件、63 个测试；CI [44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093) 在 Ubuntu/Windows 复跑通过 |
+| 测试实际执行 | 已通过（本地） | 本地 Electron Node 22：8 个测试文件、65 个测试（Windows 跳过 2 个 POSIX-only）；Ubuntu CI 将全部执行 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 恢复与 watcher 测试 | 已通过 | 快照写入/列表/读取/覆盖/丢弃/损坏文件/写删串行；外部修改、自写忽略、删除与重建、轮询差异 |
 | 故障注入测试 | 已通过 | ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理、旧快照保留、错误映射与 IPC 前缀 |
@@ -283,6 +284,10 @@ gather/
 ├─ docs/
 │  ├─ adr/0001-desktop-shell.md
 │  ├─ adr/0002-editor-core.md
+│  ├─ adr/0003-file-safety.md
+│  ├─ adr/0004-recovery-and-watcher.md
+│  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
+│  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  └─ ROADMAP.md
 ├─ .github/workflows/
 │  ├─ ci.yml                    Ubuntu + Node 24：ci/typecheck/test/build
@@ -350,7 +355,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（8 个测试文件、63 个测试）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（8 个测试文件、65 个测试；Windows 跳过 2 个 POSIX-only）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -528,6 +533,15 @@ https://hhxpoint.github.io/gather/
 - 站点当前明确写着“Phase 0、没有可下载安装包”，没有伪造下载按钮、截图或版本号。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`。若仓库改名，HTML、工作流与本文档必须同步修改。
+
+## 调试与验证记录
+
+每次 bug 修复、失败测试、平台差异与发布状态变化都记录在仓库内，而不是只留在对话里：
+
+- [docs/DEBUG_LOG.md](docs/DEBUG_LOG.md)：按“现象 / 根因 / 修复 / 证据 / 防回归”记录 Phase 0/1 的真实踩坑与修正；包含被推翻的初始判断。
+- [docs/VERIFICATION.md](docs/VERIFICATION.md)：当前可复现命令、测试清单、Windows 真实窗口矩阵、失败注入矩阵和明确未验证项。
+
+新增功能或修复时，PR 必须同时更新对应日志与验证结果；CI 链接要写具体运行号，不能写“应该能过”。
 
 ## 贡献
 
