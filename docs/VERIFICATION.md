@@ -121,8 +121,9 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功；build 14s、deploy 9s |
-| 公网内容 | in-app Browser + headless Edge | Phase 1 标题、产品/能力/构建/路线图与 3 张截图均上线 |
-| 公网截图资源 | `fetch` 三张图片 | HTTP 200，`image/png`，201,493 / 195,748 / 219,209 bytes，与仓库一致 |
+| 公网内容 | `curl` + 本地构建对照 | 导出批次 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功；公网 `index.html` 46,295 bytes，SHA-256 与本地 `dist/index.html` 一致（`3a204dc6…`）；CSS 同样一致（`90cbc561…`） |
+| 公网截图资源 | HTTP GET + SHA-256 | 新增 `gather-pdf-export.png` HTTP 200、`image/png`、214,505 bytes，SHA-256 与仓库一致（`9df4e8fb…`）；原有 3 张截图继续可访问 |
+| 本地 390px 导出卡片 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；4 张图片 naturalWidth 非零；公开 HTML/CSS 与本地字节一致，故本地渲染证据适用于公网 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
 | 窄屏 QA 误判 | headless Chrome `--window-size=390` | 实际布局视口最小 500，截图被裁切；不作为移动端溢出证据 |

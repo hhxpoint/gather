@@ -278,7 +278,7 @@
   - 真实窗口：打开合成文稿 `export-demo.md`，导出 `export-demo.pdf` 418,240 bytes；`pdfjs-dist` 抽取 4 页中文文本并渲染 PNG，页面含标题、表格、代码块与本地截图。
   - 同文稿 HTML 273,742 bytes；1 个 `data:image/png;base64`，0 个 `src="assets/gather-editor.png"`，1 个 `<table>`，`@page` 规则存在；headless Chrome 打开 HTML 截图通过。
   - 工具栏显示“已导出 export-demo.pdf · 408 KB”“已导出 export-demo.html · 267 KB”；文件菜单显示“导出 PDF… Ctrl+Shift+E”“导出 HTML…”。
-  - 本地测试 9 个文件、75 个测试，73 通过 + 2 个 POSIX-only 跳过；新增 9 个导出边界测试。CI [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) Ubuntu 75 全过、Windows 73 + 2 跳过。
+  - 本地测试 9 个文件、75 个测试，73 通过 + 2 个 POSIX-only 跳过；新增 9 个导出边界测试。CI [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) Ubuntu 75 全过、Windows 73 + 2 跳过；PR #12 合并后 main CI [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575) 与 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 均成功。
 - **防回归**：导出目标必须继续走原子替换；本地图片必须同时有目录逃逸、缺失、SVG、代码块误伤与数据 URI 测试；改打印 CSS 或 Electron 主版本后必须用真实中文文稿重新生成 PDF 并用 PDF 渲染器回读，不能只看 HTML。
 
 ### P1-25 PDF 验证不能只看 pdftotext 或浏览器直接截图

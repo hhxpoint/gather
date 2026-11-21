@@ -162,8 +162,8 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198)、Pages 修复后 main [44912794744](https://github.com/hhxpoint/gather/actions/runs/44912794744) 均全绿 |
-| 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、合并后 main [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
+| 官网 | 已部署 | `apps/site` 构建成功；导出批次 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致，4 张截图资源 HTTP 200 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
 ## 明确未完成项
@@ -195,6 +195,7 @@ Gather 不打算做这些事：
 - [ ] **没有 AI 能力。** 没有 Ollama 客户端、没有 BYOK、没有 diff 审阅、没有逐块接受/拒绝。
 - [ ] **没有 RAG。** 不在当前范围，也没有代码。
 - [x] **桌面端 PDF/HTML 导出已通过真实验收。** 从真实窗口导出 4 页 A4 PDF（418,240 bytes）并转成 PNG 回读：中文标题、GFM 表格、代码块与相对路径本地图片均存在；同文稿 HTML 为 273,742 bytes，图片已嵌入为 data URI。目录外路径、SVG、缺失图片与超预算图片有告警/拒绝测试。**DOCX 仍未实现，CLI 的 PDF 也未实现。**
+- [x] **导出批次已合并并部署。** PR [#12](https://github.com/hhxpoint/gather/pull/12) 合并为 `b237716`；合并后 CI [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575) 与 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功。公网 `index.html`/CSS 与本地构建 SHA-256 完全一致；新增 PDF 截图 214,505 bytes，HTTP 200。
 - [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
 - [ ] **没有性能与可访问性基线。** 冷启动、10 万字符输入延迟、1/5 MiB 文档滚动、200% 缩放与屏幕阅读器均未测量。
 - [ ] **没有商标/域名/包名检索记录。** `gather` 与 `@gather/*` 目前只是工作名称，未做商用清障。
