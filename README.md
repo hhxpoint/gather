@@ -4,7 +4,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。Phase 0 只做一件事：把桌面壳、编辑器内核、CLI 和共享核心的地基搭起来，并让每一层都能被单独验证。
 
-**当前状态：Phase 0 骨架开发中，未发布。** 版本号为 `0.1.0-phase.0`，不是可安装的发行版。本文档依据 2026-11-21 的工作区快照编写；依赖已安装，单元测试与类型检查已执行，CLI 的 `doctor/new/export` 已按仓库脚本验证；桌面端没有可复现的打开/保存/IME 手工矩阵记录。文中会明确区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 0 骨架已公开并完成本机 + CI 闭环，但还不是可安装的发行版。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。Windows 与 Ubuntu 的 CI 已全绿；桌面端的打开、另存为、源码/实时预览切换已在 Windows 上实际操作验证；CLI 的 `doctor/new/export` 已在 Windows 冒烟验证。**没有安装包、签名、公开 beta，也没有完成 IME/Linux 桌面矩阵、CRLF/BOM 字节保真、AI/RAG 或 PDF/DOCX 导出。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -30,17 +30,19 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 | 项目 | 现状 |
 | --- | --- |
-| 阶段 | Phase 0（骨架已落盘，发布门槛未满足） |
-| 版本 | `0.1.0-phase.0`（私有 workspace，未发布） |
+| 阶段 | Phase 0（骨架、Windows/Ubuntu CI、项目站已闭环；发布门槛未满足） |
+| 版本 | `0.1.0-phase.0`（公开源码仓库，未发布安装包或 npm 包） |
 | 目标平台 | Windows 10/11；Linux（Ubuntu/Debian/Fedora，X11 与 Wayland） |
 | 桌面壳 | Electron 38 + electron-vite 4（Phase 0 默认） |
 | 编辑器核心 | CodeMirror 6 + Lezer |
 | CLI | Node.js + Commander，`gather doctor/export/new` |
 | 共享核心 | `@gather/core`，Markdown 渲染与文本计数 |
 | 许可 | 应用核心 AGPL-3.0-only（`LICENSE` 已落盘）；插件 SDK/主题以后 MIT |
-| 发布状态 | 没有安装包、没有签名、没有公开 beta、项目站未部署 |
+| 仓库与站点 | [github.com/hhxpoint/gather](https://github.com/hhxpoint/gather) 公开；[hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/) 已部署 |
+| CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
+| 发布状态 | 没有安装包、没有签名、没有公开 beta；项目站明确标注 Phase 0 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前快照还没有达到这个标准，具体差距见[明确未完成项](#明确未完成项)。本文档不声称 RAG、完整导出、安装包、签名或公开 beta 已完成；它们要么未开始，要么只有脚手架。
+Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。仍未做到：IME/Linux 桌面矩阵、字节保真、自动备份/崩溃恢复、安装包与签名、AI/RAG、PDF/DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
 ## 为什么做 Gather
 
@@ -65,19 +67,19 @@ Gather 不打算做这些事：
 - **已验证（本地）**：在 2026-11-21 的 Windows + Node 24.22.3 环境中实际执行通过；不代表 CI 或跨平台通过。
 - **部分**：有实现，但覆盖范围或边界处理不完整。
 - **未实现**：Phase 0 范围外，或尚未开始。
-- **未验证**：代码存在，但没有完成对应验证（例如桌面手工矩阵、IME、CLI 运行），不能声称通过。
+- **未验证**：代码存在，但没有完成对应验证（例如 IME、Linux 图形会话、异常写盘矩阵），不能声称通过。
 
 ### 桌面应用（`apps/desktop`）
 
 | 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Electron 主窗口 | 已落盘 | 1200×820，最小 760×520，单实例锁 |
-| 打开 Markdown | 已落盘 | 系统文件对话框，支持 `md/markdown/mdown/mkd/txt` |
-| 保存 / 另存为 | 已落盘 | 主进程写文件，先写临时文件再 `rename` |
-| 文件大小保护 | 已落盘 | 单文件上限 20 MiB，超出时拒绝打开/保存 |
+| Electron 主窗口 | 已验证（本地 Windows） | 1200×820，最小 760×520，单实例锁；生产构建可加载 |
+| 打开 Markdown | 已验证（本地 Windows） | 系统文件对话框打开仓库内 Markdown 并渲染成功 |
+| 保存 / 另存为 | 已验证（本地 Windows） | 另存为写入 12,272 字节文件并与编辑器内容一致；主进程先写临时文件再 `rename` |
+| 文件大小保护 | 已落盘，未验证异常路径 | 单文件上限 20 MiB，超出时拒绝打开/保存；尚未跑磁盘满、只读目录等矩阵 |
 | 进程隔离 | 已落盘 | `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false` |
 | 应用菜单 | 已落盘 | 文件、视图、帮助菜单；打开/保存/另存为/切换预览 |
-| 快捷键 | 已落盘 | `Ctrl/Cmd+O`、`Ctrl/Cmd+S`、`Ctrl/Cmd+Shift+S`、`Ctrl/Cmd+Shift+P` |
+| 快捷键 | 已落盘，未逐项实测 | `Ctrl/Cmd+O`、`Ctrl/Cmd+S`、`Ctrl/Cmd+Shift+S`、`Ctrl/Cmd+Shift+P` |
 | 未保存提示 | 部分 | 标题栏脏标记与 `beforeunload`；没有崩溃恢复 |
 | 文件变更监听 | 未实现 | 外部程序改动同一文件时不会提示冲突 |
 
@@ -90,7 +92,7 @@ Gather 不打算做这些事：
 | 撤销 / 重做 | 已落盘 | CodeMirror history |
 | 搜索 | 已落盘 | CodeMirror search keymap |
 | 实时预览装饰 | 部分 | 标题、粗体、斜体、行内代码、链接、引用、代码块、列表的样式；光标所在行会显示语法标记 |
-| 预览开关 | 已落盘 | 通过 Compartment 动态启用/停用装饰 |
+| 实时预览开关 | 已验证（本地 Windows） | 通过 Compartment 动态启用/停用装饰；源码/实时预览切换已实际操作 |
 | 格式工具栏 | 已落盘 | 粗体、斜体、二级标题、引用、列表、行内代码、链接、代码块 |
 | 中文/英文计数 | 已落盘 | `countText` 统计字符、词、行；CJK 按字计数 |
 | 表格 / 图片渲染 | 未实现 | 预览层只做样式，不渲染表格和图片组件 |
@@ -101,9 +103,9 @@ Gather 不打算做这些事：
 
 | 命令 | 状态 | 说明 |
 | --- | --- | --- |
-| `gather doctor` | 已验证（本地） | 输出 Node、平台、工作目录；`--json` 输出结构化结果 |
-| `gather export <file>` | 部分（本地验证） | 仅支持 HTML；PDF/DOCX 会明确报错 |
-| `gather new <file>` | 已验证（本地） | 父目录必须存在；`wx` 模式拒绝覆盖已有文件 |
+| `gather doctor` | 已验证（本地 + 双平台 CI） | 输出 Node、平台、工作目录；`--json` 输出结构化结果；Windows 与 Ubuntu CI 均执行 |
+| `gather export <file>` | 部分（本地验证） | 仅支持 HTML；PDF/DOCX 会明确报错；本地 `--out` 写盘成功，CI 未覆盖 export |
+| `gather new <file>` | 已验证（本地） | 父目录必须存在；`wx` 模式拒绝覆盖已有文件；CI 未覆盖 new |
 | 全局安装 | 未实现 | 没有发布 npm 包；Phase 0 通过仓库内路径运行 |
 
 ### 共享核心（`packages/core`）
@@ -119,31 +121,33 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/markdown.test.ts`、`packages/editor/test/text-commands.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts`，匹配 `packages/**/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地） | 2026-11-21 在 Windows 上执行：2 个测试文件、12 个测试通过；尚未在 CI/Ubuntu 矩阵复跑 |
-| 类型检查 | 已通过（本地） | 同一轮执行中，core/editor/desktop/CLI 四个 `tsc --noEmit` 均通过；尚未在 CI 复跑 |
-| CLI 冒烟 | 已通过（本地） | `doctor`、`new`、`export --out`（HTML）可用；`--format pdf` 以非零状态拒绝；尚未在 Linux 复跑 |
-| 构建产物 | 已生成（本地） | `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist` 已生成；本次文档没有重新执行完整 `npm run build` |
-| CI | 部分 | `.github/workflows/ci.yml` 已落盘；只覆盖 Ubuntu，且尚未产生绿色运行结果 |
-| 官网骨架 | 已落盘 | `apps/site` 含 `index.html`、`styles.css`、`build.mjs`、`package.json`；`dist` 已构建，尚未部署 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Windows：2 个测试文件、12 个测试通过；Ubuntu 与 Windows CI 均复跑通过 |
+| 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过，CI 双平台通过 |
+| CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
+| 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全绿 |
+| 官网 | 已部署 | `apps/site` 构建成功；GitHub Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功，公网站点已用浏览器验证加载 |
 | 安装包 | 未实现 | `electron-builder` 配置存在，但没有安装包产物、没有签名 |
 
 ## 明确未完成项
 
-这一节是 Phase 0 的收尾清单，不是“以后再说”的愿望清单。未勾选项目前都构成发布阻断。
+这一节区分“Phase 0 骨架已闭环”和“产品可发布”。勾选项是已经完成并有证据的；未勾选项都是 beta 之前的阻断，其中任何“必须”级编辑能力缺失，都不能把当前状态描述成完整编辑器。
 
-- [ ] **测试与类型检查尚未在 CI 复跑。** 2026-11-21 本地 Windows 环境已通过 12 个测试与四个 `tsc --noEmit`；但没有 Windows/Ubuntu CI 绿色结果，不能把本地通过当成跨平台保证。
-- [ ] **CI 覆盖不全。** `.github/workflows/ci.yml` 只跑 `ubuntu-latest`，没有 Windows 矩阵；`package-lock.json` 已生成，但工作流尚未产生绿色运行结果。
-- [ ] **没有可复现的桌面验收记录。** CLI 的 `doctor/new/export` 已在 Windows 上冒烟通过；桌面端仍缺少打开/保存/另存/IME 矩阵记录，也没有 Linux 运行记录。
+- [x] **Windows/Ubuntu CI 已复跑。** 运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、test、build、CLI `doctor --json`，全部成功。
+- [x] **项目站已部署。** Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功；`https://hhxpoint.github.io/gather/` 已在浏览器中验证加载，CSS 正常。
+- [x] **桌面打开/另存为已在 Windows 实际验证。** 打开仓库内 Markdown、修改后另存为 12,272 字节文件，并切换源码/实时预览；这不是完整 IME 或 Linux 矩阵。
+- [ ] **IME 未做真机矩阵。** Windows 微软拼音/搜狗、Linux Fcitx5/IBus、X11/Wayland 下的丢字、重复上屏、候选框定位、组合期间预览抖动都还没有记录。
+- [ ] **Linux 桌面未运行验收。** 只有 Ubuntu CI 的构建与 CLI `doctor`，没有在图形会话中启动 Electron、打开文件、测试菜单与打印。
 - [ ] **Markdown 行尾不保真。** CodeMirror 默认把 CRLF 规范化为 LF；打开再保存 CRLF 文件可能改变字节。BOM 也没有显式处理。
 - [ ] **打开新文件后撤销栈可能保留旧文档。** 当前通过一次全文替换同步外部内容，没有在打开文件时重置 history；需要测试并修复。
 - [ ] **没有外部文件变更检测。** 两个程序同时编辑同一文件时，后保存者会覆盖前者。
-- [ ] **没有自动保存与崩溃恢复。** 只有未保存提示。
+- [ ] **没有自动保存与崩溃恢复。** 只有未保存提示；强制杀进程、磁盘满、只读目录等异常矩阵也未跑。
 - [ ] **没有 CSP 与导航限制。** Electron 渲染进程已开启 sandbox，但 HTML 没有 Content-Security-Policy，主进程也没有显式的 `will-navigate` / `setWindowOpenHandler` 防护。
 - [ ] **没有 AI 能力。** 没有 Ollama 客户端、没有 BYOK、没有 diff 审阅、没有逐块接受/拒绝。
 - [ ] **没有 RAG。** 不在 Phase 0 范围，也没有代码。
 - [ ] **没有完整导出。** 只有 HTML；PDF、DOCX 未实现。
-- [ ] **没有安装包与签名。** `electron-builder` 只配置了目标格式，没有执行过 `package`/`dist`。
-- [ ] **项目站未部署。** `apps/site` 的静态页、样式与构建脚本已落盘，`dist` 已构建；GitHub Pages 没有部署记录，URL 还不能访问。
+- [ ] **没有安装包与签名。** `electron-builder` 只配置了目标格式，没有执行过 `package`/`dist`；没有自动更新。
+- [ ] **没有性能与可访问性基线。** 冷启动、10 万字符输入延迟、1/5 MiB 文档滚动、200% 缩放与屏幕阅读器均未测量。
 - [ ] **没有商标/域名/包名检索记录。** `gather` 与 `@gather/*` 目前只是工作名称，未做商用清障。
 
 ## 技术架构
@@ -292,7 +296,7 @@ npm run build -w @gather/site
 npm run build -w @gather/cli
 ```
 
-当前工作区已经生成三个 workspace 的产物（`apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`），但本文档没有重新执行完整 `npm run build`，也没有在干净 clone 或 CI 中验证。需要单独构建时，可以直接运行上面的 workspace 命令。
+本地的三个 workspace 产物已生成（`apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`）。完整 `npm run build` 已在 GitHub Actions 的干净 Ubuntu 与 Windows runner 上通过，不再只是本地结果；需要单独构建某个 workspace 时，仍可直接运行上面的命令。
 
 ### 测试与类型检查
 
@@ -303,14 +307,17 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地验证（2026-11-21，Windows）**：依赖已安装；以 Node 24.22.3 执行 Vitest（2 个测试文件、12 个测试）与四个 tsconfig 的 `tsc --noEmit`，均通过。仓库已有 `package-lock.json`，`npm ci` 具备执行条件，但本次没有运行；CI 的 Windows/Ubuntu 矩阵也尚未产生结果。Phase 0 收尾时必须让下面的命令在 Windows 11 与 Ubuntu 24.04 上同时通过：
+**本地与 CI 验证**：本地 Windows 以 Node 24.22.3 执行 Vitest（2 个测试文件、12 个测试）与四个 tsconfig 的 `tsc --noEmit`，均通过。CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
 npm run typecheck
 npm test
 npm run build
+node packages/cli/dist/cli.js doctor --json
 ```
+
+运行 [44870544811](https://github.com/hhxpoint/gather/actions/runs/44870544811) 全部步骤成功（Ubuntu 约 26 秒，Windows 约 57 秒）。CI 不覆盖 IME、桌面图形会话、真实文件对话框与打印；这些仍必须手工验证。
 
 ### 桌面打包（未验证）
 
@@ -328,7 +335,7 @@ npm run dist -w @gather/desktop
 
 ## CLI 示例
 
-Phase 0 不发布全局 npm 包。先构建 CLI，再用仓库内路径运行。以下命令已在 2026-11-21 用 Node 24.22.3 在 Windows 上冒烟验证：`doctor`、`new`、`export --out`（HTML）成功，`export --format pdf` 按预期以非零状态失败；Linux 尚未复跑。
+Phase 0 不发布全局 npm 包。先构建 CLI，再用仓库内路径运行。以下命令已在 2026-11-21 用 Node 24.22.3 在 Windows 上冒烟验证：`doctor`、`new`、`export --out`（HTML）成功，`export --format pdf` 按预期以非零状态失败。CI 在 Ubuntu 与 Windows 上都执行了 `doctor --json`，但 `new` 与 `export` 还没有进入 CI；Linux 上的手工 export 也尚未做。
 
 ```bash
 npm run build -w @gather/cli
@@ -391,9 +398,9 @@ node packages/cli/dist/cli.js export notes/today.md --format pdf
 
 | 编号 | 功能 | 优先级 | 状态 |
 | --- | --- | --- | --- |
-| P0-01 | 打开 UTF-8 Markdown，保留文本内容 | 必须 | 已落盘，未验证 |
-| P0-02 | 保存 / 另存为，临时文件 + `rename` 原子替换 | 必须 | 已落盘，未验证 |
-| P0-03 | 20 MiB 文件上限与错误提示 | 必须 | 已落盘 |
+| P0-01 | 打开 UTF-8 Markdown，保留文本内容 | 必须 | 已验证（Windows；UTF-8 文本内容） |
+| P0-02 | 保存 / 另存为，临时文件 + `rename` 原子替换 | 必须 | 已验证（Windows；写入内容一致） |
+| P0-03 | 20 MiB 文件上限与错误提示 | 必须 | 已落盘，异常路径未验证 |
 | P0-04 | Markdown 源码编辑、GFM 语法、撤销/重做、搜索 | 必须 | 已落盘 |
 | P0-05 | 实时预览装饰与一键开关 | 必须 | 部分 |
 | P0-06 | 光标所在行显示语法标记，避免“看不见光标” | 必须 | 已落盘 |
@@ -428,7 +435,7 @@ P0 的“必须”项没有全部满足，因此当前快照不能称为可发�
 | 安全 | sandbox、contextIsolation、CSP、IPC 白名单、HTML 白名单、依赖审计、签名产物 | sandbox/contextIsolation/白名单部分已启用；CSP、依赖审计、签名缺失 |
 | 可访问性 | 全键盘操作、焦点可见、200% 缩放、屏幕阅读器可读、对比度达标 | 未测试 |
 | 跨平台 | Windows 10/11、Ubuntu 22.04/24.04、Fedora 当前稳定版；X11 与 Wayland 各一轮 | 未测试 |
-| 交付 | Windows + Linux CI 全绿；安装/卸载/升级/回滚；校验和与签名 | CI 仅有 Ubuntu workflow 且未绿；安装包、签名均无 |
+| 交付 | Windows + Linux CI 全绿；安装/卸载/升级/回滚；校验和与签名 | CI 双平台已绿；安装包、签名、升级/回滚均无 |
 
 Phase 0 的目标是让这些门槛“可被执行”，不是全部通过。任何“已经工业级”的说法都不成立。
 
@@ -464,7 +471,7 @@ Phase 0 不发布安装包。上面是预算与工程约束提示，不是已完
 
 ## GitHub Pages 项目站
 
-计划中的项目站路径：
+站点已部署并可访问：
 
 ```text
 https://hhxpoint.github.io/gather/
@@ -472,21 +479,21 @@ https://hhxpoint.github.io/gather/
 
 说明：
 
-- 该路径按当前维护者账号 `hhxpoint` 与仓库名 `gather` 推定；`apps/site/index.html` 的 canonical 与 `og:url` 已指向它。如果最终组织名或仓库名变化，页面与路径都必须同步修改。
-- 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`，该目录已生成。
-- `.github/workflows/pages.yml` 已落盘，触发条件包含 `apps/site/**` 与 `package-lock.json`，用 `npm ci` 安装后构建并上传 `apps/site/dist`。
-- 站点构建已在本地成功，`package-lock.json` 也已生成；但 Pages 工作流尚未运行，当前没有部署记录，上面的 URL 不应被当作可访问地址。
+- 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`。
+- `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行，执行 `npm ci`、构建站点、上传 `apps/site/dist` 并部署。运行 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 已成功。
+- 2026-11-21 已在浏览器中打开公网 URL，确认标题、样式表、hero、CLI 示例与 Phase 0 下载状态正常渲染；没有发现横向溢出。
+- 站点当前明确写着“Phase 0、没有可下载安装包”，没有伪造下载按钮、截图或版本号。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
-- 根 README 不使用绝对站点链接，避免仓库改名后产生死链。
+- 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`。若仓库改名，HTML、工作流与本文档必须同步修改。
 
 ## 贡献
 
 开发、测试、提交规范、数据安全与 AI 隐私要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。Phase 0 最需要帮助的方向：
 
 - 在 Windows 10/11 与 Linux（X11/Wayland）上做真实运行与 IME 测试，并记录系统、输入法、版本。
-- 补齐 Windows CI 矩阵与 Pages 部署；在 Linux 上复跑 CLI 与桌面矩阵。
+- 在 Linux 图形会话中复跑桌面打开/保存/打印矩阵，并补充 CLI `new/export` 的 CI 覆盖。
 - 为 Markdown 保真建立 fixture 集：CRLF、BOM、frontmatter、表格、HTML 块、CJK、emoji、超长行。
-- 审查 Electron 安全配置与 HTML 清洗规则。
+- 审查 Electron 安全配置与 HTML 清洗规则，补 CSP、导航拦截与 IPC 参数校验。
 
 不接受：伪造测试结果、伪造截图、把未验证的 AI 能力写进文档、提交真实用户文稿或密钥、引入默认上传/遥测。
 
@@ -518,7 +525,7 @@ Phase 0 没有 AI 代码，以上是后续实现的约束，不是现状。
 
 ### 漏洞报告
 
-仓库尚未公开，也没有安全邮箱。公开后优先使用 GitHub Security Advisories 私下报告；在通道建立前，不要开公开 Issue 披露可利用细节。安全修复会随版本说明公布影响范围，但不会公开用户文稿。
+仓库已公开。请优先通过 GitHub Security Advisories 私下报告，不要在公开 Issue 中披露可利用细节；如果 Advisories 不可用，再开一个不含复现细节的 Issue 请维护者建立私下通道。安全修复会随版本说明公布影响范围，但不会公开用户文稿。
 
 ## License
 
