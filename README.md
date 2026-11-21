@@ -390,7 +390,7 @@ npm run package -w @gather/desktop
 npm run dist -w @gather/desktop
 ```
 
-当前环境在 electron-builder “electron 下载完成、进入 packaging”后卡在第二个远程工具请求，600 秒超时；已关闭 `signAndEditExecutable` 并固定 `electronVersion`，仍未绕过。详细排查见 [DEBUG_LOG](docs/DEBUG_LOG.md)。没有代码签名、自动更新，也没有在干净虚拟机中做过安装/卸载测试。
+当前环境在 electron-builder “electron 下载完成、进入 packaging”后卡在第二个远程工具请求，600 秒超时；尝试关闭 `signAndEditExecutable` 与 `ELECTRON_BUILDER_OFFLINE=true` 仍未绕过。staging 验证完成后已移除 `signAndEditExecutable: false`，避免永久禁用 exe 元数据编辑/签名。详细排查见 [DEBUG_LOG](docs/DEBUG_LOG.md)。没有代码签名、自动更新，也没有在干净虚拟机中做过安装/卸载测试。
 
 ## CLI 示例
 

@@ -198,6 +198,7 @@
 - **根因**：未完全确定。证据指向 electron-builder 的第二个远程工具/校验请求，而不是应用代码、类型检查或 Electron 二进制缺失。
 - **临时修复**：新增 `apps/desktop/scripts/stage-portable.mjs`，直接把已安装的 Electron `dist` + `out` 复制成 `release/win-unpacked`，重命名 exe，去掉 `default_app.asar`，写入应用 `package.json` 与 `STAGING-README.txt`。不依赖网络。
 - **证据**：产出 328 MB 目录包；`Gather.exe` 启动、打开 Markdown、编辑、保存成功；`resources/app` 仅 3.4 MB。
+- **后续修正**：`signAndEditExecutable: false` 只是本次排查 workaround；staging 验证完成后已从提交配置移除，避免未来签名构建永久跳过 exe 元数据/签名。electron-builder 的网络阻塞仍未解决，安装器未产出。
 - **防回归**：staging 只用于运行冒烟，不当作安装包；electron-builder 的签名安装包仍必须在网络/证书可用的环境复跑并记录。
 
 ### P1-17 打包后运行时验收
@@ -213,6 +214,14 @@
 - **修复**：`recovery:activate` 启动 watcher 后立即调用一次 `checkNow(true)`，强制做 SHA-256 对比。
 - **证据**：watcher 的强制检查行为已有单元测试；真实窗口中恢复后外部改写的提示路径此前已通过。
 - **防回归**：恢复/重载路径后必须做一次强制内容检查，不能只依赖被动事件。
+
+### P1-19 Electron 依赖仍是范围版本
+
+- **现象**：虽然 build 配置固定了 `electronVersion`，`apps/desktop/package.json` 的 devDependency 仍是 `^38.0.0`；不同时间 `npm install` 可能解析到不同 38.x。
+- **根因**：一开始只修了 electron-builder 的版本解析，没有把依赖声明本身锁死。
+- **修复**：把 `electron` devDependency 与 `package-lock.json` 的 workspace spec 同步改为精确 `38.8.6`。
+- **验证**：`npm ci --dry-run --ignore-scripts` 退出 0；`npm ls electron --depth=0` 显示 `38.8.6`。
+- **防回归**：打包相关依赖必须精确版本；升级 Electron 需同时更新 package.json、lock、electronVersion 和 IME/PDF 回归记录。
 
 ---
 
