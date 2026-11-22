@@ -175,8 +175,8 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；工作区批次 [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214)、预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)、合并后 main [44981317065](https://github.com/hhxpoint/gather/actions/runs/44981317065)、导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 均全绿 |
-| 官网 | 已部署 | `apps/site` 构建成功；预览批次 Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致，5 张产品截图与 PDF 截图 HTTP 200 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；工作区批次 [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214)、合并后 main [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330)、预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)、导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 均全绿 |
+| 官网 | 已部署 | `apps/site` 构建成功；工作区批次 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致，6 张产品截图与 PDF 截图 HTTP 200 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
 ## 明确未完成项
@@ -212,6 +212,7 @@ Gather 不打算做这些事：
 - [x] **表格/图片预览与安全外链已通过真实窗口验收。** GFM 表格在光标离开时渲染为 HTML 表格，点击回到源码；文档目录内的相对路径图片经主进程校验后以 data URI 显示，点击回到 `![alt](src)`；`Ctrl/Cmd+点击` 普通链接与单击表格链接会打开系统浏览器，`javascript:` 等非 http/https 值被主进程拒绝。图片 268,682 字符 data URI、真实 1184×755 截图与 CDP 交互证据已记录在 [VERIFICATION](docs/VERIFICATION.md)。预览批次 CI [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 + 2 跳过。
 - [x] **预览批次已合并并部署。** PR [#14](https://github.com/hhxpoint/gather/pull/14) 合并为 `4e0c1e9`；main CI [44981317065](https://github.com/hhxpoint/gather/actions/runs/44981317065) 与 Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功。公网 `index.html` SHA-256 `493eec7b…`、CSS `90cbc561…` 与本地构建一致；新增表格/图片截图 65,022 / 49,852 bytes，HTTP 200，公网 5 张产品截图均加载。
 - [x] **文件夹工作区已在真实窗口跑通。** 打开 `gather-workspace-qa` 后侧栏列出 3 个文稿，隐藏目录/`node_modules`/非文稿未出现；打开嵌套 `nested/笔记.md` 正常，未保存时切换会弹确认，保存后状态与文件一致；`Ctrl+Shift+O` 已修复为打开文件夹而不是误触打开文件。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) 双平台通过；Windows 8.3 短路径误判已修复。
+- [x] **工作区批次已合并并部署。** PR [#16](https://github.com/hhxpoint/gather/pull/16) 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功。公网 `index.html` SHA-256 `34f289d4…`、CSS `5b76a1b0…` 与本地构建一致；工作区截图 37,680 bytes，HTTP 200，6 张产品截图均加载。
 - [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件或跨文稿搜索；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
@@ -600,6 +601,7 @@ https://hhxpoint.github.io/gather/
 - `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行；build 与 deploy 拆成两个 job，避免 artifact 列表竞态，并使用 Node 24 action majors。运行 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功。
 - 2026-11-21 已完成 Phase 1 站点改版并上线：真实产品截图区、文件安全、工程证据、真实下载状态与 Phase 1 路线图。公网页面已确认标题、样式与 3 张截图；截图资源 HTTP 200，字节数与仓库一致。
 - 2026-11-22 预览批次上线：产品区增加表格/图片预览两张真实截图，能力区更新 96 个测试；Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功，公网 HTML/CSS SHA-256 与本地构建一致，图片字节数一致。
+- 2026-11-22 工作区批次上线：产品区增加文件夹工作区截图，能力区更新 101 个测试；Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功，公网 HTML/CSS 与本地构建 SHA-256 一致。
 - 站点明确写着“Phase 1、没有公开下载”，没有伪造下载按钮、版本号或用户文稿。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。

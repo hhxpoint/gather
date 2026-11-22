@@ -159,10 +159,10 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
-| 公网 Pages | build / deploy 两个 job | 预览批次 [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功；上一批 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功 |
-| 公网内容 | `curl` + 本地构建对照 | 预览批次公网 `index.html` 47,745 bytes，SHA-256 与本地 `dist/index.html` 一致（`493eec7b…`）；CSS 同样一致（`90cbc561…`）；页面包含 `04 / Table`、`05 / Image` 与 96 个测试文案 |
-| 公网截图资源 | HTTP GET + SHA-256 | `gather-table-preview.png` HTTP 200、65,022 bytes；`gather-image-preview.png` HTTP 200、49,852 bytes；两者 SHA-256 与仓库一致（`eea97880…` / `67bd7a8d…`）；PDF 截图 214,505 bytes 仍可访问 |
-| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；5 张产品截图 naturalWidth 全非零；公网 HTML/CSS 与本地字节一致，故本地渲染证据适用于公网 |
+| 公网 Pages | build / deploy 两个 job | 工作区批次 [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；预览批次 [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功 |
+| 公网内容 | `curl` + 本地构建对照 | 工作区批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`34f289d4…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `06 / Workspace` 与 101 个测试文案 |
+| 公网截图资源 | HTTP GET + SHA-256 | `gather-workspace.png` HTTP 200、37,680 bytes，SHA-256 与仓库一致（`5f31a579…`）；表格/图片/PDF 截图继续可访问 |
+| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；6 张产品截图 naturalWidth 全非零；公网 HTML/CSS 与本地字节一致，故本地渲染证据适用于公网 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
 | 窄屏 QA 误判 | headless Chrome `--window-size=390` | 实际布局视口最小 500，截图被裁切；不作为移动端溢出证据 |

@@ -335,7 +335,7 @@
   - 真实窗口打开 `C:\Users\Public\gather-workspace-qa`：侧栏 3 个文稿（`01-欢迎.md`、`nested/笔记.md`、`nested/清单.txt`），隐藏 `.private`、`node_modules` 与非 Markdown 图片未出现。
   - 打开 `nested/笔记.md` 后标题、嵌套路径与表格预览正常；修改后点击 `01-欢迎.md` 出现“当前文稿有未保存修改”确认；取消/确认路径均可用；保存状态显示“已保存 笔记.md · UTF-8 · LF”。
   - 工作区测试 5 个；当前 13 个测试文件、101 个测试，本地 99 通过 + 2 个 POSIX-only 跳过。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) Ubuntu 101 全过、Windows 99 + 2 跳过；Windows 首轮 8.3 短路径失败，修复后通过。
-  - 真实截图 `docs/images/gather-workspace.png`（1184×755）。
+  - 真实截图 `docs/images/gather-workspace.png`（1184×755）。PR #16 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；公网 HTML/CSS SHA-256 与本地一致，6 张产品截图 naturalWidth 全非零。
 - **防回归**：工作区打开必须继续走相对路径 + 主进程边界；目录扫描不得跟随符号链接；快捷键分支必须显式检查 Shift；切换文稿前脏状态检查不能绕过。
 
 ---
