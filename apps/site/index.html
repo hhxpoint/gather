@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f2ede1">
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gather">
   <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
-  <meta property="og:description" content="本地优先的 Markdown 写作工作台：文件留在磁盘，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。">
+  <meta property="og:description" content="本地优先的 Markdown 写作工作台：文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。">
   <meta property="og:url" content="https://hhxpoint.github.io/gather/">
   <meta property="og:image" content="https://hhxpoint.github.io/gather/images/gather-external-change.png">
   <meta property="og:image:width" content="2560">
@@ -128,7 +128,7 @@
             </div>
             <div>
               <dt>Evidence</dt>
-              <dd>75 tests · dual CI</dd>
+              <dd>96 tests · dual CI</dd>
             </div>
             <div>
               <dt>License</dt>
@@ -198,7 +198,7 @@
           <p class="section-marker"><span>01</span> Product</p>
           <div class="section-heading">
             <h2 id="showcase-title">不是效果图。<br>是正在运行的编辑器。</h2>
-            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
+            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、表格与本地图片预览、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
           </div>
         </header>
 
@@ -231,6 +231,26 @@
             <figcaption class="shot-caption">
               <span class="shot-label">03 / Conflict</span>
               <p>外部程序改写文件时，保存会被拒绝。编辑器内容保留，由你决定载入磁盘还是另存为。</p>
+            </figcaption>
+          </figure>
+
+          <figure class="shot">
+            <div class="shot-frame">
+              <img src="images/gather-table-preview.png" alt="Gather 实时表格预览真实截图：GFM 表格以 HTML 呈现，光标离开时保持只读，点击可回到源码。" width="1184" height="755" loading="lazy" decoding="async">
+            </div>
+            <figcaption class="shot-caption">
+              <span class="shot-label">04 / Table</span>
+              <p>表格在光标离开时渲染为真实行列；点击表格回到 Markdown 源码，不产生第二份内容模型。</p>
+            </figcaption>
+          </figure>
+
+          <figure class="shot">
+            <div class="shot-frame">
+              <img src="images/gather-image-preview.png" alt="Gather 本地图片预览真实截图：文档目录内的编辑器截图经主进程解析后以 data URI 显示，带 alt 说明。" width="1184" height="755" loading="lazy" decoding="async">
+            </div>
+            <figcaption class="shot-caption">
+              <span class="shot-label">05 / Image</span>
+              <p>相对路径图片经目录边界校验后显示；点击图片回到 <code>![alt](src)</code>，远程图片默认不加载。</p>
             </figcaption>
           </figure>
         </div>
@@ -669,7 +689,7 @@
           </div>
           <div class="evidence-grid">
             <a href="https://github.com/hhxpoint/gather/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer">
-              <strong>75</strong>
+              <strong>96</strong>
               <span>tests · Ubuntu &amp; Windows CI</span>
             </a>
             <a href="https://github.com/hhxpoint/gather/blob/main/docs/DEBUG_LOG.md" target="_blank" rel="noopener noreferrer">
@@ -724,11 +744,12 @@
             </div>
             <p class="stage-code">Phase 1 / Reliability</p>
             <h3>把文件安全做实</h3>
-            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照、失败注入与可带走的导出逐项做成测试和证据。</p>
+            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照、表格/图片预览、失败注入与可带走的导出逐项做成测试和证据。</p>
             <ul class="stage-list">
               <li>CRLF / BOM / 原子写入</li>
               <li>外部修改拒绝与恢复快照</li>
               <li>强杀恢复、真实 watcher</li>
+              <li>表格 / 本地图片 / 安全外链</li>
               <li>A4 PDF / 含本地图片的 HTML</li>
               <li>未签名 staging 与工程日志</li>
             </ul>

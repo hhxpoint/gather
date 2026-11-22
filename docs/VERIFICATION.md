@@ -40,13 +40,16 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 ## 自动化测试清单
 
-当前 9 个测试文件、75 个测试（Windows 上 73 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
+当前 12 个测试文件、96 个测试（Windows 上 94 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
 
 | 文件 | 数量 | 覆盖 |
 | --- | --- | --- |
 | `packages/core/test/markdown.test.ts` | 7 | GFM、HTML 清洗、链接/图片协议、A4 打印规则、文档模板、计数 |
 | `packages/core/test/text-format.test.ts` | 10 | LF/CRLF/BOM、混合行尾、无结尾换行、跨 IPC 校验 |
 | `packages/editor/test/text-commands.test.ts` | 6 | 选区包装、行前缀、插入 |
+| `packages/editor/test/live-preview.test.ts` | 6 | 图片/链接语法、转义 label、http/https 判定、畸形输入 |
+| `apps/desktop/test/image-preview.test.ts` | 5 | 本地图片 data URI、编码文件名、目录逃逸/绝对/远程/缺失拒绝、缓存 |
+| `apps/desktop/test/external-links.test.ts` | 10 | http/https 放行、危险协议/凭据/畸形值拒绝 |
 | `apps/desktop/test/file-io.test.ts` | 11 | 真实临时目录 round-trip、外部修改拒绝、Save As、20 MiB、POSIX 只读目录 |
 | `apps/desktop/test/file-watcher.test.ts` | 4 | 外部修改、自写忽略、删除/重建、轮询差异 |
 | `apps/desktop/test/recovery.test.ts` | 9 | 快照读写/覆盖/丢弃/损坏/写删串行、注入失败、POSIX 只读目录 |
@@ -83,6 +86,23 @@ Phase 1 CI 基线：
 - Windows staged 目录包 `Gather.exe` 启动，打开 Markdown、编辑、保存成功；`resources/app` 路径、preload、renderer、userData 均正常。
 - 最终 staging 构建打开合成文稿，通过文件菜单快捷键 `Ctrl+Shift+E` 打开导出 PDF 对话框；保存为 418,240 bytes。
 - 同一窗口工具栏导出 HTML，保存为 273,742 bytes；状态栏分别显示“已导出 export-demo.pdf · 408 KB”“已导出 export-demo.html · 267 KB”。
+- 预览构建打开 `preview-demo.md`：GFM 表格显示为真实 HTML 表格；点击后出现 `| 能力 |` 源码行，Control+End 离开后表格 widget 恢复。
+- 本地图片预览 `complete=true`、natural 2560×2800、显示 567×520；点击后出现 `![Gather 编辑器真实界面](assets/gather-editor.png)` 源码行。
+- 普通链接 Ctrl+点击触发系统浏览器，状态栏显示“已在系统浏览器中打开链接”；`javascript:` 外链 IPC 返回“只允许打开 http/https 链接。”。
+
+## 预览与链接矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 表格 block widget | CodeMirror StateField + 核心清洗 HTML | 真实窗口渲染 3 列 4 行表格；点击/光标进入回源码，离开恢复 |
+| 表格性能保护 | 阈值检查 | 文稿 >1.5 MiB、单表 >50k 字符或 >30 表时退回源码 |
+| 本地图片 | 主进程 IPC + `realpath` + 8 MiB | `data:image/png;base64` 268,682 字符；点击回源码 |
+| 图片目录边界 | 单元测试 | `../`、Windows 绝对路径、远程 URL、缺失、SVG 均返回 null |
+| 图片缓存 | 5 秒 / 40 项 | 同一相对路径短时间内返回同一 data URI |
+| 普通链接 | CDP 真实 Ctrl+点击 | 系统浏览器打开 `https://hhxpoint.github.io/gather/`；状态栏反馈 |
+| 非法外链 | 主进程 + 单元测试 | `javascript:`/`file:`/`data:`/mailto/凭据/畸形值全部拒绝 |
+| 远程图片 | 设计边界 | 显示“远程图片未自动加载”，不产生网络请求 |
+| 高 DPI/缩放 | 未执行 | 预览图片按 CSS max-height 520 显示，未做 200% 缩放矩阵 |
 
 ## 导出与 PDF 矩阵
 
@@ -115,7 +135,7 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 3 张真实截图：编辑器、恢复快照、外部修改拦截；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 5 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
@@ -170,8 +190,10 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 - 安装包（NSIS/portable/AppImage/deb）、签名、自动更新、回滚。
 - 真实满盘、只读挂载、断电、网络文件系统、文件锁。
 - AI/RAG、DOCX、CLI PDF、Tauri bake-off。
-- 远程图片离线导出、页眉/页脚/页码/目录、不同平台字体一致性。
+- 远程图片自动预览/离线导出、页眉/页脚/页码/目录、不同平台字体一致性。
 - 导出 20 MiB 边界、真实磁盘满时 PDF/HTML 写盘、只读目标目录。
+- 图片缩放/平移、EXIF 方向、表格单元格富文本编辑、超大文稿表格虚拟化。
+- Windows/Linux IME 下表格/图片预览的输入与选择行为。
 
 ## 维护
 

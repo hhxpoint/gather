@@ -6,7 +6,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。当前阶段先把本地文件、编辑器内核与“不丢稿”做成可复查的工程基础，再接入 AI 审阅。
 
-**当前状态：Phase 1 文件可靠性主线已落地，并补上了真实界面、桌面 PDF/HTML 导出、仓库内调试日志与 Windows staging 目录包。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**，并产出未签名 Windows staging 目录包，实测 `Gather.exe` 可打开/保存。桌面端现在可以从当前编辑器内容导出 **A4 PDF 或含本地图片的独立 HTML**：中文、GFM 表格与代码块走同一条清洗后的渲染链路，相对路径本地图片会限制在文稿目录内并嵌入导出文件。**仍没有签名安装包、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**当前状态：Phase 1 文件可靠性主线已落地，并补上了真实界面、表格/图片实时预览、桌面 PDF/HTML 导出、仓库内调试日志与 Windows staging 目录包。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号仍为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**，并产出未签名 Windows staging 目录包，实测 `Gather.exe` 可打开/保存。编辑器现在会把 GFM 表格与文档目录内的本地图片呈现在源码旁，点击即可回到源码；外链只允许经主进程校验的 http/https。桌面端还可以从当前编辑器内容导出 **A4 PDF 或含本地图片的独立 HTML**。**仍没有签名安装包、公开 beta，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -43,11 +43,16 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | <img src="docs/images/gather-recovery.png" alt="Gather 恢复快照横幅：发现一个未保存的恢复快照，提供恢复与丢弃" width="420"> | <img src="docs/images/gather-external-change.png" alt="Gather 外部修改拦截横幅：载入磁盘版本、另存为、关闭" width="420"> |
 | 强杀进程后重启，未保存内容仍在；恢复后仍需主动保存。 | 外部程序改写文件时保存会被拒绝，由你决定载入磁盘还是另存为。 |
 
+| Markdown 表格预览 | 本地图片预览 |
+| --- | --- |
+| <img src="docs/images/gather-table-preview.png" alt="Gather 实时表格预览：GFM 表头、三列内容、表格链接，下方开始显示本地图片" width="420"> | <img src="docs/images/gather-image-preview.png" alt="Gather 本地图片预览：文档目录内的编辑器截图以 data URI 显示，带 alt 说明" width="420"> |
+| 光标离开时表格以 HTML 呈现；点击表格立即回到源码。 | 相对路径图片经主进程目录校验后显示；点击图片回到 `![alt](src)`。 |
+
 <img src="docs/images/gather-pdf-export.png" alt="Gather 导出的 A4 PDF 真实渲染：中文标题、GFM 表格与页边距，图片来自 pdfjs 渲染结果" width="620">
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0005](docs/adr)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0006](docs/adr)。
 
 ## 项目状态
 
@@ -65,7 +70,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
 | 发布状态 | 没有签名安装包或公开 beta；有 Windows 未签名 staging 目录包（内部验证，默认图标）；项目站已更新为 Phase 1 展示 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试；Windows staging 目录包已实测打开/保存。桌面端 PDF/HTML 导出已在真实窗口实际导出并回渲染核验，包括中文、表格、代码块和相对路径本地图片。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、签名安装包、AI/RAG、DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
+Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试；Windows staging 目录包已实测打开/保存。桌面端 PDF/HTML 导出已在真实窗口实际导出并回渲染核验，包括中文、表格、代码块和相对路径本地图片。实时预览已补上 GFM 表格、文档目录内图片与安全外链：点击表格/图片回源码，普通链接 Ctrl/Cmd+点击或表格链接单击，主进程只放行 http/https。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、签名安装包、AI/RAG、DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
 
 ## 为什么做 Gather
 
@@ -124,12 +129,13 @@ Gather 不打算做这些事：
 | 撤销 / 重做 | 已验证（本地 Windows） | CodeMirror history；外部输入不污染撤销栈 |
 | 打开新文件重置撤销栈 | 已验证（本地 Windows） | 打开 `lf.md` 后 Ctrl+Z 不会回到上一篇 `crlf-bom.md` |
 | 搜索 | 已落盘 | CodeMirror search keymap |
-| 实时预览装饰 | 部分 | 标题、粗体、斜体、行内代码、链接、引用、代码块、列表的样式；光标所在行会显示语法标记 |
+| 实时预览装饰 | 已验证（本地 Windows） | 标题、粗体、斜体、行内代码、链接、引用、代码块、列表、GFM 表格与图片装饰；光标所在行显示语法标记 |
 | 实时预览开关 | 已验证（本地 Windows） | 通过 Compartment 动态启用/停用装饰；源码/实时预览切换已实际操作 |
 | 格式工具栏 | 已落盘 | 粗体、斜体、二级标题、引用、列表、行内代码、链接、代码块 |
 | 中文/英文计数 | 已落盘 | `countText` 统计字符、词、行；CJK 按字计数 |
-| 表格 / 图片渲染 | 未实现（导出支持） | 编辑预览层只做样式，不渲染表格/图片组件；PDF 与 HTML 导出会渲染 GFM 表格并嵌入本地图片 |
-| 链接点击 | 未实现 | 编辑器内不打开外链 |
+| 表格预览 | 已验证（本地 Windows） | GFM 表格以只读 widget 呈现；光标进入或点击表格回到源码；超过 1.5 MiB 的文稿与超过 50k 字符的单个表格自动退回源码 |
+| 图片预览 | 已验证（本地 Windows） | 相对路径位图经主进程 `realpath` 目录边界、格式与 8 MiB 上限校验后以 data URI 呈现；点击回到源码；远程图片不自动加载 |
+| 链接打开 | 已验证（本地 Windows + 单元测试） | 普通链接 `Ctrl/Cmd+点击`、表格链接单击；主进程只放行 http/https，拒绝 `javascript:`/`file:`/凭据链接；非法值显示错误 |
 | 输入法兼容性验证 | 未验证 | 没有 Windows/Linux IME 测试记录 |
 
 ### CLI（`packages/cli`）
@@ -154,16 +160,17 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：9 个测试文件、75 个测试，73 通过、2 个 POSIX-only 跳过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) Ubuntu 75 全过、Windows 73 通过 + 2 跳过 |
+| 测试实际执行 | 已通过（本地；预览批次 CI 待运行） | 本地 Electron Node 22：12 个测试文件、96 个测试，94 通过、2 个 POSIX-only 跳过；前批 CI [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 为 75 个测试 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
+| 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
 | 恢复与 watcher 测试 | 已通过 | 快照写入/列表/读取/覆盖/丢弃/损坏文件/写删串行；外部修改、自写忽略、删除与重建、轮询差异 |
 | 故障注入测试 | 已通过 | ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理、旧快照保留、错误映射与 IPC 前缀 |
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
 | CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、合并后 main [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
-| 官网 | 已部署 | `apps/site` 构建成功；导出批次 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致，4 张截图资源 HTTP 200 |
+| 官网 | 已部署 | `apps/site` 构建成功；导出批次 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致；本批新增表格/图片预览截图后待重新部署核验 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
 ## 明确未完成项
@@ -196,6 +203,9 @@ Gather 不打算做这些事：
 - [ ] **没有 RAG。** 不在当前范围，也没有代码。
 - [x] **桌面端 PDF/HTML 导出已通过真实验收。** 从真实窗口导出 4 页 A4 PDF（418,240 bytes）并转成 PNG 回读：中文标题、GFM 表格、代码块与相对路径本地图片均存在；同文稿 HTML 为 273,742 bytes，图片已嵌入为 data URI。目录外路径、SVG、缺失图片与超预算图片有告警/拒绝测试。**DOCX 仍未实现，CLI 的 PDF 也未实现。**
 - [x] **导出批次已合并并部署。** PR [#12](https://github.com/hhxpoint/gather/pull/12) 合并为 `b237716`；合并后 CI [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575) 与 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功。公网 `index.html`/CSS 与本地构建 SHA-256 完全一致；新增 PDF 截图 214,505 bytes，HTTP 200。
+- [x] **表格/图片预览与安全外链已通过真实窗口验收。** GFM 表格在光标离开时渲染为 HTML 表格，点击回到源码；文档目录内的相对路径图片经主进程校验后以 data URI 显示，点击回到 `![alt](src)`；`Ctrl/Cmd+点击` 普通链接与单击表格链接会打开系统浏览器，`javascript:` 等非 http/https 值被主进程拒绝。图片 268,682 字符 data URI、真实 1184×755 截图与 CDP 交互证据已记录在 [VERIFICATION](docs/VERIFICATION.md)。
+- [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
+- [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
 - [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
 - [ ] **没有性能与可访问性基线。** 冷启动、10 万字符输入延迟、1/5 MiB 文档滚动、200% 缩放与屏幕阅读器均未测量。
 - [ ] **没有商标/域名/包名检索记录。** `gather` 与 `@gather/*` 目前只是工作名称，未做商用清障。
@@ -222,7 +232,7 @@ Gather 的分层原则是：**Markdown 文件是唯一真相，核心逻辑不�
 │                                                           ▼  │
 │                                      packages/editor（CM6）  │
 │                                      ├─ Markdown 语言        │
-│                                      ├─ 实时预览装饰        │
+│                                      ├─ 表格/图片/链接预览  │
 │                                      └─ 文本命令            │
 │                                                 │            │
 └─────────────────────────────────────────────────┼────────────┘
@@ -277,7 +287,11 @@ gather/
 │  │  ├─ src/main/file-errors.ts   ENOSPC/EACCES 等错误映射
 │  │  ├─ src/main/file-watcher.ts  当前文件外部变更监视（fs.watch + 轮询）
 │  │  ├─ src/main/recovery.ts   恢复快照存储（userData、SHA-256 ID、20 份上限）
+│  │  ├─ src/main/image-preview.ts  图片预览目录边界、缓存与 IPC
+│  │  ├─ src/main/export-html.ts    导出图片嵌入与目录/大小边界
+│  │  ├─ src/main/document-export.ts PDF/HTML 隐藏窗口与原子写目标
 │  │  ├─ src/shared/files.ts    主进程/preload/renderer 共享文件类型
+│  │  ├─ src/shared/external-links.ts  http/https 外链校验
 │  │  ├─ src/shared/errors.ts   IPC 错误前缀清理
 │  │  ├─ src/preload/index.ts   最小 contextBridge API
 │  │  ├─ src/renderer/          React 渲染进程
@@ -286,6 +300,8 @@ gather/
 │  │  ├─ test/recovery.test.ts  快照读写、覆盖、丢弃、失败隔离
 │  │  ├─ test/atomic-write.test.ts  ENOSPC/EIO/EACCES 故障注入
 │  │  ├─ test/file-errors.test.ts   错误映射与 IPC 前缀
+│  │  ├─ test/image-preview.test.ts 图片目录边界、编码路径与缓存
+│  │  ├─ test/external-links.test.ts http/https 与危险协议拒绝
 │  │  ├─ electron.vite.config.ts
 │  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
@@ -302,10 +318,11 @@ gather/
 │  │  └─ test/text-format.test.ts
 │  ├─ editor/                   CodeMirror 6 封装
 │  │  ├─ src/index.tsx          React 组件与命令句柄
-│  │  ├─ src/live-preview.ts    预览装饰
+│  │  ├─ src/live-preview.ts    表格 StateField、图片 widget、链接点击
 │  │  ├─ src/text-commands.ts   粗体/行前缀等纯函数
 │  │  ├─ src/theme.ts
-│  │  └─ test/text-commands.test.ts
+│  │  ├─ test/text-commands.test.ts
+│  │  └─ test/live-preview.test.ts 图片/链接语法与 http/https 判定
 │  └─ cli/                      gather 命令
 │     └─ src/cli.ts             doctor / export / new
 ├─ docs/
@@ -314,6 +331,7 @@ gather/
 │  ├─ adr/0003-file-safety.md
 │  ├─ adr/0004-recovery-and-watcher.md
 │  ├─ adr/0005-export-pipeline.md
+│  ├─ adr/0006-preview-and-images.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ images/                   真实产品截图（README 与站点共用）
@@ -384,7 +402,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（9 个测试文件、75 个测试；73 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（12 个测试文件、96 个测试；94 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -489,7 +507,7 @@ node packages/cli/dist/cli.js export notes/today.md --format pdf
 | P0-02 | 保存 / 另存为，临时文件 + `rename` 原子替换 | 必须 | 已验证（Windows；写入内容一致） |
 | P0-03 | 20 MiB 文件上限与错误提示 | 必须 | 已落盘，异常路径未验证 |
 | P0-04 | Markdown 源码编辑、GFM 语法、撤销/重做、搜索 | 必须 | 已落盘 |
-| P0-05 | 实时预览装饰与一键开关 | 必须 | 部分 |
+| P0-05 | 实时预览装饰与一键开关 | 必须 | 已验证（Windows；表格/图片/链接） |
 | P0-06 | 光标所在行显示语法标记，避免“看不见光标” | 必须 | 已落盘 |
 | P0-07 | 粗体/斜体/标题/引用/列表/代码/链接工具栏 | 必须 | 已落盘 |
 | P0-08 | `Ctrl/Cmd+O/S/Shift+S/Shift+P` | 必须 | 已落盘 |
@@ -658,5 +676,9 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [docs/ROADMAP.md](docs/ROADMAP.md)
 - [ADR 0001：桌面壳选择](docs/adr/0001-desktop-shell.md)
 - [ADR 0002：编辑器核心](docs/adr/0002-editor-core.md)
+- [ADR 0003：文件安全](docs/adr/0003-file-safety.md)
+- [ADR 0004：恢复与 watcher](docs/adr/0004-recovery-and-watcher.md)
+- [ADR 0005：导出管线](docs/adr/0005-export-pipeline.md)
+- [ADR 0006：实时预览与图片边界](docs/adr/0006-preview-and-images.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。
