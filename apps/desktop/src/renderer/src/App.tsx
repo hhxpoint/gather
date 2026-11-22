@@ -388,6 +388,22 @@ export default function App() {
     }
   }
 
+  function openLink(href: string) {
+    if (!window.gather) {
+      setStatus('桌面端才能打开外部链接');
+      return;
+    }
+    void window.gather.openExternalLink(href).then(() => {
+      setStatus('已在系统浏览器中打开链接');
+    }).catch(error => {
+      setStatus(errorMessage(error, '链接被拒绝'));
+    });
+  }
+
+  function resolvePreviewImageSrc(src: string): Promise<string | null> {
+    return window.gather?.resolveDocumentImage(src) ?? Promise.resolve(null);
+  }
+
   function togglePreview() {
     setLivePreview(value => !value);
   }
@@ -611,6 +627,9 @@ export default function App() {
           onChange={updateDoc}
           livePreview={livePreview}
           documentVersion={documentVersion}
+          previewContext={path ?? 'untitled'}
+          onOpenLink={openLink}
+          resolveImage={resolvePreviewImageSrc}
           placeholder="从一句话开始。"
         />
       </main>

@@ -299,6 +299,26 @@
 - **证据**：headless Chrome 的 `--window-size=390` 实际布局视口最小为 500，截图被裁切，容易误判；改用 CDP `Emulation.setDeviceMetricsOverride` 真实 390×844 后 `scrollWidth = clientWidth = 390`，四张图片 `naturalWidth` 均非零，导出卡片完整显示；桌面 1440 视口 `scrollWidth = clientWidth = 1422`。
 - **防回归**：新增含图片的卡片必须在 390px 用 CDP 设备模拟检查，不能只用 headless `--window-size`；Grid 子项默认 `min-width: auto`，放图片时必须显式归零。
 
+### P1-27 实时表格/图片预览：block decoration、lazy 图片与外链边界
+
+- **现象/需求**：实时预览只显示 GFM 表格源码和 `![alt](src)`；用户希望写作时看到表格与本地图片，同时能一键回到源码，且不能把任意本地文件或网络地址交给渲染层。
+- **实际踩坑**：
+  - 表格跨行，必须使用 block decoration；CodeMirror 6 不允许 ViewPlugin 提供 block decoration，会抛 `Block decorations may not be specified via plugins`。改成 StateField 持有表格扫描结果与 DecorationSet，ViewPlugin 只处理行内样式、链接和图片；表格子树在 ViewPlugin 中直接跳过，避免重叠。
+  - 图片第一次一直停在“正在加载图片…”。IPC 实际已返回 268,682 字符 data URI，`img.src` 已设置，但 `img.complete=false`。根因是 CSS 先 `display:none`，同时给图片设了 `loading="lazy"`；隐藏且未进入布局的图片不会启动懒加载。改成 `loading="eager"`（widget 本来只在可见区域创建），加载/失败状态再切换 CSS。
+  - 测试环境里的 `contextBridge` API 不可写，无法通过替换 `openExternalLink` 捕获调用；改用 CDP `Input.dispatchMouseEvent` 发送真实 Ctrl+点击，状态栏显示“已在系统浏览器中打开链接”。
+  - `pdftotext` 和 headless 浏览器不能作为 PDF/图片预览的唯一证据；图片预览用 CDP 检查 naturalWidth/complete，并用真实截图回看。
+- **实现**：
+  - 表格：`Table` 节点扫描 → 核心 `renderMarkdown` 单表清洗 → block widget；光标触及范围或点击时移除 widget；超过 1.5 MiB 文稿或 50k 字符表格退回源码。
+  - 图片：主进程 `resolvePreviewImage` 以当前文稿目录为根做 `realpath`/目录包含/位图/8 MiB 校验；5 秒、40 项缓存；返回 data URI。远程、绝对、`file:`、目录逃逸一律不读取。
+  - 外链：普通链接 Ctrl/Cmd+点击、表格链接单击；主进程 `safeExternalUrl` 只放行 http/https，拒绝凭据、`javascript:`、`file:`、`data:`、mailto 与畸形值。
+- **证据**：
+  - 真实窗口 + CDP：表格 widget 1 个；点击后 widget 0 个且出现 `| 能力 |` 源码行；Control+End 离开后 widget 恢复 1 个。
+  - 图片 widget `complete=true`、natural 2560×2800、显示 567×520（max-height 520）；点击后 widget 消失并出现 `![Gather 编辑器真实界面](assets/gather-editor.png)` 源码行。
+  - 图片预览 data URI 长度 268,682；主进程非法外链调用返回“只允许打开 http/https 链接。”；Ctrl+点击真实链接后状态栏显示“已在系统浏览器中打开链接”。
+  - 新增 6 个预览解析测试、5 个图片边界测试、10 个外链测试；当前 12 个测试文件、96 个测试，本地 94 通过 + 2 个 POSIX-only 跳过。预览批次 CI [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 + 2 跳过。
+  - 新增真实截图 `docs/images/gather-table-preview.png`、`gather-image-preview.png`（1184×755）。
+- **防回归**：表格必须继续走 StateField block decoration；图片必须保持 eager 或显式 `img.decode()`；所有本地图片读取必须复用主进程目录边界；外链必须经过 `safeExternalUrl`，不能在渲染层直接 `window.open` 或 `location.href`。
+
 ---
 
 ## 维护约定

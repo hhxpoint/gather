@@ -40,11 +40,23 @@ function isWithin(root: string, candidate: string): boolean {
   return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
 }
 
-async function embedImage(
+export interface LocalImageData {
+  dataUri: string;
+  bytes: number;
+}
+
+export type LocalImageResult = LocalImageData | { warning: string };
+
+/**
+ * Resolve a relative raster image under an already-realpath'ed document root.
+ * Shared by export embedding and the live preview IPC so both enforce the same
+ * directory, extension and size boundaries.
+ */
+export async function readLocalImageDataUri(
   src: string,
   root: string,
-  budget: { remaining: number },
-): Promise<{ value?: string; warning?: string }> {
+  maxBytes = MAX_EXPORT_IMAGE_BYTES,
+): Promise<LocalImageResult> {
   const mime = IMAGE_MIME_TYPES[extname(src).toLowerCase()];
   if (!mime) {
     return { warning: `图片 ${src} 不是可嵌入的位图格式，已保留原引用。` };
@@ -71,23 +83,33 @@ async function embedImage(
     return { warning: `本地图片 ${src} 未找到，已保留原引用。` };
   }
 
-  if (size > MAX_EXPORT_IMAGE_BYTES) {
-    return { warning: `图片 ${src} 超过 8 MiB，未嵌入导出文件。` };
-  }
-  if (size > budget.remaining) {
-    return { warning: `图片 ${src} 超出 24 MiB 的嵌入预算，未嵌入导出文件。` };
+  if (size > maxBytes) {
+    return { warning: `图片 ${src} 超过 ${Math.round(maxBytes / (1024 * 1024))} MiB，未读取。` };
   }
 
   try {
     const bytes = await readFile(realCandidate);
-    if (bytes.length > MAX_EXPORT_IMAGE_BYTES || bytes.length > budget.remaining) {
-      return { warning: `图片 ${src} 在读取期间变得过大，未嵌入导出文件。` };
+    if (bytes.length > maxBytes) {
+      return { warning: `图片 ${src} 在读取期间变得过大，未读取。` };
     }
-    budget.remaining -= bytes.length;
-    return { value: `data:${mime};base64,${bytes.toString('base64')}` };
+    return { dataUri: `data:${mime};base64,${bytes.toString('base64')}`, bytes: bytes.length };
   } catch {
     return { warning: `图片 ${src} 读取失败，已保留原引用。` };
   }
+}
+
+async function embedImage(
+  src: string,
+  root: string,
+  budget: { remaining: number },
+): Promise<{ value?: string; warning?: string }> {
+  const result = await readLocalImageDataUri(src, root, MAX_EXPORT_IMAGE_BYTES);
+  if ('warning' in result) return { warning: result.warning };
+  if (result.bytes > budget.remaining) {
+    return { warning: `图片 ${src} 超出 24 MiB 的嵌入预算，未嵌入导出文件。` };
+  }
+  budget.remaining -= result.bytes;
+  return { value: result.dataUri };
 }
 
 /**

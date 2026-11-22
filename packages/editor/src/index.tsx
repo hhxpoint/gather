@@ -7,7 +7,7 @@ import { languages } from '@codemirror/language-data';
 import { bracketMatching, defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { toggleLinePrefix, toggleWrap } from './text-commands';
-import { livePreviewExtensions } from './live-preview';
+import { createLivePreviewExtensions } from './live-preview';
 import { gatherTheme } from './theme';
 
 export interface MarkdownEditorProps {
@@ -17,6 +17,12 @@ export interface MarkdownEditorProps {
   placeholder?: string;
   /** Increment when a different document is loaded to reset undo history. */
   documentVersion?: number;
+  /** Desktop validates and opens http/https URLs. */
+  onOpenLink?: (href: string) => void;
+  /** Resolve a document-relative image to a data URI, or null when unavailable. */
+  resolveImage?: (src: string) => Promise<string | null>;
+  /** Changes when the document location changes and image previews must refresh. */
+  previewContext?: string;
 }
 
 export interface MarkdownEditorHandle {
@@ -30,7 +36,16 @@ export interface MarkdownEditorHandle {
 const previewCompartment = new Compartment();
 
 export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(function MarkdownEditor(
-  { value, onChange, livePreview = true, placeholder: placeholderText = '从一句话开始。', documentVersion = 0 },
+  {
+    value,
+    onChange,
+    livePreview = true,
+    placeholder: placeholderText = '从一句话开始。',
+    documentVersion = 0,
+    onOpenLink,
+    resolveImage,
+    previewContext = '',
+  },
   ref,
 ) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -41,6 +56,15 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
   onChangeRef.current = onChange;
   const livePreviewRef = useRef(livePreview);
   livePreviewRef.current = livePreview;
+  const previewConfigRef = useRef({ onOpenLink, resolveImage });
+  previewConfigRef.current = { onOpenLink, resolveImage };
+
+  function createPreviewExtensions() {
+    return createLivePreviewExtensions({
+      onOpenLink: href => previewConfigRef.current.onOpenLink?.(href),
+      resolveImage: src => previewConfigRef.current.resolveImage?.(src) ?? Promise.resolve(null),
+    });
+  }
 
   function createExtensions() {
     return [
@@ -67,7 +91,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
       ]),
       gatherTheme,
       placeholder(placeholderText),
-      previewCompartment.of(livePreviewRef.current ? livePreviewExtensions : []),
+      previewCompartment.of(livePreviewRef.current ? createPreviewExtensions() : []),
       EditorView.updateListener.of(update => {
         if (!update.docChanged) return;
         if (syncingRef.current) {
@@ -126,9 +150,11 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
     const view = viewRef.current;
     if (!view) return;
     view.dispatch({
-      effects: previewCompartment.reconfigure(livePreview ? livePreviewExtensions : []),
+      effects: previewCompartment.reconfigure(livePreview ? createPreviewExtensions() : []),
     });
-  }, [livePreview]);
+    // createPreviewExtensions reads the latest callbacks through a ref.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [livePreview, previewContext]);
 
   useImperativeHandle(ref, () => ({
     focus() {

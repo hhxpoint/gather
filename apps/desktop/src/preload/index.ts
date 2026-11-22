@@ -21,6 +21,10 @@ const api = {
   reloadActiveFile: (): Promise<OpenedFile> => ipcRenderer.invoke('file:reloadActive'),
   exportDocument: (request: DocumentExportRequest): Promise<DocumentExportResult> =>
     ipcRenderer.invoke('document:export', request),
+  resolveDocumentImage: (src: string): Promise<string | null> =>
+    ipcRenderer.invoke('image:resolve', src),
+  openExternalLink: (url: string): Promise<boolean> =>
+    ipcRenderer.invoke('shell:openExternal', url),
   listRecoveries: (): Promise<RecoverySnapshot[]> => ipcRenderer.invoke('recovery:list'),
   readRecovery: (id: string): Promise<RestoredRecovery | null> =>
     ipcRenderer.invoke('recovery:read', id),

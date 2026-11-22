@@ -7,6 +7,8 @@ import { ActiveFileWatcher } from './file-watcher';
 import { toUserFacingFileError } from './file-errors';
 import { RecoveryStore } from './recovery';
 import { exportDocument } from './document-export';
+import { resolvePreviewImage } from './image-preview';
+import { safeExternalUrl } from '../shared/external-links';
 import type {
   DocumentExportRequest,
   ExternalChange,
@@ -231,6 +233,16 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return exportDocument(mainWindow, request, activeFilePath);
   });
 
+  handleIpc('image:resolve', async (_event, payload: unknown) => {
+    if (typeof payload !== 'string') return null;
+    return resolvePreviewImage(payload, activeFilePath);
+  });
+
+  handleIpc('shell:openExternal', async (_event, payload: unknown) => {
+    await shell.openExternal(safeExternalUrl(payload));
+    return true;
+  });
+
   handleIpc('recovery:list', async () => recoveryStore.list());
 
   handleIpc('recovery:read', async (_event, id: unknown) => {
@@ -313,10 +325,7 @@ function createMenu() {
 
 function openExternalLink(url: string) {
   try {
-    const parsed = new URL(url);
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      void shell.openExternal(parsed.toString());
-    }
+    void shell.openExternal(safeExternalUrl(url));
   } catch {
     // Invalid or non-web URLs stay blocked.
   }
