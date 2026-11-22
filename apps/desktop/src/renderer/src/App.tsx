@@ -8,13 +8,17 @@ import {
   FileCode2,
   FileDown,
   FileText,
+  FolderOpen,
   Heading2,
   Italic,
   Link2,
   List,
   LoaderCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
   Printer,
   Quote,
+  RefreshCw,
   Save,
   SquarePen,
   X,
@@ -29,6 +33,8 @@ import type {
   OpenedFile,
   RecoverySnapshot,
   SavedFile,
+  Workspace,
+  WorkspaceFile,
 } from '../../shared/files';
 
 const sample = `# 把想法，慢慢写清楚。
@@ -67,6 +73,7 @@ function GatherMark() {
 
 interface Actions {
   open: () => Promise<void>;
+  openFolder: () => Promise<void>;
   save: () => Promise<void>;
   saveAs: () => Promise<void>;
   togglePreview: () => void;
@@ -114,6 +121,9 @@ export default function App() {
   const [recoveries, setRecoveries] = useState<RecoverySnapshot[]>([]);
   const [snapshotAt, setSnapshotAt] = useState<string | null>(null);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [workspaceBusy, setWorkspaceBusy] = useState(false);
   const editorRef = useRef<MarkdownEditorHandle>(null);
   const actionsRef = useRef<Actions | null>(null);
   const docRef = useRef(doc);
@@ -125,6 +135,8 @@ export default function App() {
   const formatRef = useRef(format);
   formatRef.current = format;
   const versionRef = useRef<FileVersion | null>(null);
+  const workspaceRef = useRef<Workspace | null>(workspace);
+  workspaceRef.current = workspace;
   const recoveryIdRef = useRef<string | null>(null);
   const snapshotInFlightRef = useRef(false);
   const savingRef = useRef(false);
@@ -186,6 +198,22 @@ export default function App() {
     }
   }
 
+  function applyOpenedFile(file: OpenedFile) {
+    versionRef.current = versionOf(file);
+    recoveryIdRef.current = null;
+    setDoc(file.content);
+    setFormat(file.format);
+    setPath(file.path);
+    setDirty(false);
+    setConflict(null);
+    setExternalChange(null);
+    setSnapshotAt(null);
+    setDocumentVersion(value => value + 1);
+    const note = file.format.eol === 'mixed' ? ' · 保存时会统一为 LF' : '';
+    setStatus(`已打开 ${file.name} · ${describeTextFormat(file.format)}${note}`);
+    void window.gather?.listRecoveries().then(setRecoveries).catch(() => undefined);
+  }
+
   async function open() {
     try {
       if (!window.gather) { setStatus('请在 Electron 桌面端打开文件'); return; }
@@ -193,22 +221,102 @@ export default function App() {
         return;
       }
       const file = await window.gather.openFile();
-      if (!file) return;
-      versionRef.current = versionOf(file);
-      recoveryIdRef.current = null;
-      setDoc(file.content);
-      setFormat(file.format);
-      setPath(file.path);
-      setDirty(false);
-      setConflict(null);
-      setExternalChange(null);
-      setSnapshotAt(null);
-      setDocumentVersion(value => value + 1);
-      const note = file.format.eol === 'mixed' ? ' · 保存时会统一为 LF' : '';
-      setStatus(`已打开 ${file.name} · ${describeTextFormat(file.format)}${note}`);
-      void window.gather.listRecoveries().then(setRecoveries).catch(() => undefined);
+      if (file) {
+        await discardCurrentRecovery();
+        applyOpenedFile(file);
+      }
     } catch (error) {
       setStatus(errorMessage(error, '打开失败'));
+    }
+  }
+
+  async function openFolder() {
+    if (!window.gather) { setStatus('请在 Electron 桌面端打开文件夹'); return; }
+    setWorkspaceBusy(true);
+    try {
+      const next = await window.gather.openWorkspace();
+      if (!next) return;
+      setWorkspace(next);
+      setSidebarVisible(true);
+      setStatus(`已打开工作区 ${next.name} · ${next.files.length} 个文稿${next.truncated ? '（列表已截断）' : ''}`);
+    } catch (error) {
+      setStatus(errorMessage(error, '打开文件夹失败'));
+    } finally {
+      setWorkspaceBusy(false);
+    }
+  }
+
+  async function refreshWorkspaceSilently() {
+    if (!window.gather || !workspaceRef.current) return;
+    try {
+      const next = await window.gather.refreshWorkspace();
+      setWorkspace(next);
+    } catch {
+      // The active file errors already surface through the save/open paths.
+    }
+  }
+
+  async function refreshWorkspace() {
+    if (!window.gather || !workspaceRef.current) return;
+    setWorkspaceBusy(true);
+    try {
+      const next = await window.gather.refreshWorkspace();
+      setWorkspace(next);
+      setStatus(`工作区已刷新 · ${next.files.length} 个文稿${next.truncated ? '（列表已截断）' : ''}`);
+    } catch (error) {
+      setStatus(errorMessage(error, '刷新工作区失败'));
+    } finally {
+      setWorkspaceBusy(false);
+    }
+  }
+
+  async function closeWorkspace() {
+    if (!window.gather) return;
+    setWorkspace(null);
+    setStatus('已关闭工作区，当前文稿仍保持打开');
+    await window.gather.closeWorkspace().catch(() => undefined);
+  }
+
+  async function discardCurrentRecovery() {
+    if (!window.gather) return;
+    // Invalidate an in-flight snapshot for the document being replaced.
+    saveEpochRef.current += 1;
+    const currentPath = pathRef.current;
+    const currentRecoveryId = recoveryIdRef.current;
+    try {
+      if (currentPath) {
+        const items = await window.gather.listRecoveries();
+        const matches = items.filter(item => item.path === currentPath);
+        await Promise.all(matches.map(item => window.gather!.discardRecovery(item.id)));
+        setRecoveries(list => list.filter(item => item.path !== currentPath));
+      } else if (currentRecoveryId) {
+        await window.gather.discardRecovery(currentRecoveryId);
+        setRecoveries(list => list.filter(item => item.id !== currentRecoveryId));
+      }
+    } catch {
+      // Recovery cleanup is best effort; it must not block opening a valid file.
+    } finally {
+      recoveryIdRef.current = null;
+      setSnapshotAt(null);
+    }
+  }
+
+  async function openWorkspaceFile(file: WorkspaceFile) {
+    if (!window.gather) return;
+    if (file.path === pathRef.current) {
+      editorRef.current?.focus();
+      return;
+    }
+    if (dirtyRef.current && !window.confirm('当前文稿有未保存修改。仍要打开工作区里的其他文件吗？')) {
+      return;
+    }
+    setStatus(`正在打开 ${file.relativePath}…`);
+    try {
+      const opened = await window.gather.openWorkspaceFile(file.relativePath);
+      await discardCurrentRecovery();
+      applyOpenedFile(opened);
+    } catch (error) {
+      setStatus(errorMessage(error, '打开工作区文件失败'));
     }
   }
 
@@ -236,6 +344,7 @@ export default function App() {
       const stillCurrent = (editorRef.current?.getText() ?? docRef.current) === text;
       applySavedFile(result.file);
       setRecoveries(list => list.filter(item => item.path !== result.file.path));
+      void refreshWorkspaceSilently();
       if (!stillCurrent) {
         setDirty(true);
         setStatus(`已保存 ${result.file.name} 的旧版本，仍有新修改未保存`);
@@ -276,6 +385,7 @@ export default function App() {
         item.path !== result.file.path
         && (previousPath ? item.path !== previousPath : item.id !== previousRecoveryId)
       )));
+      void refreshWorkspaceSilently();
       if (!stillCurrent) {
         setDirty(true);
         setStatus(`已保存 ${result.file.name} 的旧版本，仍有新修改未保存`);
@@ -297,6 +407,7 @@ export default function App() {
     }
     try {
       const file = await window.gather.reloadActiveFile();
+      await discardCurrentRecovery();
       saveEpochRef.current += 1;
       versionRef.current = versionOf(file);
       recoveryIdRef.current = null;
@@ -410,6 +521,7 @@ export default function App() {
 
   actionsRef.current = {
     open,
+    openFolder,
     save,
     saveAs,
     togglePreview,
@@ -462,6 +574,7 @@ export default function App() {
       const actions = actionsRef.current;
       if (!actions) return;
       if (action === 'open') void actions.open();
+      if (action === 'openFolder') void actions.openFolder();
       if (action === 'save') void actions.save();
       if (action === 'saveAs') void actions.saveAs();
       if (action === 'togglePreview') actions.togglePreview();
@@ -480,7 +593,8 @@ export default function App() {
       }
       if (event.key.toLowerCase() === 'o') {
         event.preventDefault();
-        void actionsRef.current?.open();
+        if (event.shiftKey) void actionsRef.current?.openFolder();
+        else void actionsRef.current?.open();
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -521,6 +635,19 @@ export default function App() {
         </div>
         <div className="header-actions">
           <button className="quiet-button" onClick={() => void open()} title="打开 (Ctrl/Cmd+O)"><FileDown size={16} />打开</button>
+          <button className="quiet-button icon-only" onClick={() => void openFolder()} title="打开文件夹 (Ctrl/Cmd+Shift+O)" aria-label="打开文件夹" disabled={workspaceBusy}>
+            {workspaceBusy ? <LoaderCircle className="spin" size={16} /> : <FolderOpen size={16} />}
+          </button>
+          {workspace && (
+            <button
+              className="quiet-button icon-only"
+              onClick={() => setSidebarVisible(value => !value)}
+              title={sidebarVisible ? '收起工作区侧栏' : '展开工作区侧栏'}
+              aria-label={sidebarVisible ? '收起工作区侧栏' : '展开工作区侧栏'}
+            >
+              {sidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+            </button>
+          )}
           <button className="quiet-button" onClick={() => void save()} title="保存 (Ctrl/Cmd+S)"><Save size={16} />保存</button>
           <button className="quiet-button" onClick={togglePreview} title="切换实时预览 (Ctrl/Cmd+Shift+P)">
             {livePreview ? <EyeOff size={16} /> : <Eye size={16} />}{livePreview ? '源码' : '预览'}
@@ -620,19 +747,66 @@ export default function App() {
         </div>
       )}
 
-      <main className="editor-surface">
-        <MarkdownEditor
-          ref={editorRef}
-          value={doc}
-          onChange={updateDoc}
-          livePreview={livePreview}
-          documentVersion={documentVersion}
-          previewContext={path ?? 'untitled'}
-          onOpenLink={openLink}
-          resolveImage={resolvePreviewImageSrc}
-          placeholder="从一句话开始。"
-        />
-      </main>
+      <div className="workspace-shell">
+        {workspace && sidebarVisible && (
+          <aside className="workspace-sidebar" aria-label="工作区文稿">
+            <div className="workspace-heading">
+              <span className="workspace-title">
+                <FolderOpen size={15} />
+                <strong title={workspace.root}>{workspace.name}</strong>
+              </span>
+              <div className="workspace-heading-actions">
+                <button onClick={() => void refreshWorkspace()} title="刷新工作区" aria-label="刷新工作区" disabled={workspaceBusy}>
+                  <RefreshCw size={13} className={workspaceBusy ? 'spin' : undefined} />
+                </button>
+                <button onClick={() => void closeWorkspace()} title="关闭工作区（当前文稿保留）" aria-label="关闭工作区">
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="workspace-meta">
+              {workspace.files.length} 个文稿
+              {workspace.truncated ? ' · 列表已截断' : ''}
+            </div>
+            <div className="workspace-list">
+              {workspace.files.length === 0 && (
+                <p className="workspace-empty">这个文件夹里还没有 Markdown 文稿。</p>
+              )}
+              {workspace.files.map(file => {
+                const active = file.path === path;
+                return (
+                  <button
+                    key={file.path}
+                    className={`workspace-file${active ? ' active' : ''}`}
+                    onClick={() => void openWorkspaceFile(file)}
+                    title={file.relativePath}
+                  >
+                    <FileText size={14} />
+                    <span className="workspace-file-copy">
+                      <strong>{file.name}</strong>
+                      {file.relativePath !== file.name && <small>{file.relativePath}</small>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="workspace-root" title={workspace.root}>{workspace.root}</div>
+          </aside>
+        )}
+        <main className="editor-surface">
+          <MarkdownEditor
+            ref={editorRef}
+            value={doc}
+            onChange={updateDoc}
+            livePreview={livePreview}
+            documentVersion={documentVersion}
+            previewContext={path ?? 'untitled'}
+            onOpenLink={openLink}
+            resolveImage={resolvePreviewImageSrc}
+            placeholder="从一句话开始。"
+          />
+        </main>
+      </div>
 
       <footer className="app-footer">
         <span className={dirty ? 'state-dot unsaved' : 'state-dot'} />

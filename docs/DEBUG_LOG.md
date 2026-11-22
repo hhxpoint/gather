@@ -319,6 +319,25 @@
   - 新增真实截图 `docs/images/gather-table-preview.png`、`gather-image-preview.png`（1184×755）。PR #14 合并为 `4e0c1e9`；main CI [44981317065](https://github.com/hhxpoint/gather/actions/runs/44981317065) 与 Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功；公网 HTML/CSS SHA-256 与本地一致，5 张产品截图 naturalWidth 全非零。
 - **防回归**：表格必须继续走 StateField block decoration；图片必须保持 eager 或显式 `img.decode()`；所有本地图片读取必须复用主进程目录边界；外链必须经过 `safeExternalUrl`，不能在渲染层直接 `window.open` 或 `location.href`。
 
+### P1-28 文件夹工作区：目录边界、侧栏与 Ctrl+Shift+O 快捷键冲突
+
+- **现象/需求**：站点写着“打开一个文件夹，就打开全部文稿”，应用却只能打开单篇文件；用户需要在同一文件夹内快速切换。
+- **实际踩坑**：
+  - `Ctrl+Shift+O` 最初打开的是**文件**对话框，不是文件夹。渲染层 keydown 只判断 `event.key.toLowerCase() === 'o'`，忽略 `shiftKey`，在菜单 accelerator 之前就把 `Ctrl+Shift+O` 当成 `open()`。修复为 `shiftKey ? openFolder() : open()` 后，真实快捷键打开“打开 Markdown 工作区”。
+  - 文件夹列表如果跟随符号链接，会越过用户选择的根目录；首版直接跳过 `Dirent.isSymbolicLink()`，打开文件时再做 `realpath` 包含检查。
+  - 如果直接信任渲染层传来的绝对路径，工作区会成为任意文件读取入口；因此渲染层只发相对路径，主进程用 `resolve` + `realpath` + `relative` 边界双重校验。
+  - Windows CI 第一次失败：`mkdtemp` 返回 8.3 短路径 `RUNNER~1`，`realpath` 返回 `runneradmin`，测试把短根与长候选比较，误判为“链接逃逸”。修复为 `resolveWorkspaceFile` 内部先 realpath 根目录，测试也统一使用 realpath 根；这是实际路径语义差异，不是放宽边界。
+- **实现**：
+  - `workspace.ts` 递归列 `.md/.markdown/.mdown/.mkd/.txt`；跳过隐藏项、`node_modules/out/dist/release/coverage` 与符号链接；最多 2000 个、深度 8；返回 `truncated`。
+  - 主进程保存 `workspaceRoot`；`workspace:open/refresh/openFile/close` IPC；打开文件复用现有 `readMarkdownFile` 与 watcher。
+  - UI 侧栏展示工作区名、相对路径、当前文件、刷新/关闭；切换脏文稿前确认；打开同一文件只聚焦，不重建状态。
+- **证据**：
+  - 真实窗口打开 `C:\Users\Public\gather-workspace-qa`：侧栏 3 个文稿（`01-欢迎.md`、`nested/笔记.md`、`nested/清单.txt`），隐藏 `.private`、`node_modules` 与非 Markdown 图片未出现。
+  - 打开 `nested/笔记.md` 后标题、嵌套路径与表格预览正常；修改后点击 `01-欢迎.md` 出现“当前文稿有未保存修改”确认；取消/确认路径均可用；保存状态显示“已保存 笔记.md · UTF-8 · LF”。
+  - 工作区测试 5 个；当前 13 个测试文件、101 个测试，本地 99 通过 + 2 个 POSIX-only 跳过。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) Ubuntu 101 全过、Windows 99 + 2 跳过；Windows 首轮 8.3 短路径失败，修复后通过。
+  - 真实截图 `docs/images/gather-workspace.png`（1184×755）。
+- **防回归**：工作区打开必须继续走相对路径 + 主进程边界；目录扫描不得跟随符号链接；快捷键分支必须显式检查 Shift；切换文稿前脏状态检查不能绕过。
+
 ---
 
 ## 维护约定
