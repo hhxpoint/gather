@@ -338,6 +338,22 @@
   - 真实截图 `docs/images/gather-workspace.png`（1184×755）。PR #16 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；公网 HTML/CSS SHA-256 与本地一致，6 张产品截图 naturalWidth 全非零。
 - **防回归**：工作区打开必须继续走相对路径 + 主进程边界；目录扫描不得跟随符号链接；快捷键分支必须显式检查 Shift；切换文稿前脏状态检查不能绕过。
 
+### P1-29 查找替换只有 keymap、没有搜索状态
+
+- **现象/需求**：编辑器导入了 `searchKeymap`，但从未安装 CodeMirror 的 `search()` 状态扩展；用户没有查找/替换面板，快捷键也没有可靠入口。面板默认英文，与其余中文 UI 不一致。
+- **实现**：
+  - 加入 `search({ top: true })`，让查询状态、匹配高亮、替换 transaction 和面板都存在。
+  - 用 `EditorState.phrases.of` 覆盖查找/替换/上一个/下一个/全部/区分大小写/正则/整词/全部替换/关闭。
+  - `Ctrl/Cmd+F` 打开查找，`Ctrl/Cmd+H` 打开并聚焦/选中替换框；菜单“编辑”和工具栏 Search 按钮调用同一 handle；Escape 关闭。
+  - 替换全部走 CodeMirror 原生 transaction，Undo 由既有 history 扩展处理。
+- **实际踩坑**：
+  - 工具栏实现最初在 `openSearchPanel(view)` 后调用 `view.focus()`，会把焦点从搜索框抢回编辑器；移除后搜索框保持聚焦。
+  - CDP 直接给面板 input 赋 value 不会触发 CodeMirror 的 `onkeyup` commit；QA 需要同时派发 keyup 或使用真实键盘。这个不是用户路径问题。
+- **证据**：
+  - 真实窗口：`Ctrl+F` 打开面板，搜索 `Gather` 命中 7 处并高亮；`Ctrl+H` 后面板替换框获得焦点并选中文本；全部替换后正文更新为 `Gather!`；`Ctrl+Z` 恢复原文；Escape 关闭面板。
+  - 截图 `docs/images/gather-search.png`（1184×755）；面板包含区分大小写、正则、整词开关。
+- **防回归**：`search()` 扩展不能被移除；打开查找后不能调用 `view.focus()` 抢焦点；替换必须使用 CodeMirror command，不能直接改 DOM 或另建文本模型。
+
 ---
 
 ## 维护约定

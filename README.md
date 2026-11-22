@@ -52,11 +52,15 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *打开一个文件夹就是工作区：侧栏递归列出 Markdown 文稿，嵌套路径可见；切换前确认未保存内容。*
 
+<img src="docs/images/gather-search.png" alt="Gather 查找替换真实截图：顶部中文搜索面板、区分大小写/正则/整词开关，正文中七个 Gather 匹配高亮" width="880">
+
+*查找/替换面板使用中文文案，支持上一个/下一个、全部选中、区分大小写、正则、整词与全部替换；匹配在正文中高亮。*
+
 <img src="docs/images/gather-pdf-export.png" alt="Gather 导出的 A4 PDF 真实渲染：中文标题、GFM 表格与页边距，图片来自 pdfjs 渲染结果" width="620">
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0007](docs/adr)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0008](docs/adr)。
 
 ## 项目状态
 
@@ -133,7 +137,7 @@ Gather 不打算做这些事：
 | GFM 解析 | 已落盘 | 使用 `@codemirror/lang-markdown` 与语言数据 |
 | 撤销 / 重做 | 已验证（本地 Windows） | CodeMirror history；外部输入不污染撤销栈 |
 | 打开新文件重置撤销栈 | 已验证（本地 Windows） | 打开 `lf.md` 后 Ctrl+Z 不会回到上一篇 `crlf-bom.md` |
-| 搜索 | 已落盘 | CodeMirror search keymap |
+| 搜索 / 替换 | 已验证（本地 Windows） | `Ctrl/Cmd+F` 打开中文查找面板，`Ctrl/Cmd+H` 聚焦替换；支持上一个/下一个、全部、区分大小写、正则、整词、替换与全部替换；替换走 CodeMirror transaction，撤销恢复原文 |
 | 实时预览装饰 | 已验证（本地 Windows） | 标题、粗体、斜体、行内代码、链接、引用、代码块、列表、GFM 表格与图片装饰；光标所在行显示语法标记 |
 | 实时预览开关 | 已验证（本地 Windows） | 通过 Compartment 动态启用/停用装饰；源码/实时预览切换已实际操作 |
 | 格式工具栏 | 已落盘 | 粗体、斜体、二级标题、引用、列表、行内代码、链接、代码块 |
@@ -213,7 +217,9 @@ Gather 不打算做这些事：
 - [x] **预览批次已合并并部署。** PR [#14](https://github.com/hhxpoint/gather/pull/14) 合并为 `4e0c1e9`；main CI [44981317065](https://github.com/hhxpoint/gather/actions/runs/44981317065) 与 Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功。公网 `index.html` SHA-256 `493eec7b…`、CSS `90cbc561…` 与本地构建一致；新增表格/图片截图 65,022 / 49,852 bytes，HTTP 200，公网 5 张产品截图均加载。
 - [x] **文件夹工作区已在真实窗口跑通。** 打开 `gather-workspace-qa` 后侧栏列出 3 个文稿，隐藏目录/`node_modules`/非文稿未出现；打开嵌套 `nested/笔记.md` 正常，未保存时切换会弹确认，保存后状态与文件一致；`Ctrl+Shift+O` 已修复为打开文件夹而不是误触打开文件。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) 双平台通过；Windows 8.3 短路径误判已修复。
 - [x] **工作区批次已合并并部署。** PR [#16](https://github.com/hhxpoint/gather/pull/16) 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功。公网 `index.html` SHA-256 `34f289d4…`、CSS `5b76a1b0…` 与本地构建一致；工作区截图 37,680 bytes，HTTP 200，6 张产品截图均加载。
+- [x] **单文件查找/替换已在真实窗口验证。** `Ctrl/Cmd+F` 打开中文面板，`Ctrl/Cmd+H` 聚焦替换；搜索 `Gather` 命中 7 处并高亮，全部替换后正文更新，Ctrl+Z 恢复原文；Escape 关闭面板。正则/大小写/整词开关已在面板中可见，但尚未逐项做替换矩阵。
 - [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件或跨文稿搜索；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
+- [ ] **跨文稿搜索未实现。** 当前只在打开的单篇文稿内查找/替换；没有工作区级结果列表或替换。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
 - [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
@@ -345,6 +351,7 @@ gather/
 │  ├─ adr/0005-export-pipeline.md
 │  ├─ adr/0006-preview-and-images.md
 │  ├─ adr/0007-workspace.md
+│  ├─ adr/0008-search.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ images/                   真实产品截图（README 与站点共用）
@@ -696,5 +703,6 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0005：导出管线](docs/adr/0005-export-pipeline.md)
 - [ADR 0006：实时预览与图片边界](docs/adr/0006-preview-and-images.md)
 - [ADR 0007：文件夹工作区](docs/adr/0007-workspace.md)
+- [ADR 0008：单文件查找替换](docs/adr/0008-search.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。

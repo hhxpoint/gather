@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持查找替换、表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f2ede1">
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
@@ -198,7 +198,7 @@
           <p class="section-marker"><span>01</span> Product</p>
           <div class="section-heading">
             <h2 id="showcase-title">不是效果图。<br>是正在运行的编辑器。</h2>
-            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、表格与本地图片预览、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
+            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、查找替换、表格与本地图片预览、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
           </div>
         </header>
 
@@ -262,6 +262,16 @@
           <figcaption class="shot-caption">
             <span class="shot-label">06 / Workspace</span>
             <p>打开一个文件夹就是工作区：侧栏递归列出 Markdown 文稿，嵌套路径可见；切换脏文稿前确认，保存与外部变更仍走原有安全链路。</p>
+          </figcaption>
+        </figure>
+
+        <figure class="shot shot--wide">
+          <div class="shot-frame">
+            <img src="images/gather-search.png" alt="Gather 查找替换真实截图：中文查找面板显示 7 处 Gather 匹配，正文黄色高亮，带区分大小写、正则、整词与全部替换按钮。" width="1184" height="755" loading="lazy" decoding="async">
+          </div>
+          <figcaption class="shot-caption">
+            <span class="shot-label">07 / Find</span>
+            <p><code>Ctrl+F</code> 打开中文查找面板，<code>Ctrl+H</code> 直接进入替换；支持区分大小写、正则与整词，全部替换进入原生撤销栈，一次 <code>Ctrl+Z</code> 即可整体回退。</p>
           </figcaption>
         </figure>
 
@@ -754,12 +764,13 @@
             </div>
             <p class="stage-code">Phase 1 / Reliability</p>
             <h3>把文件安全做实</h3>
-            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照、表格/图片预览、失败注入与可带走的导出逐项做成测试和证据。</p>
+            <p class="stage-copy">不做“永不丢字”的口号，而是把字节保真、冲突拒绝、恢复快照、查找替换、表格/图片预览、失败注入与可带走的导出逐项做成测试和证据。</p>
             <ul class="stage-list">
               <li>CRLF / BOM / 原子写入</li>
               <li>外部修改拒绝与恢复快照</li>
               <li>强杀恢复、真实 watcher</li>
               <li>文件夹工作区 / 侧栏切换</li>
+              <li>单文件查找 / 替换 / 正则</li>
               <li>表格 / 本地图片 / 安全外链</li>
               <li>A4 PDF / 含本地图片的 HTML</li>
               <li>未签名 staging 与工程日志</li>

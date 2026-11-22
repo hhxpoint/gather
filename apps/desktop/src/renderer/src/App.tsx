@@ -20,6 +20,7 @@ import {
   Quote,
   RefreshCw,
   Save,
+  Search,
   SquarePen,
   X,
 } from 'lucide-react';
@@ -77,6 +78,8 @@ interface Actions {
   save: () => Promise<void>;
   saveAs: () => Promise<void>;
   togglePreview: () => void;
+  find: () => void;
+  replace: () => void;
   exportPdf: () => Promise<void>;
   exportHtml: () => Promise<void>;
 }
@@ -519,12 +522,22 @@ export default function App() {
     setLivePreview(value => !value);
   }
 
+  function find() {
+    editorRef.current?.openSearch();
+  }
+
+  function replace() {
+    editorRef.current?.openReplace();
+  }
+
   actionsRef.current = {
     open,
     openFolder,
     save,
     saveAs,
     togglePreview,
+    find,
+    replace,
     exportPdf: () => exportAs('pdf'),
     exportHtml: () => exportAs('html'),
   };
@@ -578,6 +591,8 @@ export default function App() {
       if (action === 'save') void actions.save();
       if (action === 'saveAs') void actions.saveAs();
       if (action === 'togglePreview') actions.togglePreview();
+      if (action === 'find') actions.find();
+      if (action === 'replace') actions.replace();
       if (action === 'exportPdf') void actions.exportPdf();
       if (action === 'exportHtml') void actions.exportHtml();
     });
@@ -664,6 +679,7 @@ export default function App() {
         <button onClick={() => editorRef.current?.prefix('- ')} title="列表" aria-label="列表"><List size={15} /></button>
         <button onClick={() => editorRef.current?.wrap('`')} title="行内代码" aria-label="行内代码"><Code2 size={15} /></button>
         <button onClick={() => editorRef.current?.wrap('[', '](https://)')} title="链接" aria-label="链接"><Link2 size={15} /></button>
+        <button onClick={() => editorRef.current?.openSearch()} title="查找与替换 (Ctrl/Cmd+F)" aria-label="查找与替换"><Search size={15} /></button>
         <span className="toolbar-rule" />
         <button onClick={() => editorRef.current?.insert('\n```\n\n```\n')} title="代码块" aria-label="代码块"><SquarePen size={15} /></button>
         <span className="toolbar-rule" />
