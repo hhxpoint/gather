@@ -112,7 +112,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [x] Windows 未签名 staging 目录包可启动、打开/编辑/保存；`resources/app`、preload、renderer、userData 正常（安装器/签名/图标未完成）。
 - [x] 表格/图片预览与安全外链已在真实窗口验证：表格点击回源码、离开恢复；图片 data URI 加载并点击回源码；Ctrl/Cmd+点击链接进入系统浏览器，危险协议被主进程拒绝。
 - [x] 工作区已在真实窗口验收：3 个文稿侧栏、嵌套路径、脏状态确认、保存；快捷键 `Ctrl+Shift+O` 正确打开文件夹。工作区路径边界与跳过目录有单元测试。
-- [x] 单文件查找/替换已在真实窗口验收：中文面板、7 处匹配、全部替换、Ctrl+Z 恢复、Escape 关闭；正则/大小写/整词组合矩阵未逐项跑。
+- [x] 单文件查找/替换已在真实窗口验收：中文面板、7 处匹配、全部替换、Ctrl+Z 恢复、Escape 关闭；搜索批次 CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 双平台通过。正则/大小写/整词组合矩阵未逐项跑。
 - [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链/工作区的关键路径（13 个文件、101 个测试）；工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) Ubuntu 101 全过、Windows 99 通过 + 2 跳过。
 - [x] 桌面端 PDF/HTML 导出已在真实窗口导出并回渲染核验：4 页 A4 PDF、中文、GFM 表格、代码块与本地图片；HTML 中本地图片为 data URI（远程图片仍为 URL）。CLI PDF 与 DOCX 仍未实现。
 

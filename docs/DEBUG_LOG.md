@@ -352,6 +352,7 @@
 - **证据**：
   - 真实窗口：`Ctrl+F` 打开面板，搜索 `Gather` 命中 7 处并高亮；`Ctrl+H` 后面板替换框获得焦点并选中文本；全部替换后正文更新为 `Gather!`；`Ctrl+Z` 恢复原文；Escape 关闭面板。
   - 截图 `docs/images/gather-search.png`（1184×755）；面板包含区分大小写、正则、整词开关。
+  - 批次闭环：PR #18 合并为 `a4c63f2`；PR CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467)、main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444) 与 Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 均成功；公网 HTML/CSS/截图 SHA-256 与本地一致，1440/390 视口无横向溢出。
 - **防回归**：`search()` 扩展不能被移除；打开查找后不能调用 `view.focus()` 抢焦点；替换必须使用 CodeMirror command，不能直接改 DOM 或另建文本模型。
 
 ---
