@@ -160,7 +160,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地；预览批次 CI 待运行） | 本地 Electron Node 22：12 个测试文件、96 个测试，94 通过、2 个 POSIX-only 跳过；前批 CI [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 为 75 个测试 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：12 个测试文件、96 个测试，94 通过、2 个 POSIX-only 跳过；预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 通过 + 2 跳过 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -169,7 +169,7 @@ Gather 不打算做这些事：
 | 类型检查 | 已通过（本地 + CI） | 四个 workspace 的 `tsc --noEmit` 本地通过；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 双平台通过 |
 | CLI 冒烟 | 已通过（本地 + CI 部分） | 本地：`doctor/new/export --out`（HTML）成功，`--format pdf` 非零退出；CI：双平台 `doctor --json` 通过 |
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
-| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、合并后 main [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
+| CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)、导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)、合并后 main [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575)、可复现性 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)、打包 [44892062198](https://github.com/hhxpoint/gather/actions/runs/44892062198) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；导出批次 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致；本批新增表格/图片预览截图后待重新部署核验 |
 | 安装包 | 部分 | electron-builder NSIS/portable 未产出（第二次远程工具请求超时）；Windows staging 目录包已产出并实测；无签名、默认图标、无安装器 |
 
@@ -203,7 +203,7 @@ Gather 不打算做这些事：
 - [ ] **没有 RAG。** 不在当前范围，也没有代码。
 - [x] **桌面端 PDF/HTML 导出已通过真实验收。** 从真实窗口导出 4 页 A4 PDF（418,240 bytes）并转成 PNG 回读：中文标题、GFM 表格、代码块与相对路径本地图片均存在；同文稿 HTML 为 273,742 bytes，图片已嵌入为 data URI。目录外路径、SVG、缺失图片与超预算图片有告警/拒绝测试。**DOCX 仍未实现，CLI 的 PDF 也未实现。**
 - [x] **导出批次已合并并部署。** PR [#12](https://github.com/hhxpoint/gather/pull/12) 合并为 `b237716`；合并后 CI [44918269575](https://github.com/hhxpoint/gather/actions/runs/44918269575) 与 Pages [44918269622](https://github.com/hhxpoint/gather/actions/runs/44918269622) 成功。公网 `index.html`/CSS 与本地构建 SHA-256 完全一致；新增 PDF 截图 214,505 bytes，HTTP 200。
-- [x] **表格/图片预览与安全外链已通过真实窗口验收。** GFM 表格在光标离开时渲染为 HTML 表格，点击回到源码；文档目录内的相对路径图片经主进程校验后以 data URI 显示，点击回到 `![alt](src)`；`Ctrl/Cmd+点击` 普通链接与单击表格链接会打开系统浏览器，`javascript:` 等非 http/https 值被主进程拒绝。图片 268,682 字符 data URI、真实 1184×755 截图与 CDP 交互证据已记录在 [VERIFICATION](docs/VERIFICATION.md)。
+- [x] **表格/图片预览与安全外链已通过真实窗口验收。** GFM 表格在光标离开时渲染为 HTML 表格，点击回到源码；文档目录内的相对路径图片经主进程校验后以 data URI 显示，点击回到 `![alt](src)`；`Ctrl/Cmd+点击` 普通链接与单击表格链接会打开系统浏览器，`javascript:` 等非 http/https 值被主进程拒绝。图片 268,682 字符 data URI、真实 1184×755 截图与 CDP 交互证据已记录在 [VERIFICATION](docs/VERIFICATION.md)。预览批次 CI [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 + 2 跳过。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
 - [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
@@ -412,7 +412,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 75 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 73 通过 + 2 个 POSIX-only 跳过。上一批基线为 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)（Ubuntu 65 全过，Windows 63 + 2 跳过）。CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印与导出对话框；这些仍必须手工验证。
+预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 96 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 94 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。上一批基线为 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)（Ubuntu 75 全过，Windows 73 + 2 跳过）。CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击与外部浏览器打开；这些仍必须手工验证。
 
 ### 桌面打包（staging 已验证，安装器未产出）
 

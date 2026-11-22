@@ -110,7 +110,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [x] 原子写入故障注入（ENOSPC/EIO/EACCES/sync/rename）清理临时文件，旧快照不被覆盖；20 MiB 边界有测试。
 - [x] Windows 未签名 staging 目录包可启动、打开/编辑/保存；`resources/app`、preload、renderer、userData 正常（安装器/签名/图标未完成）。
 - [x] 表格/图片预览与安全外链已在真实窗口验证：表格点击回源码、离开恢复；图片 data URI 加载并点击回源码；Ctrl/Cmd+点击链接进入系统浏览器，危险协议被主进程拒绝。
-- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链的关键路径（12 个文件、96 个测试；本地 Windows 94 通过 + 2 个 POSIX-only 跳过）；前批 CI [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 为 75 个测试。
+- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链的关键路径（12 个文件、96 个测试）；预览批次 CI [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 通过 + 2 跳过。
 - [x] 桌面端 PDF/HTML 导出已在真实窗口导出并回渲染核验：4 页 A4 PDF、中文、GFM 表格、代码块与本地图片；HTML 中本地图片为 data URI（远程图片仍为 URL）。CLI PDF 与 DOCX 仍未实现。
 
 ### 非目标

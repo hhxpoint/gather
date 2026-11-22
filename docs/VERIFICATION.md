@@ -59,6 +59,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 Phase 1 CI 基线：
 
+- 预览批次：[44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)：Ubuntu 96 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 94 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。
 - 导出批次：[44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)：Ubuntu 75 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 73 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。
 - 恢复批次：[44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294)（40 个测试）。
 - 故障注入批次：[44886639093](https://github.com/hhxpoint/gather/actions/runs/44886639093)（63 个测试）。
