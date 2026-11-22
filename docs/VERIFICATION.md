@@ -60,6 +60,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 Phase 1 CI 基线：
 
+- 工作区批次：[44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214)：Ubuntu 101 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 99 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。首轮 Windows 8.3 短路径失败，修复 `resolveWorkspaceFile` 与测试后复跑通过。
 - 预览批次：[44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)：Ubuntu 96 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 94 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。
 - 导出批次：[44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628)：Ubuntu 75 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 73 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。
 - 恢复批次：[44885022294](https://github.com/hhxpoint/gather/actions/runs/44885022294)（40 个测试）。
