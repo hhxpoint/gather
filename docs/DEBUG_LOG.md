@@ -316,7 +316,7 @@
   - 图片 widget `complete=true`、natural 2560×2800、显示 567×520（max-height 520）；点击后 widget 消失并出现 `![Gather 编辑器真实界面](assets/gather-editor.png)` 源码行。
   - 图片预览 data URI 长度 268,682；主进程非法外链调用返回“只允许打开 http/https 链接。”；Ctrl+点击真实链接后状态栏显示“已在系统浏览器中打开链接”。
   - 新增 6 个预览解析测试、5 个图片边界测试、10 个外链测试；当前 12 个测试文件、96 个测试，本地 94 通过 + 2 个 POSIX-only 跳过。预览批次 CI [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499) Ubuntu 96 全过、Windows 94 + 2 跳过。
-  - 新增真实截图 `docs/images/gather-table-preview.png`、`gather-image-preview.png`（1184×755）。
+  - 新增真实截图 `docs/images/gather-table-preview.png`、`gather-image-preview.png`（1184×755）。PR #14 合并为 `4e0c1e9`；main CI [44981317065](https://github.com/hhxpoint/gather/actions/runs/44981317065) 与 Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功；公网 HTML/CSS SHA-256 与本地一致，5 张产品截图 naturalWidth 全非零。
 - **防回归**：表格必须继续走 StateField block decoration；图片必须保持 eager 或显式 `img.decode()`；所有本地图片读取必须复用主进程目录边界；外链必须经过 `safeExternalUrl`，不能在渲染层直接 `window.open` 或 `location.href`。
 
 ---
