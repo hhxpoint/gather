@@ -80,12 +80,20 @@ export async function listWorkspace(folderPath: string): Promise<Workspace> {
  * Resolve a workspace-relative file, rejecting absolute paths, traversal,
  * symlink escapes and non-files. The root must already be a realpath.
  */
-export async function resolveWorkspaceFile(root: string, relativePath: string): Promise<string> {
+export async function resolveWorkspaceFile(rootInput: string, relativePath: string): Promise<string> {
   if (!relativePath || relativePath.length > 4096 || relativePath.includes('\u0000')) {
     throw new Error('工作区文件路径无效。');
   }
   if (isAbsolute(relativePath) || relativePath.startsWith('/') || relativePath.startsWith('\\')) {
     throw new Error('工作区文件路径必须是相对路径。');
+  }
+  // Windows may hand back an 8.3 short path from the dialog; normalise the
+  // root before comparing it with the realpath of the candidate.
+  let root: string;
+  try {
+    root = await realpath(rootInput);
+  } catch {
+    throw new Error('工作区目录不存在或已被移动。');
   }
   const candidate = resolve(root, relativePath);
   if (!isWithin(root, candidate)) {

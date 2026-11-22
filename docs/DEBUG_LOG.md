@@ -326,6 +326,7 @@
   - `Ctrl+Shift+O` 最初打开的是**文件**对话框，不是文件夹。渲染层 keydown 只判断 `event.key.toLowerCase() === 'o'`，忽略 `shiftKey`，在菜单 accelerator 之前就把 `Ctrl+Shift+O` 当成 `open()`。修复为 `shiftKey ? openFolder() : open()` 后，真实快捷键打开“打开 Markdown 工作区”。
   - 文件夹列表如果跟随符号链接，会越过用户选择的根目录；首版直接跳过 `Dirent.isSymbolicLink()`，打开文件时再做 `realpath` 包含检查。
   - 如果直接信任渲染层传来的绝对路径，工作区会成为任意文件读取入口；因此渲染层只发相对路径，主进程用 `resolve` + `realpath` + `relative` 边界双重校验。
+  - Windows CI 第一次失败：`mkdtemp` 返回 8.3 短路径 `RUNNER~1`，`realpath` 返回 `runneradmin`，测试把短根与长候选比较，误判为“链接逃逸”。修复为 `resolveWorkspaceFile` 内部先 realpath 根目录，测试也统一使用 realpath 根；这是实际路径语义差异，不是放宽边界。
 - **实现**：
   - `workspace.ts` 递归列 `.md/.markdown/.mdown/.mkd/.txt`；跳过隐藏项、`node_modules/out/dist/release/coverage` 与符号链接；最多 2000 个、深度 8；返回 `truncated`。
   - 主进程保存 `workspaceRoot`；`workspace:open/refresh/openFile/close` IPC；打开文件复用现有 `readMarkdownFile` 与 watcher。

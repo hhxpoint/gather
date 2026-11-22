@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -8,8 +8,8 @@ let root = '';
 let outside = '';
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'gather-workspace-'));
-  outside = await mkdtemp(join(tmpdir(), 'gather-workspace-outside-'));
+  root = await realpath(await mkdtemp(join(tmpdir(), 'gather-workspace-')));
+  outside = await realpath(await mkdtemp(join(tmpdir(), 'gather-workspace-outside-')));
   await mkdir(join(root, 'nested', 'deep'), { recursive: true });
   await mkdir(join(root, '.hidden'), { recursive: true });
   await mkdir(join(root, 'node_modules'), { recursive: true });
