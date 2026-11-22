@@ -5,7 +5,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { bracketMatching, defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import { highlightSelectionMatches, openSearchPanel, search, searchKeymap } from '@codemirror/search';
 import { toggleLinePrefix, toggleWrap } from './text-commands';
 import { createLivePreviewExtensions } from './live-preview';
 import { gatherTheme } from './theme';
@@ -30,7 +30,21 @@ export interface MarkdownEditorHandle {
   wrap: (before: string, after?: string) => void;
   prefix: (prefix: string) => void;
   insert: (text: string) => void;
+  openSearch: () => void;
+  openReplace: () => void;
   getText: () => string;
+}
+
+function openReplacePanel(view: EditorView): boolean {
+  const opened = openSearchPanel(view);
+  if (opened) {
+    requestAnimationFrame(() => {
+      const input = view.dom.querySelector<HTMLInputElement>('input[name="replace"]');
+      input?.focus();
+      input?.select();
+    });
+  }
+  return opened;
 }
 
 const previewCompartment = new Compartment();
@@ -73,6 +87,20 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
       dropCursor(),
       highlightActiveLine(),
       bracketMatching(),
+      search({ top: true }),
+      EditorState.phrases.of({
+        Find: '查找',
+        Replace: '替换',
+        next: '下一个',
+        previous: '上一个',
+        all: '全部',
+        'match case': '区分大小写',
+        regexp: '正则',
+        'by word': '整词',
+        replace: '替换',
+        'replace all': '全部替换',
+        close: '关闭',
+      }),
       highlightSelectionMatches(),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       markdown({ base: markdownLanguage, codeLanguages: languages }),
@@ -87,6 +115,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         ...defaultKeymap,
         ...historyKeymap,
         ...searchKeymap,
+        { key: 'Mod-h', run: openReplacePanel, preventDefault: true },
         indentWithTab,
       ]),
       gatherTheme,
@@ -194,6 +223,17 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         scrollIntoView: true,
       });
       view.focus();
+    },
+    openSearch() {
+      const view = viewRef.current;
+      if (!view) return;
+      openSearchPanel(view);
+    },
+    openReplace() {
+      const view = viewRef.current;
+      if (!view) return;
+      view.focus();
+      openReplacePanel(view);
     },
     getText() {
       return viewRef.current?.state.doc.toString() ?? '';

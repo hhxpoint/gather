@@ -335,6 +335,16 @@ function createMenu() {
       ],
     },
     {
+      label: '编辑',
+      submenu: [
+        { label: '查找与替换…', accelerator: 'CmdOrCtrl+F', click: () => sendMenu('find') },
+        { label: '替换…', accelerator: 'CmdOrCtrl+H', click: () => sendMenu('replace') },
+        { type: 'separator' },
+        { role: 'undo', label: '撤销' },
+        { role: 'redo', label: '重做' },
+      ],
+    },
+    {
       label: '视图',
       submenu: [
         { label: '切换实时预览', accelerator: 'CmdOrCtrl+Shift+P', click: () => sendMenu('togglePreview') },

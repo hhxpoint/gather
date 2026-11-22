@@ -94,6 +94,7 @@ Phase 1 CI 基线：
 - 普通链接 Ctrl+点击触发系统浏览器，状态栏显示“已在系统浏览器中打开链接”；`javascript:` 外链 IPC 返回“只允许打开 http/https 链接。”。
 - 工作区真实窗口：`gather-workspace-qa` 侧栏 3 个文稿，隐藏/依赖/非 Markdown 未出现；打开 `nested/笔记.md`、表格预览、脏状态确认与保存均成功。
 - `Ctrl+Shift+O` 真实快捷键打开“打开 Markdown 工作区”，不再误触文件对话框。
+- 查找替换真实窗口：`Ctrl+F` 打开中文面板，`Gather` 命中 7 处；`Ctrl+H` 聚焦替换；全部替换后正文更新；`Ctrl+Z` 恢复原文；Escape 关闭。
 
 ## 预览与链接矩阵
 
@@ -108,6 +109,20 @@ Phase 1 CI 基线：
 | 非法外链 | 主进程 + 单元测试 | `javascript:`/`file:`/`data:`/mailto/凭据/畸形值全部拒绝 |
 | 远程图片 | 设计边界 | 显示“远程图片未自动加载”，不产生网络请求 |
 | 高 DPI/缩放 | 未执行 | 预览图片按 CSS max-height 520 显示，未做 200% 缩放矩阵 |
+
+## 查找替换矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 打开查找 | 真实 `Ctrl+F` | 顶部中文面板出现，搜索框聚焦 |
+| 匹配高亮 | 搜索 `Gather` | 7 个匹配 `.cm-searchMatch`，正文黄色高亮 |
+| 打开替换 | 真实 `Ctrl+H` | 替换框获得焦点并选中当前替换文本 |
+| 全部替换 | 面板“全部替换” | 正文 7 处变为 `Gather!`，doc 被标记未保存 |
+| 撤销 | 编辑器 Ctrl+Z | 正文恢复原文；需要保存才清除脏标记 |
+| 关闭 | Escape | 面板消失，正文保持 |
+| 中文文案 | `EditorState.phrases` | 查找/替换/上一个/下一个/全部/区分大小写/正则/整词/全部替换/关闭 |
+| 正则/大小写/整词组合 | 未逐项 | 开关可见；只用默认大小写不敏感搜索做了替换验收 |
+| 跨文稿搜索 | 未实现 | 仅当前文稿 |
 
 ## 工作区矩阵
 
@@ -154,7 +169,7 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 6 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 7 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
