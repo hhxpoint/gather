@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f2ede1">
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gather">
   <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
-  <meta property="og:description" content="本地优先的 Markdown 写作工作台：文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。">
+  <meta property="og:description" content="本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，表格与本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照，并支持 A4 PDF 与含本地图片的 HTML 导出。">
   <meta property="og:url" content="https://hhxpoint.github.io/gather/">
   <meta property="og:image" content="https://hhxpoint.github.io/gather/images/gather-external-change.png">
   <meta property="og:image:width" content="2560">
@@ -128,7 +128,7 @@
             </div>
             <div>
               <dt>Evidence</dt>
-              <dd>96 tests · dual CI</dd>
+              <dd>101 tests · dual CI</dd>
             </div>
             <div>
               <dt>License</dt>
@@ -255,6 +255,16 @@
           </figure>
         </div>
 
+        <figure class="shot shot--wide">
+          <div class="shot-frame">
+            <img src="images/gather-workspace.png" alt="Gather 文件夹工作区真实截图：侧栏列出欢迎、嵌套笔记与清单，当前笔记高亮，编辑器显示表格预览与保存状态。" width="1184" height="755" loading="lazy" decoding="async">
+          </div>
+          <figcaption class="shot-caption">
+            <span class="shot-label">06 / Workspace</span>
+            <p>打开一个文件夹就是工作区：侧栏递归列出 Markdown 文稿，嵌套路径可见；切换脏文稿前确认，保存与外部变更仍走原有安全链路。</p>
+          </figcaption>
+        </figure>
+
         <p class="shot-note"><span>Note</span> 截图使用公开示例目录与合成文稿，不含真实用户文件；界面为当前 Phase 1 构建，不是概念设计稿。</p>
       </div>
     </section>
@@ -357,7 +367,7 @@
             </div>
             <div class="card-content">
               <h3>文件夹，<br>就是工作区。</h3>
-              <p>打开一个文件夹，就打开全部文稿。Markdown 原文始终留在磁盘上，任何编辑器都能继续写，Git 也能照常工作。</p>
+              <p>打开一个文件夹，侧栏列出全部 Markdown 文稿并高亮当前篇；切换前确认未保存内容。Markdown 原文始终留在磁盘上，Git 也能照常工作。</p>
             </div>
             <footer class="card-foot">
               <span>Plain text / portable by default</span>
@@ -689,7 +699,7 @@
           </div>
           <div class="evidence-grid">
             <a href="https://github.com/hhxpoint/gather/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer">
-              <strong>96</strong>
+              <strong>101</strong>
               <span>tests · Ubuntu &amp; Windows CI</span>
             </a>
             <a href="https://github.com/hhxpoint/gather/blob/main/docs/DEBUG_LOG.md" target="_blank" rel="noopener noreferrer">
@@ -749,6 +759,7 @@
               <li>CRLF / BOM / 原子写入</li>
               <li>外部修改拒绝与恢复快照</li>
               <li>强杀恢复、真实 watcher</li>
+              <li>文件夹工作区 / 侧栏切换</li>
               <li>表格 / 本地图片 / 安全外链</li>
               <li>A4 PDF / 含本地图片的 HTML</li>
               <li>未签名 staging 与工程日志</li>

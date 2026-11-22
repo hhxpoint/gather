@@ -8,6 +8,7 @@ import { toUserFacingFileError } from './file-errors';
 import { RecoveryStore } from './recovery';
 import { exportDocument } from './document-export';
 import { resolvePreviewImage } from './image-preview';
+import { listWorkspace, resolveWorkspaceFile } from './workspace';
 import { safeExternalUrl } from '../shared/external-links';
 import type {
   DocumentExportRequest,
@@ -21,6 +22,7 @@ import type {
 const isDev = Boolean(process.env.ELECTRON_RENDERER_URL);
 const fileWatcher = new ActiveFileWatcher();
 let activeFilePath: string | null = null;
+let workspaceRoot: string | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 // Keep recovery snapshots under %APPDATA%/Gather, not the workspace package
@@ -178,6 +180,37 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return file;
   });
 
+  handleIpc('workspace:open', async () => {
+    if (!mainWindow || mainWindow.isDestroyed()) throw new Error('主窗口不可用。');
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: '打开 Markdown 工作区',
+      properties: ['openDirectory'],
+    });
+    if (result.canceled || !result.filePaths[0]) return null;
+    const workspace = await listWorkspace(result.filePaths[0]);
+    workspaceRoot = workspace.root;
+    return workspace;
+  });
+
+  handleIpc('workspace:refresh', async () => {
+    if (!workspaceRoot) throw new Error('当前没有打开的工作区。');
+    return listWorkspace(workspaceRoot);
+  });
+
+  handleIpc('workspace:openFile', async (_event, payload: unknown) => {
+    if (!workspaceRoot) throw new Error('当前没有打开的工作区。');
+    if (typeof payload !== 'string') throw new Error('工作区文件路径无效。');
+    const path = await resolveWorkspaceFile(workspaceRoot, payload);
+    const file = await readMarkdownFile(path);
+    watchActiveFile(file);
+    return file;
+  });
+
+  handleIpc('workspace:close', async () => {
+    workspaceRoot = null;
+    return true;
+  });
+
   handleIpc('file:save', async (_event, payload: unknown) => {
     const request = parseSaveRequest(payload);
     const outcome = await writeMarkdownFile(request.path, request.content, {
@@ -291,6 +324,7 @@ function createMenu() {
       label: '文件',
       submenu: [
         { label: '打开…', accelerator: 'CmdOrCtrl+O', click: () => sendMenu('open') },
+        { label: '打开文件夹…', accelerator: 'CmdOrCtrl+Shift+O', click: () => sendMenu('openFolder') },
         { label: '保存', accelerator: 'CmdOrCtrl+S', click: () => sendMenu('save') },
         { label: '另存为…', accelerator: 'CmdOrCtrl+Shift+S', click: () => sendMenu('saveAs') },
         { type: 'separator' },

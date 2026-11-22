@@ -82,6 +82,21 @@ export type ExternalChange =
       path: string;
     };
 
+export interface WorkspaceFile {
+  path: string;
+  /** POSIX-style path relative to the workspace root, used for display and IPC. */
+  relativePath: string;
+  name: string;
+}
+
+export interface Workspace {
+  root: string;
+  name: string;
+  files: WorkspaceFile[];
+  /** True when depth/file limits stopped a complete recursive listing. */
+  truncated: boolean;
+}
+
 export type ExportFormat = 'pdf' | 'html';
 
 export interface DocumentExportRequest {

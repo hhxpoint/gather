@@ -40,7 +40,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 ## 自动化测试清单
 
-当前 12 个测试文件、96 个测试（Windows 上 94 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
+当前 13 个测试文件、101 个测试（Windows 上 99 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
 
 | 文件 | 数量 | 覆盖 |
 | --- | --- | --- |
@@ -50,6 +50,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 | `packages/editor/test/live-preview.test.ts` | 6 | 图片/链接语法、转义 label、http/https 判定、畸形输入 |
 | `apps/desktop/test/image-preview.test.ts` | 5 | 本地图片 data URI、编码文件名、目录逃逸/绝对/远程/缺失拒绝、缓存 |
 | `apps/desktop/test/external-links.test.ts` | 10 | http/https 放行、危险协议/凭据/畸形值拒绝 |
+| `apps/desktop/test/workspace.test.ts` | 5 | 工作区递归/跳过目录/排序、目录边界、绝对路径/穿越/缺失/目录拒绝 |
 | `apps/desktop/test/file-io.test.ts` | 11 | 真实临时目录 round-trip、外部修改拒绝、Save As、20 MiB、POSIX 只读目录 |
 | `apps/desktop/test/file-watcher.test.ts` | 4 | 外部修改、自写忽略、删除/重建、轮询差异 |
 | `apps/desktop/test/recovery.test.ts` | 9 | 快照读写/覆盖/丢弃/损坏/写删串行、注入失败、POSIX 只读目录 |
@@ -90,6 +91,8 @@ Phase 1 CI 基线：
 - 预览构建打开 `preview-demo.md`：GFM 表格显示为真实 HTML 表格；点击后出现 `| 能力 |` 源码行，Control+End 离开后表格 widget 恢复。
 - 本地图片预览 `complete=true`、natural 2560×2800、显示 567×520；点击后出现 `![Gather 编辑器真实界面](assets/gather-editor.png)` 源码行。
 - 普通链接 Ctrl+点击触发系统浏览器，状态栏显示“已在系统浏览器中打开链接”；`javascript:` 外链 IPC 返回“只允许打开 http/https 链接。”。
+- 工作区真实窗口：`gather-workspace-qa` 侧栏 3 个文稿，隐藏/依赖/非 Markdown 未出现；打开 `nested/笔记.md`、表格预览、脏状态确认与保存均成功。
+- `Ctrl+Shift+O` 真实快捷键打开“打开 Markdown 工作区”，不再误触文件对话框。
 
 ## 预览与链接矩阵
 
@@ -104,6 +107,20 @@ Phase 1 CI 基线：
 | 非法外链 | 主进程 + 单元测试 | `javascript:`/`file:`/`data:`/mailto/凭据/畸形值全部拒绝 |
 | 远程图片 | 设计边界 | 显示“远程图片未自动加载”，不产生网络请求 |
 | 高 DPI/缩放 | 未执行 | 预览图片按 CSS max-height 520 显示，未做 200% 缩放矩阵 |
+
+## 工作区矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 目录扫描 | 真实临时目录/单元测试 | 递归列出 `.md/.markdown/.mdown/.mkd/.txt`；排序后 `a.md`、`nested/b.markdown`、`nested/deep/c.mdown`、`z.txt` |
+| 跳过策略 | 单元测试 | `.hidden`、`node_modules`、`out`、非 Markdown 图片均不进入列表；符号链接不跟随 |
+| 路径边界 | 单元测试 | `../outside`、绝对路径、缺失、目录、NUL、空字符串全部拒绝 |
+| 真实侧栏 | staged Windows + 原生目录对话框 | 3 个文稿；`nested/笔记.md` 切换成功，当前项高亮 |
+| 未保存确认 | 真实键盘/鼠标 | 修改后切换弹“当前文稿有未保存修改”，取消与确认路径均可用 |
+| 工作区保存 | 真实 Ctrl+S | 状态“已保存 笔记.md · UTF-8 · LF”，侧栏保持当前项 |
+| 快捷键 | 真实 `Ctrl+Shift+O` | 打开“打开 Markdown 工作区”，不再误触文件 |
+| 最近工作区/树形/新建删除搜索 | 未实现 | 首版只做导航；刷新需手动 |
+| 2000/深度 8 截断 | 未构造超限目录 | 代码有 `truncated` 与上限，真实超限目录未跑 |
 
 ## 导出与 PDF 矩阵
 
@@ -136,7 +153,7 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 5 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 6 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400，headless Edge + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
@@ -195,6 +212,8 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 - 导出 20 MiB 边界、真实磁盘满时 PDF/HTML 写盘、只读目标目录。
 - 图片缩放/平移、EXIF 方向、表格单元格富文本编辑、超大文稿表格虚拟化。
 - Windows/Linux IME 下表格/图片预览的输入与选择行为。
+- 最近工作区持久化、工作区树形折叠、新建/重命名/删除、跨文稿搜索、外部新增自动刷新。
+- 工作区 2000 文件/深度 8 截断的真实目录与性能。
 
 ## 维护
 

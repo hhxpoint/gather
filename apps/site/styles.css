@@ -169,6 +169,7 @@ ol, ul { padding: 0; list-style: none; }
 .showcase { background: var(--paper); }
 .shot { margin: 0; }
 .shot--lead { margin-bottom: 8px; }
+.shot--wide { margin-top: 37px; }
 .shot-frame { overflow: hidden; border: 1px solid var(--line); background: #fff; box-shadow: 0 26px 70px rgba(22,43,35,.12); }
 .shot-frame img { width: 100%; height: auto; }
 .shot--lead .shot-frame { background: var(--paper-3); }

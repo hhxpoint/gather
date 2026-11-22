@@ -31,6 +31,8 @@ button { font: inherit; cursor: pointer; }
 .header-actions { display: flex; align-items: center; gap: 6px; }
 .quiet-button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #65745f; font-size: 12px; padding: 8px 10px; }
 .quiet-button:hover { background: var(--control); color: var(--sage); }
+.quiet-button:disabled { opacity: .5; cursor: default; }
+.quiet-button.icon-only { width: 32px; padding: 7px; justify-content: center; }
 .editor-toolbar { min-height: 47px; display: flex; align-items: center; gap: 3px; padding: 7px 22px; border-bottom: 1px solid var(--rule); color: var(--muted); background: #f7f7f0; }
 .editor-toolbar button { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #74816b; }
 .editor-toolbar button:hover { background: #e9ede1; color: var(--sage); }
@@ -39,7 +41,27 @@ button { font: inherit; cursor: pointer; }
 @keyframes gather-spin { to { transform: rotate(360deg); } }
 .toolbar-rule { width: 1px; height: 17px; background: var(--rule); margin: 0 7px; }
 .toolbar-note { margin-left: auto; color: #a0a995; font-size: 10px; letter-spacing: .4px; }
-.editor-surface { flex: 1; min-height: 0; background: #f1f0e9; }
+.workspace-shell { flex: 1; min-height: 0; display: flex; background: #f1f0e9; }
+.editor-surface { flex: 1; min-width: 0; min-height: 0; background: #f1f0e9; }
+.workspace-sidebar { flex: 0 0 248px; width: 248px; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--rule); background: #f7f7f0; }
+.workspace-heading { display: flex; align-items: center; gap: 8px; padding: 13px 12px 7px; }
+.workspace-title { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; color: var(--sage); }
+.workspace-title strong { overflow: hidden; color: #465744; font-family: Georgia, "Noto Serif CJK SC", "Songti SC", serif; font-size: 15px; font-weight: 500; letter-spacing: .3px; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-heading-actions { display: flex; align-items: center; gap: 2px; }
+.workspace-heading-actions button { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #89947f; }
+.workspace-heading-actions button:hover { background: #e9ede1; color: var(--sage); }
+.workspace-meta { padding: 0 14px 9px; color: #9aa391; font-size: 9px; letter-spacing: .35px; }
+.workspace-list { flex: 1; min-height: 0; overflow: auto; padding: 3px 8px 12px; }
+.workspace-file { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #66745f; text-align: left; }
+.workspace-file > svg { flex: 0 0 auto; margin-top: 1px; color: #9aa391; }
+.workspace-file:hover { background: #eef1e7; color: #44583f; }
+.workspace-file.active { border-color: #d5e0c9; background: #e6eedc; color: #3e543a; }
+.workspace-file.active > svg { color: var(--sage); }
+.workspace-file-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.workspace-file-copy strong { overflow: hidden; font-size: 11.5px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-file-copy small { overflow: hidden; color: #9ba493; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-empty { margin: 12px 8px; color: #8e9985; font-size: 11px; line-height: 1.7; }
+.workspace-root { overflow: hidden; padding: 8px 13px; border-top: 1px solid var(--rule); color: #a0a995; font-size: 8.5px; text-overflow: ellipsis; white-space: nowrap; }
 .gather-editor { height: 100%; }
 .gather-editor .cm-editor { height: 100%; background: var(--paper); }
 .gather-editor .cm-scroller { scrollbar-gutter: stable; }
@@ -72,6 +94,10 @@ button { font: inherit; cursor: pointer; }
 .state-dot { width: 6px; height: 6px; border-radius: 50%; background: #7f9b6a; }
 .state-dot.unsaved { background: #b48a63; }
 .phase-tag { color: #8a967d; border: 1px solid #dbe1d2; border-radius: 4px; padding: 2px 5px; font-size: 8px; letter-spacing: 1px; }
+@media (max-width: 960px) {
+  .workspace-sidebar { flex-basis: 210px; width: 210px; }
+  .workspace-file-copy small { display: none; }
+}
 @media (max-width: 720px) {
   .app-header { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
   .brand { min-width: 0; }

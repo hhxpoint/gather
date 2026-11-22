@@ -10,6 +10,7 @@ import type {
   SaveAsRequest,
   SaveOutcome,
   SaveRequest,
+  Workspace,
 } from '../shared/files';
 
 const api = {
@@ -19,6 +20,11 @@ const api = {
   saveFileAs: (request: SaveAsRequest): Promise<SaveOutcome | null> =>
     ipcRenderer.invoke('file:saveAs', request),
   reloadActiveFile: (): Promise<OpenedFile> => ipcRenderer.invoke('file:reloadActive'),
+  openWorkspace: (): Promise<Workspace | null> => ipcRenderer.invoke('workspace:open'),
+  refreshWorkspace: (): Promise<Workspace> => ipcRenderer.invoke('workspace:refresh'),
+  openWorkspaceFile: (relativePath: string): Promise<OpenedFile> =>
+    ipcRenderer.invoke('workspace:openFile', relativePath),
+  closeWorkspace: (): Promise<boolean> => ipcRenderer.invoke('workspace:close'),
   exportDocument: (request: DocumentExportRequest): Promise<DocumentExportResult> =>
     ipcRenderer.invoke('document:export', request),
   resolveDocumentImage: (src: string): Promise<string | null> =>
@@ -67,4 +73,6 @@ export type {
   SaveOutcome,
   SaveRequest,
   SavedFile,
+  Workspace,
+  WorkspaceFile,
 } from '../shared/files';
