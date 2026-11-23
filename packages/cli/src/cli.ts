@@ -4,7 +4,7 @@ import { access, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { renderDocumentHtml } from '@gather/core';
 
-const VERSION = '0.1.0-phase.0';
+const VERSION = '0.1.0';
 const program = new Command();
 
 program

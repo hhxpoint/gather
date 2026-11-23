@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag (for example v0.1.0-phase.0)
+        description: Release tag (for example v0.1.0)
         required: true
-        default: v0.1.0-phase.0
+        default: v0.1.0
   push:
     tags:
       - 'v*'
@@ -79,7 +79,7 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Gather ${{ env.RELEASE_TAG }}
           body_path: .github/release-body.md
-          prerelease: true
+          prerelease: false
           overwrite_files: true
           fail_on_unmatched_files: true
           target_commitish: ${{ github.sha }}

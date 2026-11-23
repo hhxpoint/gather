@@ -1,6 +1,6 @@
 {
   "name": "gather",
-  "version": "0.1.0-phase.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Gather, a local-first Markdown writing workspace with reviewable AI and a first-class CLI.",

@@ -1,6 +1,6 @@
 {
   "name": "@gather/desktop",
-  "version": "0.1.0-phase.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Gather desktop workspace",
   "author": "Gather contributors",
@@ -15,8 +15,8 @@
     "dist": "electron-vite build && electron-builder --publish never"
   },
   "dependencies": {
-    "@gather/core": "0.1.0-phase.0",
-    "@gather/editor": "0.1.0-phase.0",
+    "@gather/core": "0.1.0",
+    "@gather/editor": "0.1.0",
     "lucide-react": "^1.31.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
