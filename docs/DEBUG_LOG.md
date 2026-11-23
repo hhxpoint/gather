@@ -424,6 +424,7 @@
   - 阅读模式 `.cm-content` contenteditable=false；聚焦并插入文本后长度不变。退出后 Undo 历史有效。
   - 远程图片：注入 `https://example.com/gather-remote.png` 后，DOM 无 http img，占位为“远程图片未自动加载 · 远程图片”，`performance.getEntriesByType('resource')` 为空；本地图片仍为 data URI、naturalWidth 1184。
   - 截图 `docs/images/gather-reading.png`（1184×755，94,878 bytes，纸色阅读）。
+  - 批次闭环：PR #25 合并为 `b21ee48`；PR CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938)、main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 与 Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 均成功；公网 HTML/阅读截图 SHA-256 与本地一致，9 张产品截图在 1440/390 全部加载。
 - **防回归**：阅读视图必须来自 `renderMarkdown` 且在进入 DOM 前剥离非 data 图片 `src`；编辑器不得在阅读模式卸载或保持可编辑；远程图片不得自动加载；阅读模式隐藏编辑器时应关闭搜索面板；专注/阅读 Esc 必须可退出且不吞搜索 Escape。
 
 ---
