@@ -12,10 +12,11 @@
 2. [ADR 0001](adr/0001-desktop-shell.md) 与 [ADR 0002](adr/0002-editor-core.md)：Electron + CodeMirror 的基础选择。
 3. [ADR 0003](adr/0003-file-safety.md) 到 [ADR 0007](adr/0007-workspace.md)：文件安全、恢复、导出、预览与工作区。
 4. [ADR 0008](adr/0008-search.md) 与 [ADR 0009](adr/0009-workspace-search.md)：单文件查找与跨文稿搜索。
-5. [DEBUG_LOG](DEBUG_LOG.md) 的 P1-24 到 P1-30：最近几批真实失败、根因与防回归。
-6. [VERIFICATION](VERIFICATION.md)：当前能复现的命令、矩阵和未验证项。
-7. 本手册第 2–8 节：把单点经验放回工程方法。
-8. 源码阅读，推荐顺序：`packages/core` → `packages/editor` → `apps/desktop/src/main` → `preload` → `renderer` → `apps/site` → `packages/cli`。
+5. [ADR 0010](adr/0010-session-continuity.md)：窗口、工作区与最后文稿的跨重启恢复。
+6. [DEBUG_LOG](DEBUG_LOG.md) 的 P1-24 到 P1-31：最近几批真实失败、根因与防回归。
+7. [VERIFICATION](VERIFICATION.md)：当前能复现的命令、矩阵和未验证项。
+8. 本手册第 2–8 节：把单点经验放回工程方法。
+9. 源码阅读，推荐顺序：`packages/core` → `packages/editor` → `apps/desktop/src/main` → `preload` → `renderer` → `apps/site` → `packages/cli`。
 
 证据分级必须写清楚：
 
@@ -304,6 +305,7 @@ POST pull request
 | 单文件搜索 | #18 / `a4c63f2` | 44985572444 | 44985572472 | search() 状态；中文 phrases；打开面板不要抢焦点 |
 | 工作区搜索 | #20 / `a6b51e1` | 45102037935 | 45102037910 | utilityProcess；预算/超时；error 监听；定位等待文稿版本 |
 | 部署记录 | #21 / `b871d4c` | 45102465517 | — | 把运行号、哈希与边界写回仓库 |
+| 会话恢复 | #23 / `f4825c8` | 45110083947 | 45110083883 | 窗口归一化；两个版本化存储；恢复路径重新列目录；与恢复快照共存 |
 
 ### 8.4 关键故障索引
 

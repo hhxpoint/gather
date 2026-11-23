@@ -398,6 +398,7 @@
   - 关闭工作区后重启：无侧栏、示例文稿，窗口尺寸仍恢复；会话文件已删除。
   - 编辑后强杀重启：恢复横幅存在，点击“恢复”得到插入文本，标题变脏，状态“已恢复 笔记.md · 尚未保存”。
   - 单元测试 `apps/desktop/test/session.test.ts` 10 个：矩形归一化、主屏/副屏选择、最小尺寸、异步/同步往返、损坏/版本、非法根/相对路径、清除。
+  - 批次闭环：PR #23 合并为 `f4825c8`；PR CI [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613)、main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947) 与 Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 均成功；公网 HTML/CSS SHA-256 与本地一致，1440/390 无横向溢出。
 - **防回归**：窗口 bounds 必须经过显示器归一化；工作区会话只存路径且恢复必须重新列目录；关闭工作区必须清除会话；Session 恢复不能替代恢复快照；StrictMode 下只能发起一次恢复。
 
 ---
