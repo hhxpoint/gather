@@ -1,6 +1,6 @@
 # Gather 调试与变更记录
 
-这份日志记录 Phase 0/1 中实际遇到的失败、根因、修复和证据。目的不是写流水账，而是让下一次遇到同类问题时能直接复用判断。
+这份日志记录项目从早期骨架到 Gather 0.1.0 实际遇到的失败、根因、修复和证据。目的不是写流水账，而是让下一次遇到同类问题时能直接复用判断。文中的 Phase 0/1 是历史里程碑标签，当前产品版本是 `0.1.0`。
 
 规则：
 
@@ -526,7 +526,7 @@
 
 - **现象/需求**：下载页已经列出真实安装包，但第一次使用的人仍可能不知道下载后做什么：安装器/便携版区别、SmartScreen、AppImage 权限、首次示例文稿、怎样打开文件夹、`Ctrl+S` 与恢复快照的关系、卸载后配置留在哪里。
 - **实现**：
-  - 新增 [QUICKSTART](../QUICKSTART.md)：选择并校验资产、Windows 安装/便携、Linux AppImage/deb、首次启动、打开文稿/文件夹、快捷键表、保存/恢复/隐私、升级卸载、故障排查和边界。
+  - 新增 [QUICKSTART](QUICKSTART.md)：选择并校验资产、Windows 安装/便携、Linux AppImage/deb、首次启动、打开文稿/文件夹、快捷键表、保存/恢复/隐私、升级卸载、故障排查和边界。
   - 站点下载区新增“下载后怎么用”三步块：安装/运行、打开文稿或文件夹、保存/阅读/导出，链接完整指南。
   - README 新增“下载后怎么用”段落、目录入口与文件索引；Release notes 同步安装与首次使用步骤。
 - **实际判断**：
@@ -539,6 +539,24 @@
   - 公网 `index.html` 57,780 bytes / LF 归一 `0ecc3d7a…`；CSS 37,996 bytes / `bfc60401…`，均与本地 `dist` 一致。
   - 公网 CDP：桌面 `scrollWidth=1425`；390 `scrollWidth=390`，三步宽度 358，指南链接指向 `https://github.com/hhxpoint/gather/blob/main/docs/QUICKSTART.md`；Release notes 已用 `gh release edit` 更新并包含指南链接。
 - **防回归**：下载页/README/Release notes 必须同时说明“保存才写盘、恢复快照不是自动保存”；桌面没有新建菜单时不得写“点击新建”；Linux 未实测边界必须保留；新增菜单/快捷键后同步 QUICKSTART 与站点步骤。
+
+### P1-38 0.1.0 正式版与“Phase 0”仓库门面清理
+
+- **现象/需求**：Release 已经可用，但 GitHub 仓库 About 仍写着“（Phase 0）”，README 末尾仍写着“Gather 还没有发布”，站点/README/版本号也大量保留 Phase 1 与 prerelease 标签。用户直接指出这看起来仍像阶段项目，要求一次性交付成完整项目。
+- **实现**：
+  - GitHub About 改为“本地优先、开源 Markdown 写作工作台。Windows/Linux 桌面 + CLI，工作区、全文搜索、阅读模式、文件恢复与 PDF/HTML 导出。”，并补齐 topics。
+  - 版本统一提升到 `0.1.0`：根/桌面/站点/CLI/core/editor 的 `package.json`、内部 workspace 依赖、`package-lock.json` 与 CLI `VERSION`；release workflow 默认 tag 改为 `v0.1.0`，发布为正常 latest release（`prerelease: false`）。
+  - 重新运行 Release [45161110408](https://github.com/hhxpoint/gather/actions/runs/45161110408)，产出 `Gather-Setup-0.1.0.exe`、`Gather-Portable-0.1.0.exe`、Linux AppImage/deb 与 `SHA256SUMS.txt`；四个 SHA-256 与 API digest、清单一致。
+  - README/站点/QUICKSTART 去掉 Phase/beta/prerelease/“还没有发布”等门面文案，下载区改用 0.1.0 资产；站点 roadmap 状态改为“已发布 / Released”。
+- **实际判断**：
+  - **只改 About 不够。** 用户会继续看到 README 结尾、下载页标签和旧安装包名；版本号、Release、站点链接必须一起收口。
+  - **不删除旧预览 release。** `v0.1.0-phase.0` 保留为历史 prerelease，`v0.1.0` 成为 Latest；不在没有备份/迁移需求时做破坏性删除。
+  - **不把 0.1.0 写成 1.0 或功能完整。** 安装包仍未签名，Linux GUI/IME、干净 VM 与签名安装器仍未验证；门面完整不等于能力全部成熟。
+- **证据**：
+  - 版本 PR [#41](https://github.com/hhxpoint/gather/pull/41) 合并为 `dce0dc4`；品牌 PR [#42](https://github.com/hhxpoint/gather/pull/42) 合并为 `4ec3be4`。
+  - Release `v0.1.0`：Setup 107,158,569 B / `0f1f3f7b…`；Portable 97,381,791 B / `5329527a…`；AppImage 124,429,206 B / `6b46b262…`；deb 96,983,944 B / `ee5f8881…`；清单 377 B / `0ceeb978…`。
+  - main CI [45162824811](https://github.com/hhxpoint/gather/actions/runs/45162824811) 双平台成功；Pages [45162824716](https://github.com/hhxpoint/gather/actions/runs/45162824716) 成功。公网 HTML 57,429 bytes / LF 归一 `791d25ca…`，CSS `bfc60401…`，1440/390 无横向溢出，5 个资产链接均指向 v0.1.0。
+- **防回归**：每次版本 bump 同时检查 package-lock、CLI VERSION、release workflow 默认 tag、Release body、站点/README/QUICKSTART 下载链接；发布后检查 GitHub About、README 首屏和 Releases 页面；旧 preview 保留但必须明确 Latest 指向新正式版。
 
 ---
 
