@@ -8,7 +8,7 @@
 
 Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权留给你。它不把文稿锁进云端数据库，也不让模型在后台悄悄改写正文。当前阶段先把本地文件、编辑器内核与“不丢稿”做成可复查的工程基础，再接入 AI 审阅。
 
-**当前状态：Phase 1 文件可靠性主线已落地，并补上了真实界面、文件夹工作区、表格/图片实时预览、桌面 PDF/HTML 导出、仓库内调试日志与首个公开 prerelease。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)，版本号为 `0.1.0-phase.0`。已完成 **CRLF/BOM 保真、保存冲突拒绝、撤销栈重置、CSP/导航、自动恢复快照、强杀恢复、实时外部变更、故障注入与错误映射**；GitHub Actions 已在 Windows 与 Ubuntu 上构建并发布 **Windows NSIS/portable、Linux AppImage/deb 与 SHA-256 清单**，全部未签名。桌面端可以打开一个文件夹作为工作区，递归列出 Markdown 文稿并在侧栏切换；切换脏文稿前会确认。编辑器会把 GFM 表格与文档目录内的本地图片呈现在源码旁，点击即可回到源码；外链只允许经主进程校验的 http/https。桌面端还可以从当前编辑器内容导出 **A4 PDF 或含本地图片的独立 HTML**。**仍未达到公开 beta：没有代码签名/自动更新，也没有完成 IME/Linux 桌面矩阵、完整版本历史/冲突合并、真实断电/满盘矩阵、AI/RAG 或 DOCX。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
+**Gather 0.1.0 已发布。** 仓库为 [hhxpoint/gather](https://github.com/hhxpoint/gather)，项目站为 [hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/)。这是首个正式版本：Windows NSIS 安装版/便携版、Linux AppImage/deb、SHA-256 清单与下载引导均已交付。桌面端支持文件夹工作区、单文件查找替换、跨文稿搜索、实时预览、专注/阅读模式、阅读目录/查找/代码高亮、窗口/会话恢复、崩溃恢复与冲突拒绝，以及 A4 PDF/含本地图片 HTML 导出。**当前边界：安装包未签名、没有自动更新；Linux 图形会话、IME、字体回退与 200% 缩放尚未实测；AI/RAG、DOCX、阅读标注、精确段落同步与工作区树形文件操作不在 0.1.0 范围。** 文中区分“代码中存在”“已验证”“尚未验证”，不把计划写成结果。
 
 ## 目录
 
@@ -36,36 +36,36 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 ## 下载与校验
 
-首个公开预览是 GitHub prerelease [v0.1.0-phase.0](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0)。二进制只放在 GitHub Releases，不进入 Pages 或 npm。
+Gather 0.1.0 已发布为 GitHub [正式版本](https://github.com/hhxpoint/gather/releases/tag/v0.1.0)。二进制只放在 GitHub Releases，不进入 Pages 或 npm。
 
 | 平台 | 文件 | 大小 | 说明 |
 | --- | --- | --- | --- |
-| Windows x64 | [Gather-Setup-0.1.0-phase.0.exe](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-Setup-0.1.0-phase.0.exe) | 107,159,310 B（约 102.2 MiB） | NSIS 安装版；可选安装目录，创建开始菜单/桌面快捷方式 |
-| Windows x64 | [Gather-Portable-0.1.0-phase.0.exe](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-Portable-0.1.0-phase.0.exe) | 97,380,409 B（约 92.9 MiB） | 便携版，无需安装 |
-| Linux x86_64 | [Gather-0.1.0-phase.0-linux-x86_64.AppImage](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-0.1.0-phase.0-linux-x86_64.AppImage) | 124,429,055 B（约 118.7 MiB） | AppImage；Linux 图形会话尚未实测 |
-| Linux amd64 | [Gather-0.1.0-phase.0-linux-amd64.deb](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-0.1.0-phase.0-linux-amd64.deb) | 96,985,132 B（约 92.5 MiB） | Debian/Ubuntu 包；Linux 图形会话尚未实测 |
-| 全部 | [SHA256SUMS.txt](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/SHA256SUMS.txt) | 409 B | 四个产物的 SHA-256 清单 |
+| Windows x64 | [Gather-Setup-0.1.0.exe](https://github.com/hhxpoint/gather/releases/download/v0.1.0/Gather-Setup-0.1.0.exe) | 107,158,569 B（约 102.2 MiB） | NSIS 安装版；可选安装目录，创建开始菜单/桌面快捷方式 |
+| Windows x64 | [Gather-Portable-0.1.0.exe](https://github.com/hhxpoint/gather/releases/download/v0.1.0/Gather-Portable-0.1.0.exe) | 97,381,791 B（约 92.9 MiB） | 便携版，无需安装 |
+| Linux x86_64 | [Gather-0.1.0-linux-x86_64.AppImage](https://github.com/hhxpoint/gather/releases/download/v0.1.0/Gather-0.1.0-linux-x86_64.AppImage) | 124,429,206 B（约 118.7 MiB） | AppImage；Linux 图形会话尚未实测 |
+| Linux amd64 | [Gather-0.1.0-linux-amd64.deb](https://github.com/hhxpoint/gather/releases/download/v0.1.0/Gather-0.1.0-linux-amd64.deb) | 96,983,944 B（约 92.5 MiB） | Debian/Ubuntu 包；Linux 图形会话尚未实测 |
+| 全部 | [SHA256SUMS.txt](https://github.com/hhxpoint/gather/releases/download/v0.1.0/SHA256SUMS.txt) | 377 B | 四个产物的 SHA-256 清单 |
 
 <details>
 <summary>SHA-256 校验值</summary>
 
 | 文件 | SHA-256 |
 | --- | --- |
-| `Gather-Setup-0.1.0-phase.0.exe` | `cdacfcc18809fcbd0818fd249539a72b34d8e987b119ed30a5e46a94afaab249` |
-| `Gather-Portable-0.1.0-phase.0.exe` | `74df9788937a96d563d431fdca05b90ef43f81b2e7218ae95bc1afed59f24b58` |
-| `Gather-0.1.0-phase.0-linux-x86_64.AppImage` | `0342adf296686ded1dcea0a0476fcb177668eb62052903d011486451a0c59b26` |
-| `Gather-0.1.0-phase.0-linux-amd64.deb` | `0f3d6f98e2de95a512ed708a231630c146eadcbd4a62fe5da7680af2d8996026` |
+| `Gather-Setup-0.1.0.exe` | `0f1f3f7b6586dfb53137dc53cf87876e959a4235a0ea204f3ca6b7c4e0525ca6` |
+| `Gather-Portable-0.1.0.exe` | `5329527a6c4c1517f03b98839d247505a58620bd6fee965518338fa717e0450c` |
+| `Gather-0.1.0-linux-x86_64.AppImage` | `6b46b26277887afd601e53f3c5640e32f898cada964afa19f60caa0533f4756d` |
+| `Gather-0.1.0-linux-amd64.deb` | `ee5f8881da0c35e3c44c221656de0485cc9ff4488a4e64e9310e658400b7457b` |
 
 </details>
 
-安装包**没有代码签名**：Windows SmartScreen 可能提示“未知发布者”，只有在你信任此构建时才选择“仍要运行”。没有自动更新；Linux 包由 Actions 构建并通过产物校验，但尚未在真实 Linux 图形会话、IME 或 200% 缩放下验收。下载前可用 `sha256sum -c SHA256SUMS.txt`（Linux）或 `Get-FileHash`（Windows PowerShell）核对。AppImage 需要先 `chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage`；deb 可用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。
+安装包**没有代码签名**：Windows SmartScreen 可能提示“未知发布者”，只有在你信任此构建时才选择“仍要运行”。没有自动更新；Linux 包由 Actions 构建并通过产物校验，但尚未在真实 Linux 图形会话、IME 或 200% 缩放下验收。下载前可用 `sha256sum -c SHA256SUMS.txt`（Linux）或 `Get-FileHash`（Windows PowerShell）核对。AppImage 需要先 `chmod +x Gather-0.1.0-linux-x86_64.AppImage`；deb 可用 `sudo apt install ./Gather-0.1.0-linux-amd64.deb`。
 
 ## 下载后怎么用
 
 不需要账号，也不需要把文稿上传到云端。第一次启动会显示一篇示例文稿；文稿只写进你选择的本地文件。
 
-1. **Windows**：双击 `Gather-Setup-0.1.0-phase.0.exe` 安装，或直接双击 `Gather-Portable-0.1.0-phase.0.exe`。SmartScreen 提示时确认来源与 SHA-256，再选择“更多信息 → 仍要运行”。
-2. **Linux**：AppImage 先 `chmod +x` 再运行；deb 用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。Linux 图形会话尚未进入已验证矩阵。
+1. **Windows**：双击 `Gather-Setup-0.1.0.exe` 安装，或直接双击 `Gather-Portable-0.1.0.exe`。SmartScreen 提示时确认来源与 SHA-256，再选择“更多信息 → 仍要运行”。
+2. **Linux**：AppImage 先 `chmod +x` 再运行；deb 用 `sudo apt install ./Gather-0.1.0-linux-amd64.deb`。Linux 图形会话尚未进入已验证矩阵。
 3. **打开文稿/文件夹**：`Ctrl+O` 打开单个 `.md`，`Ctrl+Shift+O` 把整个文件夹作为工作区。首次出现的“未命名文稿”可以直接改写，用 `Ctrl+Shift+S` 另存为新文件。
 4. **写作与保存**：`Ctrl+S` 才写回原文件；标题栏未保存标记消失才算保存成功。Gather 不会自动改写原文件，恢复快照只用于崩溃恢复。
 5. **阅读与导出**：`Ctrl+Shift+R` 进入阅读模式，`Ctrl+Shift+Enter` 专注模式，`Ctrl+Shift+E` 导出 A4 PDF；“文件 → 导出 HTML…”导出独立 HTML。
@@ -75,7 +75,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 ## 真实界面
 
-以下截图来自 Phase 1 的 Windows 构建，不是效果图。示例文稿与公开示例路径均为合成内容。
+以下截图来自 0.1.0 的 Windows 构建，不是效果图。示例文稿与公开示例路径均为合成内容。
 
 <img src="docs/images/gather-editor.png" alt="Gather 编辑器真实截图：Markdown 标题、引用、列表与 TypeScript 代码块，页脚显示字符数、行数和 UTF-8 编码" width="880">
 
@@ -121,19 +121,18 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 | 项目 | 现状 |
 | --- | --- |
-| 阶段 | Phase 1（文件可靠性进行中；Phase 0 骨架与 CI 已闭环） |
-| 版本 | `0.1.0-phase.0`（公开源码仓库；有未签名 GitHub prerelease 安装包；未发布 npm 包） |
+| 版本 | `0.1.0`（公开源码仓库；有未签名 GitHub 正式版安装包；未发布 npm 包） |
 | 目标平台 | Windows 10/11；Linux（Ubuntu/Debian/Fedora，X11 与 Wayland） |
-| 桌面壳 | Electron 38 + electron-vite 4（Phase 0 默认） |
+| 桌面壳 | Electron 38 + electron-vite 4 |
 | 编辑器核心 | CodeMirror 6 + Lezer |
 | CLI | Node.js + Commander，`gather doctor/export/new` |
 | 共享核心 | `@gather/core`：Markdown 渲染、文本计数、CRLF/BOM 格式检测 |
 | 许可 | 应用核心 AGPL-3.0-only（`LICENSE` 已落盘）；插件 SDK/主题以后 MIT |
 | 仓库与站点 | [github.com/hhxpoint/gather](https://github.com/hhxpoint/gather) 公开；[hhxpoint.github.io/gather](https://hhxpoint.github.io/gather/) 已部署 |
 | CI | [Windows + Ubuntu matrix](https://github.com/hhxpoint/gather/actions/workflows/ci.yml) 已产生绿色运行 |
-| 发布状态 | [v0.1.0-phase.0 prerelease](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0)：Windows NSIS/portable、Linux AppImage/deb、SHA256SUMS；全部未签名、无自动更新；未达到公开 beta |
+| 发布状态 | [v0.1.0 正式版](https://github.com/hhxpoint/gather/releases/tag/v0.1.0)：Windows NSIS/portable、Linux AppImage/deb、SHA256SUMS；未签名、无自动更新；Linux GUI/IME 待验证 |
 
-Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已经做到：干净环境 `npm ci`、类型检查、测试、构建、CLI 冒烟在 Windows 与 Ubuntu CI 通过；桌面打开与另存为在 Windows 实际写盘成功；项目站公网可访问。Phase 1 文件安全主线已闭环：LF/CRLF/BOM 可字节保真 round-trip；保存前用 SHA-256 + 尺寸拒绝覆盖外部修改；打开新文件会重建编辑器状态，撤销不会回到上一篇；生产环境注入 CSP 并拦截导航/新窗口；自动恢复快照在强杀后可恢复，实时 watcher 会提示外部修改并支持显式载入磁盘版本；写入/重命名/权限失败会清理临时文件并显示可操作错误；POSIX 只读目录与 20 MiB 边界进入真实/注入测试；Windows staging 目录包已实测打开/保存。桌面端 PDF/HTML 导出已在真实窗口实际导出并回渲染核验，包括中文、表格、代码块和相对路径本地图片。实时预览已补上 GFM 表格、文档目录内图片与安全外链：点击表格/图片回源码，普通链接 Ctrl/Cmd+点击或表格链接单击，主进程只放行 http/https。仍未做到：IME/Linux 桌面矩阵、完整的冲突合并/版本历史、真实断电/满盘矩阵、签名安装包、AI/RAG、DOCX。具体差距见[明确未完成项](#明确未完成项)；本文档不声称这些能力已完成。
+0.1.0 的交付标准不是“功能多”，而是“每一层都能从干净环境跑起来，并且不丢稿”。当前已做到：干净环境 `npm ci`、类型检查、测试、构建与 CLI 冒烟在 Windows/Ubuntu CI 通过；LF/CRLF/BOM 字节保真、保存冲突拒绝、撤销栈重置、CSP/导航、恢复快照、强杀恢复、外部变更提示、原子写入故障注入、工作区、单文件与跨文稿搜索、专注/阅读模式、阅读目录/查找/代码高亮、PDF/HTML 导出、窗口/工作区/文稿会话恢复。Windows 安装器、便携版与图标已实测；公网下载页、SHA-256 清单与上手指南已上线。仍未做到：IME/Linux 桌面矩阵、完整冲突合并/版本历史、真实断电/满盘矩阵、代码签名/自动更新、AI/RAG、DOCX；这些边界见[明确未完成项](#明确未完成项)。
 
 ## 为什么做 Gather
 
@@ -145,7 +144,7 @@ Phase 0 的退出标准不是“功能多”，而是“每一层都能从干净
 
 Gather 不打算做这些事：
 
-- 不做云端协作 SaaS，不要求账号，不做多人实时协同（至少 Phase 0–2 不做）。
+- 不做云端协作 SaaS，不要求账号，不做多人实时协同（至少 0.1–2 不做）。
 - 不做 Notion 式块数据库，不引入私有文档格式。
 - 不内置付费模型 API，不把“上传文档”当作默认行为。
 - 不承诺“AI 自动写完一篇文章”。审阅是产品约束，不是可关闭的选项。
@@ -212,7 +211,7 @@ Gather 不打算做这些事：
 | `gather doctor` | 已验证（本地 + 双平台 CI） | 输出 Node、平台、工作目录；`--json` 输出结构化结果；Windows 与 Ubuntu CI 均执行 |
 | `gather export <file>` | 部分（本地验证） | CLI 仅支持 HTML；桌面端另有 PDF/HTML 导出，CLI 的 PDF/DOCX 会明确报错；本地 `--out` 写盘成功，CI 未覆盖 export |
 | `gather new <file>` | 已验证（本地） | 父目录必须存在；`wx` 模式拒绝覆盖已有文件；CI 未覆盖 new |
-| 全局安装 | 未实现 | 没有发布 npm 包；Phase 0 通过仓库内路径运行 |
+| 全局安装 | 未实现 | 没有发布 npm 包；当前通过仓库内路径运行 |
 
 ### 共享核心（`packages/core`）
 
@@ -239,11 +238,11 @@ Gather 不打算做这些事：
 | 构建产物 | 已通过（本地 + CI） | 本地 `apps/desktop/out`、`apps/site/dist`、`packages/cli/dist`；CI 双平台完整构建通过 |
 | CI | 已通过 | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，Node 24；工作区批次 [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214)、合并后 main [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330)、预览批次 [44974544499](https://github.com/hhxpoint/gather/actions/runs/44974544499)、导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 均全绿 |
 | 官网 | 已部署 | `apps/site` 构建成功；工作区批次 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；公网 HTML/CSS 与本地构建 SHA-256 一致，6 张产品截图与 PDF 截图 HTTP 200 |
-| 安装包 | 已产出（未签名） | Release workflow [45140138861](https://github.com/hhxpoint/gather/actions/runs/45140138861)：Windows NSIS/portable、Linux AppImage/deb、SHA256SUMS；Windows 构建已实测安装/启动/卸载与便携启动；无代码签名、自动更新或干净 VM 矩阵 |
+| 安装包 | 已产出（未签名） | Release workflow [45161110408](https://github.com/hhxpoint/gather/actions/runs/45161110408)：Windows NSIS/portable、Linux AppImage/deb、SHA256SUMS；Windows 构建已实测安装/启动/卸载与便携启动；无代码签名、自动更新或干净 VM 矩阵 |
 
 ## 明确未完成项
 
-这一节区分“骨架已闭环”“Phase 1 文件可靠性已证明”和“产品可发布”。勾选项是已经完成并有证据的；未勾选项都是 beta 之前的阻断，其中任何“必须”级编辑能力缺失，都不能把当前状态描述成完整编辑器。
+这一节区分“0.1.0 已交付”“已验证”和“仍待补齐”。勾选项是已经完成并有证据的；未勾选项是后续版本的真实缺口，不能把计划写成已经通过。
 
 - [x] **Windows/Ubuntu CI 已复跑。** 导出批次 [44917922628](https://github.com/hhxpoint/gather/actions/runs/44917922628) 在 `ubuntu-latest` 与 `windows-latest` 上执行 `npm ci`、typecheck、75 个测试、build 与 CLI `doctor --json`，全部成功；Ubuntu 75 全过，Windows 73 通过 + 2 个 POSIX-only 跳过。上一批基线为 [44888732915](https://github.com/hhxpoint/gather/actions/runs/44888732915)（65 个测试）。
 - [x] **项目站已部署。** Pages 工作流 [44870544823](https://github.com/hhxpoint/gather/actions/runs/44870544823) 成功；`https://hhxpoint.github.io/gather/` 已在浏览器中验证加载，CSS 正常。
@@ -290,7 +289,7 @@ Gather 不打算做这些事：
 - [ ] **工作区搜索仍是只读的。** 没有跨文稿替换、搜索历史、包含/排除规则或流式结果；单文件超过 2 MiB、二进制文件会跳过并在摘要中计数；正则可能很慢，由 8 秒超时兜底。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
-- [ ] **没有签名安装包。** `v0.1.0-phase.0` 已发布未签名 NSIS/portable/AppImage/deb 与 SHA-256 清单；仍没有代码签名、自动更新、升级/回滚与干净 VM 安装/卸载矩阵。Windows 未签名安装器会触发 SmartScreen。
+- [ ] **没有签名安装包。** `v0.1.0` 已发布未签名 NSIS/portable/AppImage/deb 与 SHA-256 清单；仍没有代码签名、自动更新、升级/回滚与干净 VM 安装/卸载矩阵。Windows 未签名安装器会触发 SmartScreen。
 - [ ] **没有性能与可访问性基线。** 冷启动、10 万字符输入延迟、1/5 MiB 文档滚动、200% 缩放与屏幕阅读器均未测量。
 - [ ] **没有商标/域名/包名检索记录。** `gather` 与 `@gather/*` 目前只是工作名称，未做商用清障。
 
@@ -349,7 +348,7 @@ Gather 的分层原则是：**Markdown 文件是唯一真相，核心逻辑不�
 
 Markdown 是文本，不是富文本 schema。CodeMirror 6 的文档模型就是字符串，Lezer 提供增量语法树，装饰层可以在不改变文本的前提下隐藏标记、放大标题、着色引用。保存时写回的是用户看到的同一段文本，不需要“从富文本模型序列化回 Markdown”这一步，因而更容易保住空行、表格、HTML 和未知语法。详细取舍见 [ADR 0002](docs/adr/0002-editor-core.md)。
 
-### 为什么 Phase 0 是 Electron
+### 为什么 0.1 是 Electron
 
 Electron 在所有目标平台使用同一套 Chromium，中文输入法、字体回退、打印/PDF 的行为更容易保持一致；主进程直接使用 Node 的文件系统能力，CLI 与桌面端可以共享同一套 TypeScript 核心。代价是安装包大、内存高、需要跟随 Chromium 安全更新。Tauri 2 是候选，但必须先通过四项硬门槛，见 [ADR 0001](docs/adr/0001-desktop-shell.md)。
 
@@ -398,7 +397,7 @@ gather/
 │  │  ├─ test/session.test.ts    窗口归一化、同步写与会话路径校验
 │  │  ├─ test/reading-utils.test.ts 标题大纲与源行映射
 │  │  ├─ electron.vite.config.ts
-│  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
+│  │  ├─ scripts/stage-portable.mjs  内部 Windows/Linux 目录包
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
 │  └─ site/                     官网静态骨架
 │     ├─ index.html             项目站首页（约 56 KB）
@@ -443,7 +442,7 @@ gather/
 ├─ .github/workflows/
 │  ├─ ci.yml                    Ubuntu + Node 24：ci/typecheck/test/build
 │  ├─ pages.yml                 构建 apps/site 并部署 GitHub Pages
-│  └─ release.yml               Windows/Ubuntu 安装包、SHA256SUMS 与 prerelease
+│  └─ release.yml               Windows/Ubuntu 安装包、SHA256SUMS 与 GitHub Release
 ├─ .nvmrc                       Node 24
 ├─ LICENSE                      GNU AGPL v3 全文
 ├─ package.json                 npm workspaces 根
@@ -461,7 +460,7 @@ gather/
 - **Node.js 24.x**。`.nvmrc` 写的是 `24`；根 `package.json` 的 `engines` 是 `>=22.13.0`，但文档与 CI 目标统一按 Node 24 执行，避免 Node 22 早期版本的类型剥离/工具链差异。
 - npm（随 Node 安装）。仓库使用 npm workspaces，不要求 pnpm/yarn。
 - Windows 10/11，或带桌面环境的 Linux。Electron 在 Linux 上需要 GTK3、NSS、ALSA 等运行库，具体包名以 Electron 官方 Linux 依赖说明和你的发行版为准。
-- Phase 0 不需要 Rust、Python 或 Tauri 工具链。
+- 0.1 不需要 Rust、Python 或 Tauri 工具链。
 
 切换 Node 版本（任选其一）：
 
@@ -532,15 +531,15 @@ npm run dist -w @gather/desktop
 # 产物：apps/desktop/release/
 ```
 
-`npm run stage -w @gather/desktop` 仍保留为内部 staging 目录包（`release/*-unpacked`），用于不经过安装器的桌面冒烟；它不是公开发行物。
+`npm run stage -w @gather/desktop` 仍保留为内部未打包目录（`release/*-unpacked`），用于不经过安装器的桌面冒烟；公开发行物以 GitHub Release 为准。
 
-发行由 [`.github/workflows/release.yml`](.github/workflows/release.yml) 完成：Windows 与 Ubuntu runner 分别构建安装包，上传 artifact；发布 job 合并产物、生成 `SHA256SUMS.txt`、创建/更新 GitHub prerelease。成功运行 [45140138861](https://github.com/hhxpoint/gather/actions/runs/45140138861) 产出了 `v0.1.0-phase.0` 的 NSIS、portable、AppImage、deb 与校验和。首次 Linux 构建先后暴露了 scoped npm 包名进入 executable/artifact 路径的问题，修复记录见 [DEBUG_LOG](docs/DEBUG_LOG.md) 与 [ADR 0013](docs/adr/0013-distribution-and-icons.md)。
+发行由 [`.github/workflows/release.yml`](.github/workflows/release.yml) 完成：Windows 与 Ubuntu runner 分别构建安装包，上传 artifact；发布 job 合并产物、生成 `SHA256SUMS.txt`、创建/更新 GitHub Release。成功运行 [45161110408](https://github.com/hhxpoint/gather/actions/runs/45161110408) 产出了 `v0.1.0` 的 NSIS、portable、AppImage、deb 与校验和。首次 Linux 构建先后暴露了 scoped npm 包名进入 executable/artifact 路径的问题，修复记录见 [DEBUG_LOG](docs/DEBUG_LOG.md) 与 [ADR 0013](docs/adr/0013-distribution-and-icons.md)。
 
 本地 Windows 构建已实测：PowerShell 静默安装（`/S /D=...`）退出码 0、应用启动、卸载退出码 0；便携版启动并渲染 1184×755 窗口；安装后的 `Gather.exe` 带应用图标与 `ProductVersion 0.1.0.0`。Release 资产名称、大小与 SHA-256 已与 GitHub API 摘要及 `SHA256SUMS.txt` 交叉核对；受本机到 Release 资产网络限速影响，最终 Windows 二进制尚未从 Release 重新下载安装，证据边界见 [VERIFICATION](docs/VERIFICATION.md)。安装包**未签名**，没有自动更新，也没有在干净虚拟机中跑完整安装/卸载矩阵；Linux 图形会话、IME、字体回退与 200% 缩放仍未实测。
 
 ## CLI 示例
 
-Phase 0 不发布全局 npm 包。先构建 CLI，再用仓库内路径运行。以下命令已在 2026-11-21 用 Node 24.22.3 在 Windows 上冒烟验证：`doctor`、`new`、`export --out`（HTML）成功，`export --format pdf` 按预期以非零状态失败。CI 在 Ubuntu 与 Windows 上都执行了 `doctor --json`，但 `new` 与 `export` 还没有进入 CI；Linux 上的手工 export 也尚未做。
+0.1 不发布全局 npm 包。先构建 CLI，再用仓库内路径运行。以下命令已在 2026-11-21 用 Node 24.22.3 在 Windows 上冒烟验证：`doctor`、`new`、`export --out`（HTML）成功，`export --format pdf` 按预期以非零状态失败。CI 在 Ubuntu 与 Windows 上都执行了 `doctor --json`，但 `new` 与 `export` 还没有进入 CI；Linux 上的手工 export 也尚未做。
 
 ```bash
 npm run build -w @gather/cli
@@ -574,32 +573,31 @@ node packages/cli/dist/cli.js export notes/today.md
 # 写入 HTML 文件
 node packages/cli/dist/cli.js export notes/today.md --out notes/today.html
 
-# 显式指定格式（Phase 0 只接受 html）
+# 显式指定格式（0.1 只接受 html）
 node packages/cli/dist/cli.js export notes/today.md --format html --out notes/today.html
 
 # 预期失败：PDF 尚未实现
 node packages/cli/dist/cli.js export notes/today.md --format pdf
 ```
 
-`--format pdf` 会以非零状态退出并提示 Phase 0 只支持 HTML。`--json` 在配合 `--out` 时输出 `{ output, bytes }`；不配合 `--out` 时仍然输出 HTML 正文。
+`--format pdf` 会以非零状态退出并提示 0.1 只支持 HTML。`--json` 在配合 `--out` 时输出 `{ output, bytes }`；不配合 `--out` 时仍然输出 HTML 正文。
 
 ## 路线图
 
 完整阶段、验收门槛与时间范围见 [docs/ROADMAP.md](docs/ROADMAP.md)。摘要：
 
-| 阶段 | 目标 | 量级 | 关键出口 |
+| 版本 | 目标 | 状态 | 关键出口 |
 | --- | --- | --- | --- |
-| Phase 0 | 可运行骨架：桌面编辑器、CLI、官网、测试、CI | 2 周（一人全职） | 干净环境四命令全绿；打开/保存不丢稿；站点可访问 |
-| Phase 1 | 编辑可靠性与文件安全：CRLF/BOM、外部变更、恢复、IME、性能 | 4–6 周 | 8 小时 dogfood；IME 矩阵签字；5 MiB 文档可用 |
-| Phase 2 | AI 审阅与 Tauri bake-off：Ollama、BYOK、逐块 diff | 6–10 周 | 默认不上传；逐块接受/拒绝；四项硬门槛有结论 |
-| Phase 3 | beta 加固：DOCX、插件 SDK、签名分发、自动更新 | 3–5 个月 | 签名安装包；更新可回滚；插件 API 稳定 |
-| Phase 4 | 1.0：稳定性、可访问性、本地化 | 3–6 个月 | 30 天无 P0 数据事故；文档与迁移路径完备 |
+| 0.1.0 | 本地优先编辑器、文件安全、工作区、搜索、阅读、导出、安装包与下载 | 已发布 | Windows/Linux 安装包、公网下载、SHA-256、稳定编辑与恢复 |
+| 0.2 | AI 审阅与逐块 diff：Ollama、BYOK、默认不上传 | 计划 | 逐块接受/拒绝；模型调用可审计 |
+| 0.3 | 稳定性与生态：签名分发、自动更新、DOCX、插件 SDK | 计划 | 签名安装包；更新可回滚；插件 API 稳定 |
+| 1.0 | 长期稳定版：可访问性、本地化、跨平台矩阵 | 计划 | 30 天无 P0 数据事故；文档与迁移路径完备 |
 
-**公开 beta 的时间量级是 6–9 个月**（一人全职、按上述范围）。两到四人的小团队可以并行桌面、AI、站点与测试，beta 可能压缩到 3–6 个月，但 IME、Linux 发行版矩阵、签名与数据安全测试不能按人数线性压缩。兼职投入按 1.5–2.5 倍时间估算。以上是范围估算，不是发布日期承诺。
+以上是范围估算，不是发布日期承诺。0.1.0 已发布；后续版本按实际验证推进。
 
 ## P0 编辑功能清单
 
-这里的 P0 指“不完成就不能进入 Phase 1 的编辑能力”。状态按当前代码快照判定，未运行验证的条目标为“未验证”。
+这里的 P0 指“0.1.0 发布前必须核对的编辑能力”。状态按当前代码快照判定，未运行验证的条目标为“未验证”。
 
 | 编号 | 功能 | 优先级 | 状态 |
 | --- | --- | --- | --- |
@@ -621,14 +619,14 @@ node packages/cli/dist/cli.js export notes/today.md --format pdf
 | P0-16 | 5 MiB 文档输入延迟与滚动性能 | 应该 | 未验证 |
 | P0-17 | 表格、图片、链接的预览呈现 | 应该 | 已验证（GFM 表格、目录内位图、安全外链；远程图片不自动加载） |
 | P0-18 | 多标签/工作区 | 以后 | 工作区已可用；多标签未实现 |
-| P0-19 | AI diff 审阅与逐块接受/拒绝 | Phase 2 | 未实现 |
-| P0-20 | DOCX 导出 | Phase 3 | 未实现；桌面 PDF/HTML 导出已可用 |
+| P0-19 | AI diff 审阅与逐块接受/拒绝 | 0.2 | 未实现 |
+| P0-20 | DOCX 导出 | 0.3 | 未实现；桌面 PDF/HTML 导出已可用 |
 
-P0 的“必须”项没有全部满足，因此当前快照不能称为可发布的编辑器，只能称为骨架。
+P0 中的 IME、性能与可访问性仍未全部满足；0.1.0 已发布，但这些项目不能写成“已通过”，它们是后续版本的优先工作。
 
 ## 工业级质量门槛
 
-以下是 Gather 进入 beta 前必须满足的门槛。它们不是营销指标，而是发布阻断条件。当前快照只满足其中很小一部分。
+以下是 Gather 在后续稳定版发布前必须继续满足的门槛。它们不是营销指标，而是质量条件；0.1.0 已交付的部分见“已验证”，其余不能写成已通过。
 
 | 门槛 | 可验证标准 | 当前 |
 | --- | --- | --- |
@@ -642,13 +640,13 @@ P0 的“必须”项没有全部满足，因此当前快照不能称为可发�
 | 跨平台 | Windows 10/11、Ubuntu 22.04/24.04、Fedora 当前稳定版；X11 与 Wayland 各一轮 | 未测试 |
 | 交付 | Windows + Linux CI 全绿；安装/卸载/升级/回滚；校验和与签名 | CI 双平台已绿；未签名 NSIS/portable/AppImage/deb 与 SHA-256 已发布；签名、升级/回滚、干净 VM 均无 |
 
-Phase 0 的目标是让这些门槛“可被执行”，不是全部通过。任何“已经工业级”的说法都不成立。
+0.1 的目标是让这些门槛“可被执行”，不是全部通过。任何“已经工业级”的说法都不成立。
 
 ## Windows / Linux 分发与签名成本
 
-当前的 `electron-builder` 配置仍以正式分发为目标；首个未签名 prerelease 已产出，但没有证书或签名：
+当前的 `electron-builder` 配置以正式分发为目标；0.1.0 未签名安装包已产出，但没有证书或签名：
 
-- Windows：`nsis` 安装包与 `portable` 单文件（[v0.1.0-phase.0](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0) 已发布；安装/启动/卸载在 Windows 本机实测）。
+- Windows：`nsis` 安装包与 `portable` 单文件（[v0.1.0](https://github.com/hhxpoint/gather/releases/tag/v0.1.0) 已发布；安装/启动/卸载在 Windows 本机实测）。
 - Linux：`AppImage` 与 `deb`，分类 `Office`（已构建并上传；图形会话未实测）。
 
 ### Windows
@@ -664,15 +662,15 @@ Phase 0 的目标是让这些门槛“可被执行”，不是全部通过。任
 - AppImage 没有强制的中心化签名体系，可以用 GPG 对产物签名并提供校验和；deb 仓库同样用 GPG 签 `Release` 文件。
 - 没有必须购买的代码签名证书，但有仓库托管、带宽、Flathub/Snap 审核与持续维护成本。
 - 必须在 Ubuntu/Debian 与 Fedora 上分别测试 glibc、GTK、Electron/Chromium 运行库；Wayland 下的输入法、文件对话框、缩放要单独验证。
-- 不建议 Phase 0 就承诺“全发行版支持”。先锁定 Ubuntu 22.04/24.04 与 Fedora 当前稳定版，再扩展。
+- 不建议 0.1 就承诺“全发行版支持”。先锁定 Ubuntu 22.04/24.04 与 Fedora 当前稳定版，再扩展。
 
 ### 共同成本
 
 - CI 需要 Windows 与 Linux runner；签名通常需要单独的密钥管理方案。
-- 自动更新需要签名、HTTPS 托管、版本清单与回滚策略，Phase 0 没有实现。
+- 自动更新需要签名、HTTPS 托管、版本清单与回滚策略，0.1 没有实现。
 - 崩溃报告如果做，必须默认关闭或明确征得同意，且不能包含文稿内容。
 
-尚未发布签名安装包。`v0.1.0-phase.0` 是未签名预览；签名、自动更新、升级/回滚与干净 VM 测试仍是公开 beta 的阻断。
+`v0.1.0` 已发布，但仍是未签名安装包；代码签名、自动更新、升级/回滚与干净 VM 测试仍是后续稳定版的阻断。
 
 ## GitHub Pages 项目站
 
@@ -686,7 +684,7 @@ https://hhxpoint.github.io/gather/
 
 - 站点源码在 `apps/site`：`index.html`、`styles.css`、`build.mjs`、`package.json`；`build.mjs` 把首页与样式复制到 `apps/site/dist`，并从 `docs/images` 复制真实产品截图。
 - `.github/workflows/pages.yml` 在 `main` 的站点/锁文件变化或手动触发时运行；build 与 deploy 拆成两个 job，避免 artifact 列表竞态，并使用 Node 24 action majors。运行 [44912794773](https://github.com/hhxpoint/gather/actions/runs/44912794773) 成功。
-- 2026-11-21 已完成 Phase 1 站点改版并上线：真实产品截图区、文件安全、工程证据、真实下载状态与 Phase 1 路线图。公网页面已确认标题、样式与 3 张截图；截图资源 HTTP 200，字节数与仓库一致。
+- 2026-11-21 已完成 0.1.0 站点改版并上线：真实产品截图区、文件安全、工程证据、真实下载状态与 0.1.0 路线图。公网页面已确认标题、样式与 3 张截图；截图资源 HTTP 200，字节数与仓库一致。
 - 2026-11-22 预览批次上线：产品区增加表格/图片预览两张真实截图，能力区更新 96 个测试；Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功，公网 HTML/CSS SHA-256 与本地构建一致，图片字节数一致。
 - 2026-11-22 工作区批次上线：产品区增加文件夹工作区截图，能力区更新 101 个测试；Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功，公网 HTML/CSS 与本地构建 SHA-256 一致。
 - 2026-11-22 搜索批次上线：产品区增加 `07 / Find` 查找替换截图，能力区与路线图同步；Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 成功，公网 HTML/CSS/截图 SHA-256 与本地构建一致，390/1440 均无横向溢出。
@@ -694,8 +692,8 @@ https://hhxpoint.github.io/gather/
 - 2026-11-23 会话批次上线：窗口/工作区/最后文稿跨重启恢复，能力区更新 121 个测试；Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功，公网 HTML/CSS SHA-256 与本地构建一致，1440/390 均无横向溢出。
 - 2026-11-23 阅读批次上线：新增 `09 / Reading`、专注/阅读/夜读与 760px 编辑版心；Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功，公网 9 张产品截图在 1440/390 全部加载。
 - 2026-11-23 阅读工具批次上线：新增 `10 / Reading tools`、目录、全文查找、代码语法高亮与阅读导出；Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功，10 张产品截图在 1440/390 全部加载。
-- 2026-11-23 下载与上手指南上线：hero 下载 CTA、Windows/Linux 四个安装包直链、真实大小与 SHA-256 详情、SmartScreen/`chmod +x`/deb 命令，以及站内“下载后怎么用”三步引导和 [QUICKSTART](docs/QUICKSTART.md)；Pages [45148678830](https://github.com/hhxpoint/gather/actions/runs/45148678830) 成功，公网 HTML 按 LF 归一后的 SHA-256 `0ecc3d7a…`、CSS `bfc60401…` 与本地 `dist` 一致，1440/390 无横向溢出，下载区 5 个链接都指向 `v0.1.0-phase.0` 的真实资产。
-- 站点现在列出真实存在的 `v0.1.0-phase.0` Release 资产、大小与 SHA-256，并明确标注未签名、无自动更新、Linux GUI 未实测；没有伪造下载按钮、版本号或用户文稿。二进制只走 GitHub Releases，不塞进 Pages。
+- 2026-11-23 下载与上手指南上线：hero 下载 CTA、Windows/Linux 四个安装包直链、真实大小与 SHA-256 详情、SmartScreen/`chmod +x`/deb 命令，以及站内“下载后怎么用”三步引导和 [QUICKSTART](docs/QUICKSTART.md)；Pages [45148678830](https://github.com/hhxpoint/gather/actions/runs/45148678830) 成功，公网 HTML 按 LF 归一后的 SHA-256 `0ecc3d7a…`、CSS `bfc60401…` 与本地 `dist` 一致，1440/390 无横向溢出，下载区 5 个链接都指向 `v0.1.0` 的真实资产。
+- 站点现在列出真实存在的 `v0.1.0` Release 资产、大小与 SHA-256，并明确标注未签名、无自动更新、Linux GUI 未实测；没有伪造下载按钮、版本号或用户文稿。二进制只走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
 
@@ -704,14 +702,14 @@ https://hhxpoint.github.io/gather/
 每次 bug 修复、失败测试、平台差异与发布状态变化都记录在仓库内，而不是只留在对话里：
 
 - [docs/QUICKSTART.md](docs/QUICKSTART.md)：下载、校验、Windows/Linux 安装、首次打开、快捷键、数据位置、升级卸载与故障排查。
-- [docs/DEBUG_LOG.md](docs/DEBUG_LOG.md)：按“现象 / 根因 / 修复 / 证据 / 防回归”记录 Phase 0/1 的真实踩坑与修正；包含被推翻的初始判断。
+- [docs/DEBUG_LOG.md](docs/DEBUG_LOG.md)：按“现象 / 根因 / 修复 / 证据 / 防回归”记录 0.1/1 的真实踩坑与修正；包含被推翻的初始判断。
 - [docs/VERIFICATION.md](docs/VERIFICATION.md)：当前可复现命令、测试清单、Windows 真实窗口矩阵、失败注入矩阵和明确未验证项。
 
 新增功能或修复时，PR 必须同时更新对应日志与验证结果；CI 链接要写具体运行号，不能写“应该能过”。
 
 ## 贡献
 
-开发、测试、提交规范、数据安全与 AI 隐私要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。Phase 1 最需要帮助的方向：
+开发、测试、提交规范、数据安全与 AI 隐私要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。0.1.0 之后最需要帮助的方向：
 
 - Windows 10/11 与 Linux（X11/Wayland）上做真实运行与 IME 测试，并记录系统、输入法、版本。
 - 在 Linux 图形会话中复跑桌面打开/保存/打印矩阵，并补充 CLI `new/export` 的 CI 覆盖。
@@ -736,7 +734,7 @@ https://hhxpoint.github.io/gather/
 
 仍缺少：依赖漏洞扫描、签名构建、自动更新校验、恢复快照加密。不要因为“本地优先”就认为桌面端没有攻击面；打开不受信任的 Markdown 仍然会经过解析与 HTML 渲染。
 
-### AI 隐私原则（Phase 2 才实现）
+### AI 隐私原则（0.2 计划实现）
 
 - 默认不联网、不上传文稿。AI 功能必须由用户显式开启。
 - 本地推理优先使用 Ollama；云端使用用户自带 Key（BYOK），不内置任何付费 API。
@@ -767,7 +765,7 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 
 **Gather 目前只是工作名称，没有做商用清障。** `gather` 是常见英文单词，重名概率高；`@gather/*` 只是当前 workspace 作用域，不代表已获得 npm 组织名或商标权。
 
-在公开 beta、收费、应用商店上架或成立公司之前，至少完成：
+在后续稳定版、收费、应用商店上架或成立公司之前，至少完成：
 
 1. **商标检索**：中国国家知识产权局（CNIPA）、USPTO、EUIPO 等目标市场，覆盖第 9 类（软件）与第 42 类（SaaS/开发服务）。
 2. **域名检索**：`gather.app`、`gather.dev`、`getgather.*` 等候选，确认不会与既有产品混淆。
@@ -775,7 +773,7 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 4. **既有产品检索**：搜索引擎、GitHub、Product Hunt、应用商店，确认没有同品类的高知名度 Gather。
 5. **法律意见**：如果计划商业化，让商标代理人做可注册性意见；本 README 不构成法律建议。
 
-如果检索发现冲突，应在 beta 前改名，而不是等用户和文档积累后再改。改名成本包括仓库、包名、站点、签名证书、域名、文档与用户迁移说明。
+如果检索发现冲突，应在后续稳定版前改名，而不是等用户和文档积累后再改。改名成本包括仓库、包名、站点、签名证书、域名、文档与用户迁移说明。
 
 ---
 
@@ -798,4 +796,4 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0012：阅读查找、目录与源行同步](docs/adr/0012-reading-navigation.md)
 - [ADR 0013：应用图标、安装包与 Releases](docs/adr/0013-distribution-and-icons.md)
 
-Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。
+Gather 0.1.0 已发布。这里记录的是第一个正式版本、可复查的工程证据，以及把它继续做成长期可信写作工具所需的门槛。

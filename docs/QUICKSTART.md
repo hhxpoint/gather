@@ -2,24 +2,24 @@
 
 这份指南面向第一次下载 Gather 的人。应用不需要账号，打开文稿不需要联网；Markdown 文件始终留在你选择的本地文件夹。
 
-当前版本是 [`v0.1.0-phase.0`](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0) 未签名预览版。Windows 安装器可能触发 SmartScreen；Linux 图形会话、IME 与字体回退尚未实测。遇到问题请附系统版本与终端输出。
+当前版本是 [`v0.1.0`](https://github.com/hhxpoint/gather/releases/tag/v0.1.0) 未签名正式版。Windows 安装器可能触发 SmartScreen；Linux 图形会话、IME 与字体回退尚未实测。遇到问题请附系统版本与终端输出。
 
 ## 1. 选择并校验下载
 
 | 系统 | 建议文件 | 适用方式 |
 | --- | --- | --- |
-| Windows 10/11 x64 | `Gather-Setup-0.1.0-phase.0.exe` | 安装版，创建开始菜单/桌面快捷方式 |
-| Windows 10/11 x64 | `Gather-Portable-0.1.0-phase.0.exe` | 单文件运行，不经过安装器 |
-| Linux x86_64 | `Gather-0.1.0-phase.0-linux-x86_64.AppImage` | 单文件 AppImage |
-| Debian / Ubuntu amd64 | `Gather-0.1.0-phase.0-linux-amd64.deb` | 系统包管理器安装 |
+| Windows 10/11 x64 | `Gather-Setup-0.1.0.exe` | 安装版，创建开始菜单/桌面快捷方式 |
+| Windows 10/11 x64 | `Gather-Portable-0.1.0.exe` | 单文件运行，不经过安装器 |
+| Linux x86_64 | `Gather-0.1.0-linux-x86_64.AppImage` | 单文件 AppImage |
+| Debian / Ubuntu amd64 | `Gather-0.1.0-linux-amd64.deb` | 系统包管理器安装 |
 
-下载页：[项目站下载区](https://hhxpoint.github.io/gather/#download) · [GitHub Release](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0)
+下载页：[项目站下载区](https://hhxpoint.github.io/gather/#download) · [GitHub Release](https://github.com/hhxpoint/gather/releases/tag/v0.1.0)
 
 可选校验：
 
 ```powershell
 # Windows PowerShell
-Get-FileHash .\Gather-Setup-0.1.0-phase.0.exe -Algorithm SHA256
+Get-FileHash .\Gather-Setup-0.1.0.exe -Algorithm SHA256
 ```
 
 ```bash
@@ -27,25 +27,25 @@ Get-FileHash .\Gather-Setup-0.1.0-phase.0.exe -Algorithm SHA256
 sha256sum -c SHA256SUMS.txt
 ```
 
-完整 SHA-256 列表见 [Release 的 SHA256SUMS.txt](https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/SHA256SUMS.txt)。
+完整 SHA-256 列表见 [Release 的 SHA256SUMS.txt](https://github.com/hhxpoint/gather/releases/download/v0.1.0/SHA256SUMS.txt)。
 
 ## 2. 安装或直接运行
 
 ### Windows 安装版
 
-1. 双击 `Gather-Setup-0.1.0-phase.0.exe`。
-2. 若 SmartScreen 提示“未知发布者”，确认文件来源与 SHA-256 后，选择“更多信息 → 仍要运行”。这是未签名预览版的预期行为。
+1. 双击 `Gather-Setup-0.1.0.exe`。
+2. 若 SmartScreen 提示“未知发布者”，确认文件来源与 SHA-256 后，选择“更多信息 → 仍要运行”。这是未签名正式版的预期行为。
 3. 选择安装目录，完成安装，从开始菜单或桌面启动 Gather。
 
 ### Windows 便携版
 
-双击 `Gather-Portable-0.1.0-phase.0.exe` 即可运行，不需要安装。它仍会在用户配置目录保存窗口、工作区会话与恢复快照，不是“配置完全随文件走”的绿色版。
+双击 `Gather-Portable-0.1.0.exe` 即可运行，不需要安装。它仍会在用户配置目录保存窗口、工作区会话与恢复快照，不是“配置完全随文件走”的绿色版。
 
 ### Linux AppImage
 
 ```bash
-chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage
-./Gather-0.1.0-phase.0-linux-x86_64.AppImage
+chmod +x Gather-0.1.0-linux-x86_64.AppImage
+./Gather-0.1.0-linux-x86_64.AppImage
 ```
 
 如果系统缺少 FUSE 2 运行库，按发行版安装对应的 FUSE 2 包后再运行。Linux 桌面启动是当前最需要真实反馈的部分，尚未进入已验证矩阵。
@@ -53,7 +53,7 @@ chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage
 ### Linux deb
 
 ```bash
-sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb
+sudo apt install ./Gather-0.1.0-linux-amd64.deb
 ```
 
 安装后从应用菜单启动 Gather，或在终端运行 GUI 可执行文件 `gather`。需要 GTK3、NSS、ALSA 等 Electron 运行库。
@@ -109,7 +109,7 @@ sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb
 
 | 现象 | 先检查 |
 | --- | --- |
-| Windows 提示“Windows 已保护你的电脑” | 确认下载来源为 `github.com/hhxpoint/gather`，核对 SHA-256；未签名预览版需要“更多信息 → 仍要运行” |
+| Windows 提示“Windows 已保护你的电脑” | 确认下载来源为 `github.com/hhxpoint/gather`，核对 SHA-256；未签名正式版需要“更多信息 → 仍要运行” |
 | Linux 双击 AppImage 没反应 | 先 `chmod +x`，再从终端运行看错误；检查 FUSE 2 与 GTK3/NSS 运行库 |
 | 打开文件后无法保存 | 检查目录写权限、磁盘空间与文件是否只读；冲突横幅表示外部内容已变化 |
 | 重启后出现“恢复快照” | 点击恢复，确认内容后用 `Ctrl+S` 保存；丢弃会删除该快照 |
