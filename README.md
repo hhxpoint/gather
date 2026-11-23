@@ -57,7 +57,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 </details>
 
-安装包**没有代码签名**：Windows SmartScreen 可能提示“未知发布者”，只有在你信任此构建时才选择“仍要运行”。没有自动更新；Linux 包由 Actions 构建并通过产物校验，但尚未在真实 Linux 图形会话、IME 或 200% 缩放下验收。下载前可用 `sha256sum -c SHA256SUMS.txt`（Linux）或 `Get-FileHash`（Windows PowerShell）核对。
+安装包**没有代码签名**：Windows SmartScreen 可能提示“未知发布者”，只有在你信任此构建时才选择“仍要运行”。没有自动更新；Linux 包由 Actions 构建并通过产物校验，但尚未在真实 Linux 图形会话、IME 或 200% 缩放下验收。下载前可用 `sha256sum -c SHA256SUMS.txt`（Linux）或 `Get-FileHash`（Windows PowerShell）核对。AppImage 需要先 `chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage`；deb 可用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。
 
 ## 真实界面
 

@@ -24,6 +24,7 @@ Get-FileHash .\Gather-Setup-0.1.0-phase.0.exe -Algorithm SHA256
 - 没有自动更新、代码签名或干净 VM 安装/卸载矩阵；Linux 图形会话与 IME 矩阵仍未验证。
 - 安装包不是 npm 包；CLI 源码仍从仓库运行。
 - 系统要求：Windows 10/11；Linux 需要 Electron 的 GTK3/NSS/ALSA 等运行库。
+- Linux：AppImage 先 `chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage`；deb 用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。
 
 ## 验证
 
