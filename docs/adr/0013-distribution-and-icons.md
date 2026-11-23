@@ -31,5 +31,6 @@
 - Release 需要 GitHub Actions 下载 electron-builder/NSIS/AppImage/fpm 工具；网络失败要重跑，不能把半成品上传。
 - Windows 安装器可安装、便携版可启动；Linux AppImage/deb 由 Ubuntu runner 构建并上传，但未在图形会话运行，IME/字体矩阵仍未验证。
 - 首个成功发布为 [45140138861](https://github.com/hhxpoint/gather/actions/runs/45140138861)，prerelease 为 [v0.1.0-phase.0](https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0)。四个产物的 SHA-256 已与 GitHub API `asset.digest` 和 `SHA256SUMS.txt` 交叉核对；受本机到 release-assets 的网络限速影响，未从 Release 重新下载全部大文件。
+- 下载页随 PR [#35](https://github.com/hhxpoint/gather/pull/35) 合并为 `8dbb908`，Pages [45144561805](https://github.com/hhxpoint/gather/actions/runs/45144561805) 成功；公网 HTML（LF 归一）SHA-256 `0ae7957d…` 与本地 `dist` 一致，1440/390 无横向溢出，5 个链接均指向真实 Release 资产。
 - 未签名产物会触发 SmartScreen；自动更新、回滚、签名、干净 VM 安装/卸载仍属于后续发布门槛。
 - 图标源文件与生成 PNG/ICO 都进入仓库；ICO 为 PNG 压缩条目（Windows Vista+），electron-builder/Windows 10/11 可读。

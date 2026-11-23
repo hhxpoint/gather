@@ -320,6 +320,8 @@ POST pull request
 | 会话恢复 | #23 / `f4825c8` | 45110083947 | 45110083883 | 窗口归一化；两个版本化存储；恢复路径重新列目录；与恢复快照共存 |
 | 阅读与专注 | #25 / `b21ee48` | 45121313100 | 45121313093 | 只读派生阅读视图；隐藏编辑器只读；远程图片预剥离；版心与夜读 |
 | 阅读工具 | #27 / `9c233e1` | 45127144335 | 45127144374 | CSS Highlight 查找；目录/源行同步；Lezer 代码高亮；阅读导出 |
+| 图标与发行 | #29–#34 / `efe8cd6` | 45140133948 | — | SVG 图标；Actions 构建 NSIS/portable/AppImage/deb；Linux scoped 名/路径修复；Release 45140138861 |
+| 下载页与记录 | #35 / `8dbb908` | 45144561882 | 45144561805 | 真实资产/哈希上线；公网 LF 归一哈希；下载页 1440/390 无溢出 |
 
 ### 8.4 关键故障索引
 
@@ -342,6 +344,7 @@ POST pull request
 | P1-33 | 阅读查找/目录 | 代码高亮会重建 DOM；查找要重跑；表格要包滚动层；Esc 分层处理 |
 | P1-34 | 图标、安装包与 Release | SVG 单一源；NSIS 静默安装不能用 Git Bash 传 `/S`；unsigned 不能写成签名 |
 | P1-35 | Release Linux 构建 | scoped npm 名会进入 executable/artifact 路径；显式 `executableName`/`artifactName`；publish job 必须 checkout |
+| P1-36 | 下载页上线 | 公网 HTML CRLF 与本地不同；比较前按 LF 归一；链接存在不等于资产已下载 |
 
 ## 9. Windows / Linux 平台笔记
 
@@ -369,6 +372,7 @@ POST pull request
 - Windows staging 启动与真实窗口路径；GitHub Pages 部署与哈希回读。
 - GitHub Actions 在同一提交构建 Windows NSIS/portable、Linux AppImage/deb 并发布 prerelease；四个包 SHA-256 与 Release API digest、`SHA256SUMS.txt` 一致。
 - Windows 安装器/便携版的本地构建安装、启动、卸载与图标嵌入。
+- 公网下载页链接到真实 Release 资产；1440/390 无溢出；HTML/CSS 与本地构建 LF 归一哈希一致。
 
 ### 未验证
 

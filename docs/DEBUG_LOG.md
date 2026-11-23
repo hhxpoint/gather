@@ -503,6 +503,25 @@
   - publish job 必须 checkout；release action 必须 `overwrite_files: true`；重命名资产后要删掉旧资产。
   - 发布后同时核对 Release API 的 `name/size/digest` 与 `SHA256SUMS.txt`；网络不可用时明确记录证据缺口，不伪造下载/安装结果。
 
+### P1-36 下载页上线：真实资产、哈希与公网 CRLF 误判
+
+- **现象/需求**：Release 已经有四个安装包，但站点仍写着“还没有公开下载”，README 仍把安装器写成未产出；用户从项目站无法下载，工程记录也与 Release 不一致。
+- **实现**：
+  - 站点下载区改为 `v0.1.0-phase.0` 真实资产：Windows NSIS/portable、Linux AppImage/deb，显示精确大小；增加 SHA-256 `<details>`，并链接 `SHA256SUMS.txt`。
+  - hero 主按钮改为“下载 Phase 1 预览版”，导航 `05` 改为“下载”，header phase 改为“预览已发布”；CLI 仍明确 Source only。
+  - README 新增“下载与校验”表、真实大小/哈希、unsigned/SmartScreen 边界；同步项目状态、打包章节、P0 能力与 beta 门槛。
+  - ADR 0013、VERIFICATION 打包矩阵、PLAYBOOK、ROADMAP 记录 45140138861、四个资产与哈希，以及 Linux 打包修复。
+- **实际踩坑/判断**：
+  - **公网 HTML 哈希与本地不一致，但内容完全一样。** 本地 `apps/site/index.html` 是 CRLF，Git 提交/Pages 是 LF，直接按字节比较会误判；按 LF 归一后公网与本机 `dist/index.html` 均为 `0ae7957d…`，CSS 字节一致。发布核对必须先统一换行。
+  - **本地下载页截图最初停在错误滚动位置。** `scrollIntoView` 后立即 `captureScreenshot` 在 headless 中仍可能是旧帧；改为显式 `window.scrollTo`、等待并用 `getBoundingClientRect` 确认 `top≈0` 后再截图。
+  - **不能用“链接存在”代替“资产可下载/可运行”。** GitHub API 的 `state=uploaded`、大小与 digest 已核对，`SHA256SUMS.txt` 可下载；但本机到 `release-assets.githubusercontent.com` 只完成清单下载，四个大文件因 TLS/速率失败未复核，不能写成“已从 Release 重新安装”。
+- **证据**：
+  - Release 45140138861；资产 4 个安装包 + `SHA256SUMS.txt`；四个 SHA-256 与 API digest、清单一致。
+  - 站点 PR [#35](https://github.com/hhxpoint/gather/pull/35) 合并为 `8dbb908`；main CI [45144561882](https://github.com/hhxpoint/gather/actions/runs/45144561882)、Pages [45144561805](https://github.com/hhxpoint/gather/actions/runs/45144561805) 成功。
+  - 公网 `index.html` 56,069 bytes / LF 归一 `0ae7957d…`；`styles.css` 36,255 bytes / `f957b6a1…`，均与本地 `dist` 一致。
+  - 公网 CDP：桌面 1440 `scrollWidth=1425`，390 `scrollWidth=390`；下载区 4 个安装链接 + SHA256SUMS 链接；5 个按钮在 390 下宽度均 320；页面无 `Not published`/“还没有公开下载”；hero CTA 为“下载 Phase 1 预览版”。
+- **防回归**：站点只能链接真实存在的 Release 资产；发布核对必须比较 LF 归一哈希；1440/390 都要检查下载区溢出；资产 digest 与 `SHA256SUMS.txt` 必须同时核对；未下载/未安装的二进制不得写成已验证。
+
 ---
 
 ## 维护约定
