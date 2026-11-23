@@ -401,6 +401,31 @@
   - 批次闭环：PR #23 合并为 `f4825c8`；PR CI [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613)、main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947) 与 Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 均成功；公网 HTML/CSS SHA-256 与本地一致，1440/390 无横向溢出。
 - **防回归**：窗口 bounds 必须经过显示器归一化；工作区会话只存路径且恢复必须重新列目录；关闭工作区必须清除会话；Session 恢复不能替代恢复快照；StrictMode 下只能发起一次恢复。
 
+### P1-32 编辑与阅读体验：隐藏编辑器仍可写、撤销栈与预览细节
+
+- **现象/需求**：实时预览已可用，但编辑/阅读工具密度相同；长文缺少真正排版的阅读视图、专注模式、夜间阅读与更安静的版心。简单地把编辑器卸载再显示阅读页会丢 Undo 历史；只把编辑器 `display:none` 又会让键盘继续改到不可见文稿。
+- **实现**：
+  - 新增 `ReadingView`：`renderMarkdown` 清洗后的 HTML 阅读页，680px 版心、1.95 行高、中文两端对齐、标题/引用/代码/表格/图片/任务列表独立样式、2px sticky 进度条。
+  - 阅读模式隐藏应用 chrome，但编辑器保持挂载；新增 `editable` prop，用 Compartment 切换 `EditorView.editable` + `EditorState.readOnly`。退出时 `requestMeasure` 恢复布局与焦点。
+  - 专注模式隐藏 header/toolbar/sidebar/footer，保留编辑、搜索、保存与撤销；右上角低对比度退出胶囊。
+  - 阅读主题 paper/night 局部 CSS 变量，localStorage 持久化；夜间降低图片亮度。
+  - 阅读图片继续走 `image:resolve`；在 HTML 进入 live DOM 之前先用 `DOMParser` 扫描：远程/危险协议替换为占位，本地图片移除 `src` 并记录 `data-reading-src`，等 IPC 返回 data URI 再设置；链接只对 http/https 调用现有 `openLink`。
+  - 同步修正实时预览：隐藏 `QuoteMark`；blockquote 全行、ListItem 全行、FencedCode 首尾圆角；字体 17.5px、版心 760px、代码/表格/图片圆角与阴影。
+- **实际踩坑/判断**：
+  - **隐藏编辑器必须只读。** 若只 `display:none`，CodeMirror 仍可能接收焦点和输入；真实窗口测试在阅读模式聚焦 `.cm-content` 再 `Input.insertText`，文本长度保持 524，未产生不可见修改。
+  - **不能卸载编辑器。** 阅读模式保持挂载，退出后插入 `UNDO-MARKER`、进入阅读、退出、Ctrl+Z 能恢复到 524 字符；卸载方案会丢历史。
+  - **Escape 有两层语义。** 专注模式下 CodeMirror 搜索面板打开时，Escape 先关搜索，不退出专注；阅读模式进入时主动关闭搜索面板，Escape 直接返回编辑。
+  - **预览只给引用/列表首行加类。** 原实现只在 `Blockquote`/`BulletList` 的 `node.from` 加行类，多行引用和后续列表项没有样式；改为 QuoteMark 隐藏 + blockquote 全行 + 每个 ListItem 首行。
+  - **远程图片在 effect 前就可能发请求。** 第一版把清洗后的 HTML 直接交给 React，再在 `useEffect` 里找远程 `img` 替换；真实网络面板仍出现 `https://example.com/gather-remote.png` 请求。改为在 `useMemo` 中用 `DOMParser` 预剥离所有非 data `src`：远程直接变占位，本地先留空，effect 只处理 `img[data-reading-src]`。复测 `performance.getEntriesByType('resource')` 为空，远程图片不再产生请求。
+  - 阅读截图最初带“未保存”和测试标记；先撤销测试输入并保存，再截桌面图，不用脏状态做展示。
+- **证据**：
+  - 1184×755 真实 staging：阅读模式正文 680px、表格 568px（等于版心内容宽）、本地图片 naturalWidth 1184、进度 63.71% 可更新；纸色/夜读切换、`gather.readingTheme` 持久化。
+  - 专注模式四块 chrome 均为 `display:none`，`.focus-exit` 存在，Esc 恢复 header/footer；`Ctrl+Shift+R` 与 `Ctrl+Shift+Enter` 菜单快捷键生效。
+  - 阅读模式 `.cm-content` contenteditable=false；聚焦并插入文本后长度不变。退出后 Undo 历史有效。
+  - 远程图片：注入 `https://example.com/gather-remote.png` 后，DOM 无 http img，占位为“远程图片未自动加载 · 远程图片”，`performance.getEntriesByType('resource')` 为空；本地图片仍为 data URI、naturalWidth 1184。
+  - 截图 `docs/images/gather-reading.png`（1184×755，94,878 bytes，纸色阅读）。
+- **防回归**：阅读视图必须来自 `renderMarkdown` 且在进入 DOM 前剥离非 data 图片 `src`；编辑器不得在阅读模式卸载或保持可编辑；远程图片不得自动加载；阅读模式隐藏编辑器时应关闭搜索面板；专注/阅读 Esc 必须可退出且不吞搜索 Escape。
+
 ---
 
 ## 维护约定

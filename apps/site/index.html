@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f2ede1">
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gather">
   <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
-  <meta property="og:description" content="本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。">
+  <meta property="og:description" content="本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。">
   <meta property="og:url" content="https://hhxpoint.github.io/gather/">
   <meta property="og:image" content="https://hhxpoint.github.io/gather/images/gather-external-change.png">
   <meta property="og:image:width" content="2560">
@@ -198,7 +198,7 @@
           <p class="section-marker"><span>01</span> Product</p>
           <div class="section-heading">
             <h2 id="showcase-title">不是效果图。<br>是正在运行的编辑器。</h2>
-            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、单文件与跨文稿搜索、表格与本地图片预览、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
+            <p>以下画面来自 Phase 1 的 Windows 构建：Markdown 原文、单文件与跨文稿搜索、专注与阅读模式、表格与本地图片预览、崩溃恢复快照与外部修改拦截，都在同一个工作区里真实发生。</p>
           </div>
         </header>
 
@@ -282,6 +282,16 @@
           <figcaption class="shot-caption">
             <span class="shot-label">08 / Search</span>
             <p><code>Ctrl+Shift+F</code> 跨文稿查找：独立工具进程扫描当前文件夹，支持区分大小写与正则；点击命中打开文稿并把光标放到对应行列，不把搜索状态写回 Markdown。</p>
+          </figcaption>
+        </figure>
+
+        <figure class="shot shot--wide">
+          <div class="shot-frame">
+            <img src="images/gather-reading.png" alt="Gather 阅读模式真实截图：纸色阅读版心、标题、引用、阅读进度线与夜读/返回编辑按钮。" width="1184" height="755" loading="lazy" decoding="async">
+          </div>
+          <figcaption class="shot-caption">
+            <span class="shot-label">09 / Reading</span>
+            <p>阅读模式把工具栏收起，留下 680px 版心与阅读进度；<code>Ctrl+Shift+R</code> 进入，纸色/夜读切换。编辑器只读挂载，退出后撤销历史与光标仍在。</p>
           </figcaption>
         </figure>
 
@@ -782,6 +792,7 @@
               <li>文件夹工作区 / 侧栏切换</li>
               <li>单文件查找 / 替换 / 正则</li>
               <li>跨文稿搜索 / 点击跳转</li>
+              <li>专注模式 / 阅读模式 / 夜读</li>
               <li>窗口 / 工作区 / 文稿恢复</li>
               <li>表格 / 本地图片 / 安全外链</li>
               <li>A4 PDF / 含本地图片的 HTML</li>

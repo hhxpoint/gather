@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Bold,
+  BookOpen,
   Code2,
   Download,
   Eye,
@@ -8,12 +9,15 @@ import {
   FileCode2,
   FileDown,
   FileText,
+  Focus,
   FolderOpen,
   Heading2,
   Italic,
   Link2,
   List,
   LoaderCircle,
+  Minimize2,
+  Moon,
   PanelLeftClose,
   PanelLeftOpen,
   Printer,
@@ -22,8 +26,10 @@ import {
   Save,
   Search,
   SquarePen,
+  Sun,
   X,
 } from 'lucide-react';
+import { ReadingView } from './ReadingView';
 import { describeTextFormat } from '@gather/core/text-format';
 import { MarkdownEditor, countText, type MarkdownEditorHandle } from '@gather/editor';
 import { errorMessage } from '../../shared/errors';
@@ -81,12 +87,17 @@ interface Actions {
   save: () => Promise<void>;
   saveAs: () => Promise<void>;
   togglePreview: () => void;
+  toggleReading: () => void;
+  toggleFocus: () => void;
   find: () => void;
   replace: () => void;
   workspaceSearch: () => void;
   exportPdf: () => Promise<void>;
   exportHtml: () => Promise<void>;
 }
+
+type ViewMode = 'edit' | 'focus' | 'reading';
+type ReadingTheme = 'paper' | 'night';
 
 const EXPORT_LABELS: Record<ExportFormat, string> = { pdf: 'PDF', html: 'HTML' };
 
@@ -120,6 +131,14 @@ export default function App() {
   const [path, setPath] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [livePreview, setLivePreview] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('edit');
+  const [readingTheme, setReadingTheme] = useState<ReadingTheme>(() => {
+    try {
+      return window.localStorage.getItem('gather.readingTheme') === 'night' ? 'night' : 'paper';
+    } catch {
+      return 'paper';
+    }
+  });
   const [status, setStatus] = useState('Phase 1 · 本地文件');
   const [format, setFormat] = useState<TextFormat>(DEFAULT_FORMAT);
   const [documentVersion, setDocumentVersion] = useState(0);
@@ -590,6 +609,45 @@ export default function App() {
     setLivePreview(value => !value);
   }
 
+  function exitViewMode() {
+    setViewMode('edit');
+    window.requestAnimationFrame(() => editorRef.current?.refreshLayout());
+  }
+
+  function enterReading() {
+    setSearchOpen(false);
+    editorRef.current?.closeSearch();
+    (document.activeElement as HTMLElement | null)?.blur();
+    setViewMode('reading');
+  }
+
+  function enterFocus() {
+    setViewMode('focus');
+    window.requestAnimationFrame(() => editorRef.current?.focus());
+  }
+
+  function toggleReading() {
+    if (viewMode === 'reading') exitViewMode();
+    else enterReading();
+  }
+
+  function toggleFocus() {
+    if (viewMode === 'focus') exitViewMode();
+    else enterFocus();
+  }
+
+  function toggleReadingTheme() {
+    setReadingTheme(current => {
+      const next: ReadingTheme = current === 'night' ? 'paper' : 'night';
+      try {
+        window.localStorage.setItem('gather.readingTheme', next);
+      } catch {
+        // Preference persistence is best effort.
+      }
+      return next;
+    });
+  }
+
   function find() {
     editorRef.current?.openSearch();
   }
@@ -604,6 +662,8 @@ export default function App() {
     save,
     saveAs,
     togglePreview,
+    toggleReading,
+    toggleFocus,
     find,
     replace,
     workspaceSearch: openWorkspaceSearch,
@@ -660,6 +720,8 @@ export default function App() {
       if (action === 'save') void actions.save();
       if (action === 'saveAs') void actions.saveAs();
       if (action === 'togglePreview') actions.togglePreview();
+      if (action === 'readingMode') actions.toggleReading();
+      if (action === 'focusMode') actions.toggleFocus();
       if (action === 'find') actions.find();
       if (action === 'replace') actions.replace();
       if (action === 'workspaceSearch') actions.workspaceSearch();
@@ -689,6 +751,20 @@ export default function App() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (viewMode === 'edit') return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (viewMode === 'focus' && document.querySelector('.cm-search')) return;
+      event.preventDefault();
+      exitViewMode();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // exitViewMode is stable enough for this mode-scoped listener.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
 
   useEffect(() => {
     document.title = `${dirty ? '• ' : ''}${title} · Gather`;
@@ -814,7 +890,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-frame">
+    <div className={`app-frame${viewMode === 'focus' ? ' is-focus' : ''}${viewMode === 'reading' ? ' is-reading' : ''}`}>
       <header className="app-header">
         <div className="brand">
           <span className="brand-mark"><GatherMark /></span>
@@ -843,6 +919,24 @@ export default function App() {
           <button className="quiet-button" onClick={() => void save()} title="保存 (Ctrl/Cmd+S)"><Save size={16} />保存</button>
           <button className="quiet-button" onClick={togglePreview} title="切换实时预览 (Ctrl/Cmd+Shift+P)">
             {livePreview ? <EyeOff size={16} /> : <Eye size={16} />}{livePreview ? '源码' : '预览'}
+          </button>
+          <button
+            className="quiet-button icon-only"
+            onClick={toggleReading}
+            title="阅读模式 (Ctrl/Cmd+Shift+R)"
+            aria-label="阅读模式"
+            aria-pressed={viewMode === 'reading'}
+          >
+            <BookOpen size={16} />
+          </button>
+          <button
+            className="quiet-button icon-only"
+            onClick={toggleFocus}
+            title="专注模式 (Ctrl/Cmd+Shift+Enter)"
+            aria-label="专注模式"
+            aria-pressed={viewMode === 'focus'}
+          >
+            <Focus size={16} />
           </button>
         </div>
       </header>
@@ -1112,6 +1206,7 @@ export default function App() {
             previewContext={path ?? 'untitled'}
             onOpenLink={openLink}
             resolveImage={resolvePreviewImageSrc}
+            editable={viewMode !== 'reading'}
             placeholder="从一句话开始。"
           />
         </main>
@@ -1127,6 +1222,39 @@ export default function App() {
         <span>{describeTextFormat(format)}</span>
         <span className="phase-tag">PHASE 1</span>
       </footer>
+
+      {viewMode === 'reading' && (
+        <section className="reading-shell" data-reading-theme={readingTheme} aria-label="阅读模式">
+          <header className="reading-bar">
+            <div className="reading-identity">
+              <BookOpen size={15} />
+              <strong>{title}</strong>
+              {dirty && <i>未保存</i>}
+              <span>{counts.words} 字 · {counts.lines} 行</span>
+            </div>
+            <div className="reading-actions">
+              <button type="button" onClick={toggleReadingTheme} title={readingTheme === 'night' ? '切换为纸色阅读' : '切换为夜读'}>
+                {readingTheme === 'night' ? <Sun size={14} /> : <Moon size={14} />}
+                {readingTheme === 'night' ? '纸读' : '夜读'}
+              </button>
+              <button type="button" onClick={exitViewMode} title="返回编辑 (Esc)">
+                <Minimize2 size={14} />
+                返回编辑
+                <kbd>Esc</kbd>
+              </button>
+            </div>
+          </header>
+          <ReadingView markdown={doc} resolveImage={resolvePreviewImageSrc} onOpenLink={openLink} />
+        </section>
+      )}
+
+      {viewMode === 'focus' && (
+        <button type="button" className="focus-exit" onClick={exitViewMode} title="退出专注模式 (Esc)">
+          <Minimize2 size={14} />
+          退出专注
+          <kbd>Esc</kbd>
+        </button>
+      )}
     </div>
   );
 }

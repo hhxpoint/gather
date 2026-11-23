@@ -31,7 +31,7 @@ const markClasses: Record<string, string> = {
   InlineCode: 'cm-inline-code',
 };
 
-const hiddenMarks = new Set(['HeaderMark', 'EmphasisMark', 'CodeMark']);
+const hiddenMarks = new Set(['HeaderMark', 'EmphasisMark', 'CodeMark', 'QuoteMark']);
 
 /** Whole-document table previews are skipped above this size to protect typing latency. */
 export const MAX_TABLE_PREVIEW_DOCUMENT = 1_500_000;
@@ -110,6 +110,25 @@ function addLine(items: Range<Decoration>[], view: EditorView, position: number,
     to: line.from,
     value: Decoration.line({ class: className }),
   });
+}
+
+function addLineRange(
+  items: Range<Decoration>[],
+  view: EditorView,
+  from: number,
+  to: number,
+  className: (first: boolean, last: boolean) => string,
+) {
+  let position = from;
+  let first = true;
+  while (position <= to) {
+    const line = view.state.doc.lineAt(position);
+    const last = line.to >= to;
+    addLine(items, view, position, className(first, last));
+    first = false;
+    if (last) break;
+    position = line.to + 1;
+  }
 }
 
 function renderTableHtml(source: string): string | null {
@@ -361,17 +380,25 @@ function buildDecorations(view: EditorView, config: LivePreviewConfig): Decorati
         if (name === 'Table') return false;
         const lineClass = headingClasses[name];
         if (lineClass) addLine(items, view, node.from, lineClass);
-        if (name === 'Blockquote') addLine(items, view, node.from, 'cm-quote');
-        if (name === 'FencedCode') {
-          let position = node.from;
-          while (position <= node.to) {
-            addLine(items, view, position, 'cm-code-line');
-            const line = view.state.doc.lineAt(position);
-            if (line.to >= node.to) break;
-            position = line.to + 1;
-          }
+        if (name === 'Blockquote') {
+          addLineRange(
+            items,
+            view,
+            node.from,
+            node.to,
+            (first, last) => `cm-quote${first ? ' cm-quote-first' : ''}${last ? ' cm-quote-last' : ''}`,
+          );
         }
-        if (name === 'BulletList' || name === 'OrderedList') addLine(items, view, node.from, 'cm-list-line');
+        if (name === 'FencedCode') {
+          addLineRange(
+            items,
+            view,
+            node.from,
+            node.to,
+            (first, last) => `cm-code-line${first ? ' cm-code-first' : ''}${last ? ' cm-code-last' : ''}`,
+          );
+        }
+        if (name === 'ListItem') addLine(items, view, node.from, 'cm-list-line');
         const markClass = markClasses[name];
         if (markClass) {
           items.push({

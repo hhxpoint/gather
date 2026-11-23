@@ -456,6 +456,8 @@ function createMenu() {
       label: '视图',
       submenu: [
         { label: '切换实时预览', accelerator: 'CmdOrCtrl+Shift+P', click: () => sendMenu('togglePreview') },
+        { label: '阅读模式', accelerator: 'CmdOrCtrl+Shift+R', click: () => sendMenu('readingMode') },
+        { label: '专注模式', accelerator: 'CmdOrCtrl+Shift+Enter', click: () => sendMenu('focusMode') },
         { type: 'separator' },
         { role: 'reload', label: '重新载入' },
         { role: 'toggleDevTools', label: '开发者工具' },

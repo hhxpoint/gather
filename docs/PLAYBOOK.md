@@ -13,10 +13,11 @@
 3. [ADR 0003](adr/0003-file-safety.md) 到 [ADR 0007](adr/0007-workspace.md)：文件安全、恢复、导出、预览与工作区。
 4. [ADR 0008](adr/0008-search.md) 与 [ADR 0009](adr/0009-workspace-search.md)：单文件查找与跨文稿搜索。
 5. [ADR 0010](adr/0010-session-continuity.md)：窗口、工作区与最后文稿的跨重启恢复。
-6. [DEBUG_LOG](DEBUG_LOG.md) 的 P1-24 到 P1-31：最近几批真实失败、根因与防回归。
-7. [VERIFICATION](VERIFICATION.md)：当前能复现的命令、矩阵和未验证项。
-8. 本手册第 2–8 节：把单点经验放回工程方法。
-9. 源码阅读，推荐顺序：`packages/core` → `packages/editor` → `apps/desktop/src/main` → `preload` → `renderer` → `apps/site` → `packages/cli`。
+6. [ADR 0011](adr/0011-reading-and-focus.md)：阅读模式、专注模式与阅读主题。
+7. [DEBUG_LOG](DEBUG_LOG.md) 的 P1-24 到 P1-32：最近几批真实失败、根因与防回归。
+8. [VERIFICATION](VERIFICATION.md)：当前能复现的命令、矩阵和未验证项。
+9. 本手册第 2–8 节：把单点经验放回工程方法。
+10. 源码阅读，推荐顺序：`packages/core` → `packages/editor` → `apps/desktop/src/main` → `preload` → `renderer` → `apps/site` → `packages/cli`。
 
 证据分级必须写清楚：
 
@@ -151,6 +152,14 @@ Workspace search worker (Node, no window, bounded scan)
 - 窗口关闭使用同步原子写（临时文件 + fsync + rename），异步保存有 300ms 防抖。
 - **会话恢复不等于恢复未保存内容。** 恢复文稿后，恢复快照横幅仍会出现；用户点击“恢复”才进入脏状态。
 - 已实测：1000×700 @120,80 重启恢复；最大化 1920×1032；工作区/最后文稿恢复；文稿或根缺失降级；关闭工作区不恢复；强杀后横幅与恢复内容都在。多显示器拔插、Linux 窗口恢复未跑。
+
+### 3.9 阅读与专注模式
+
+- 阅读视图来自已清洗的 `renderMarkdown`，不建立第二份文档；图片在进入 DOM 前用 `DOMParser` 剥离非 data `src`（远程直接占位、本地等 IPC 返回 data URI），链接只放行 http/https。
+- 编辑器在阅读模式下**保持挂载但只读**（`EditorView.editable(false)` + `EditorState.readOnly(true)`），退出后 Undo/选区仍在；只隐藏 DOM 不够，必须阻止隐藏编辑器接收输入。
+- 专注模式只隐藏 chrome，编辑、搜索、保存、撤销不变；阅读/专注互斥，Esc 退出。搜索面板打开时 Esc 先关搜索，不退出专注。
+- 阅读主题 paper/night 局部变量，写 localStorage；夜间只影响阅读外壳，不是全应用 dark mode。
+- 阅读 680px 版心、1.95 行高、进度条；排版只使用清洗 HTML，不得直接插入原始 Markdown HTML。阅读模式不承诺全文查找、目录、标注或滚动位置映射。
 
 ## 4. Electron 安全与跨进程
 
@@ -324,6 +333,7 @@ POST pull request
 | P1-29 | 单文件搜索状态 | 只装 keymap 没有面板；打开面板后不要抢搜索框焦点 |
 | P1-30 | 工作区搜索进程 | 必须监听 `UtilityProcess` error；定位等待文稿版本提交 |
 | P1-31 | 会话恢复 | 窗口越界归一化；会话只存路径并重新列目录；恢复快照仍需用户确认 |
+| P1-32 | 阅读与专注 | 隐藏编辑器仍须只读；阅读视图不得卸载编辑器；远程图片不得自动加载 |
 
 ## 9. Windows / Linux 平台笔记
 
@@ -346,6 +356,7 @@ POST pull request
 - GFM 表格/本地图片预览、安全外链。
 - 文件夹工作区、侧栏切换、脏文稿确认、工作区搜索与超时。
 - 窗口位置/尺寸/最大化、工作区与最后文稿跨重启恢复；缺失根/文稿降级；与恢复快照共存。
+- 专注模式、阅读模式、纸色/夜读、阅读进度、只读编辑器与 Undo 保留；远程图片在 HTML 进入 DOM 前被阻断，无网络请求。
 - Windows staging 启动与真实窗口路径；GitHub Pages 部署与哈希回读。
 
 ### 未验证
@@ -358,6 +369,7 @@ POST pull request
 ### 未实现
 
 - 最近工作区列表、单文件（无工作区）会话、滚动位置/光标恢复。
+- 阅读全文查找、目录、标注、滚动/光标同步、打印/导出；全应用夜间主题。
 - 工作区树形折叠、新建/重命名/删除文件。
 - 跨文稿替换、搜索历史、包含/排除规则、流式结果。
 - DOCX、CLI PDF、图片缩放/平移、EXIF 方向。
@@ -452,9 +464,10 @@ POST pull request
 1. 最近工作区列表、单文件会话、滚动位置/光标恢复。
 2. 工作区树形折叠、新建/重命名/删除（需要明确确认、回收站与路径边界）。
 3. 搜索历史、包含/排除规则、跨文稿替换的审阅边界。
-4. IME 真机矩阵、200% 缩放/屏幕阅读器、5 MiB/10 万字符性能基线。
-5. 安装包签名、自动更新、干净 VM 安装/卸载；Linux 图形会话与多显示器窗口恢复。
-6. CLI PDF/DOCX、本地 AI/Ollama/BYOK/diff 审阅/RAG；Tauri bake-off。
+4. 阅读全文查找、目录、标注、滚动同步；全应用夜间主题。
+5. IME 真机矩阵、200% 缩放/屏幕阅读器、5 MiB/10 万字符性能基线。
+6. 安装包签名、自动更新、干净 VM 安装/卸载；Linux 图形会话与多显示器窗口恢复。
+7. CLI PDF/DOCX、本地 AI/Ollama/BYOK/diff 审阅/RAG；Tauri bake-off。
 
 主要风险：
 
