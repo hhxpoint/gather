@@ -198,7 +198,7 @@
 - **根因**：未完全确定。证据指向 electron-builder 的第二个远程工具/校验请求，而不是应用代码、类型检查或 Electron 二进制缺失。
 - **临时修复**：新增 `apps/desktop/scripts/stage-portable.mjs`，直接把已安装的 Electron `dist` + `out` 复制成 `release/win-unpacked`，重命名 exe，去掉 `default_app.asar`，写入应用 `package.json` 与 `STAGING-README.txt`。不依赖网络。
 - **证据**：产出 328 MB 目录包；`Gather.exe` 启动、打开 Markdown、编辑、保存成功；`resources/app` 仅 3.4 MB。
-- **后续修正**：`signAndEditExecutable: false` 只是本次排查 workaround；staging 验证完成后已从提交配置移除，避免未来签名构建永久跳过 exe 元数据/签名。electron-builder 的网络阻塞仍未解决，安装器未产出。
+- **后续修正**：`signAndEditExecutable: false` 只是本次排查 workaround；staging 验证完成后已从提交配置移除，避免未来签名构建永久跳过 exe 元数据/签名。该条“安装器未产出”只适用于当时环境；后续 P1-34 本地产出 NSIS/portable，P1-35 由 GitHub Actions 在 Windows/Ubuntu 上产出并发布四个安装包，旧结论保留但已被后续证据覆盖。
 - **防回归**：staging 只用于运行冒烟，不当作安装包；electron-builder 的签名安装包仍必须在网络/证书可用的环境复跑并记录。
 
 ### P1-17 打包后运行时验收
@@ -470,8 +470,38 @@
   - 本地 SHA-256：Setup `43eb057f…`、Portable `d492ffa8…`（本地构建，最终 Release 以 CI 产物和 `SHA256SUMS.txt` 为准）。
   - 安装/卸载：PowerShell 静默安装 exit 0；启动 installed Gather；关闭后 uninstaller `/S` exit 0；临时目录删除。
   - 图标：exe 关联图标 32×32 提取成功；窗口标题栏显示新图标；`resources/icon.png` 598,018 bytes。
-  - 站点 favicon 已进入 `apps/site/dist/assets`；Release workflow YAML 通过解析，尚未执行。
+  - 站点 favicon 已进入 `apps/site/dist/assets`；Release workflow YAML 通过解析。后续执行时暴露了 Linux scoped 包名与 deb 输出路径问题，见 P1-35；最终运行 45140138861 成功。
 - **防回归**：图标必须从 SVG 重生成并检查小尺寸；安装包必须在 Release 附带 SHA256SUMS；静默安装 QA 不能用 Git Bash 直接传 `/S`；unsigned 不得写成签名发布。
+
+### P1-35 Release 工作流：scoped 包名、deb 输出路径与文件名收口
+
+- **现象/需求**：Release 首次真实执行时，Windows job 成功，Linux job 在 AppImage 之后失败；修复后又连续出现配置 schema 错误和 deb 输出目录不存在。目标是把“本地能打包”变成“GitHub Actions 能在同一提交上稳定产出四个安装包并发布”。
+- **实现/修复（PR #30–#34）**：
+  - Linux 配置增加 `executableName: "gather"`、`syncDesktopName: true`、Debian `maintainer` 与 `homepage`；`dist` 脚本传给 electron-builder `--publish never`，发布只由 workflow 负责，避免 CI 隐式发布。
+  - 发布 job 增加 `actions/checkout@v5`，保证 `body_path: .github/release-body.md` 存在。
+  - `packageName: "gather"` 必须放在 `deb` 子配置，而不是 `linux`；`linux` 不接受该字段。
+  - 显式设置 `linux.artifactName: "Gather-${version}-linux-${arch}.${ext}"`，避免 deb 继续使用 scoped npm 名生成 `release/@gather/...` 路径；AppImage 的 `${arch}` 展开为 `x86_64`，deb 为 `amd64`。
+  - portable 显式命名 `Gather-Portable-${version}.exe`，并给 release action 增加 `overwrite_files: true`；重跑后删除旧的不带连字符资产，避免同一 Release 留下两个便携版。
+- **根因**：
+  - npm workspace 名 `@gather/desktop` 含有 `@` 与 `/`；electron-builder 的默认 executableName 清洗成 `@gatherdesktop`，随后因非法字符拒绝 AppImage。
+  - `packageName` 属于 `LinuxTargetSpecificOptions`（deb/rpm 等目标），放在 `linux` 根会 schema 校验失败；即使设置 deb.packageName，默认 artifactName 仍从 app name 推导，路径仍是 `release/@gather/desktop_...deb`。
+  - GitHub Release 会把带空格的文件名改写成点号（`Gather 0.1.0-phase.0.exe` → `Gather.0.1.0-phase.0.exe`），不适合作为稳定下载名。
+  - publish job 如果没有 checkout，工作区只有下载的 artifact，没有 `.github/release-body.md`。
+- **证据**：
+  - 失败运行：45135334703（`executableName ... @gatherdesktop`）、45136562424（deb fpm 路径 `release/@gather/...`）、45137610847（`linux.packageName` schema invalid）、45138226673（deb 路径仍为 `release/@gather/...`）。
+  - 中间成功：45139088242 产出 AppImage/deb/NSIS/portable；但 portable 名字被 GitHub 改写为 `Gather.0.1.0-phase.0.exe`，随后做命名收口。
+  - 最终成功：45140138861，Windows 3m38s、Ubuntu 1m18s、publish 14s；Release `v0.1.0-phase.0` 包含：
+    - `Gather-Setup-0.1.0-phase.0.exe` 107,159,310 B / `cdacfcc1…`
+    - `Gather-Portable-0.1.0-phase.0.exe` 97,380,409 B / `74df9788…`
+    - `Gather-0.1.0-phase.0-linux-x86_64.AppImage` 124,429,055 B / `0342adf2…`
+    - `Gather-0.1.0-phase.0-linux-amd64.deb` 96,985,132 B / `0f3d6f98…`
+    - `SHA256SUMS.txt` 409 B / `ef4af8e1…`
+  - 四个包的 SHA-256 与 GitHub API `asset.digest`、`SHA256SUMS.txt` 三方一致。本机到 `release-assets.githubusercontent.com` 出现持续 TLS 握手失败/低速率，只完成了清单下载；未把“Release 大文件下载并安装”写成已验证。
+- **防回归**：
+  - 修改 electron-builder 配置后先跑本地 `validateConfiguration`；不要在 `linux` 根猜字段。
+  - 任何 scoped workspace 包都必须显式指定 `executableName` 与 `artifactName`，不要依赖默认清洗。
+  - publish job 必须 checkout；release action 必须 `overwrite_files: true`；重命名资产后要删掉旧资产。
+  - 发布后同时核对 Release API 的 `name/size/digest` 与 `SHA256SUMS.txt`；网络不可用时明确记录证据缺口，不伪造下载/安装结果。
 
 ---
 

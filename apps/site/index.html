@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gather — 本地优先的 Markdown 写作工作台</title>
-  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、阅读目录/查找/代码高亮、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。Windows、Linux 与 CLI。">
+  <title>Gather — 本地优先的 Markdown 写作工作台 · Phase 1 预览下载</title>
+  <meta name="description" content="Gather 是一个本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、阅读目录/查找/代码高亮、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。Phase 1 预览版已发布，提供 Windows 安装版/便携版与 Linux AppImage/deb 下载。">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -13,8 +13,8 @@
   <link rel="canonical" href="https://hhxpoint.github.io/gather/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gather">
-  <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台">
-  <meta property="og:description" content="本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、阅读目录/查找/代码高亮、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。">
+  <meta property="og:title" content="Gather — 本地优先的 Markdown 写作工作台 · Phase 1 预览下载">
+  <meta property="og:description" content="本地优先的 Markdown 写作工作台：打开文件夹就是工作区，文件留在磁盘，支持单文件查找替换与跨文稿搜索、专注与阅读模式、阅读目录/查找/代码高亮、表格和本地图片实时预览，保存冲突拒绝覆盖，未保存内容有崩溃恢复快照；窗口、工作区与最后文稿跨重启恢复，并支持 A4 PDF 与含本地图片的 HTML 导出。Phase 1 预览版已发布，提供 Windows 与 Linux 下载。">
   <meta property="og:url" content="https://hhxpoint.github.io/gather/">
   <meta property="og:image" content="https://hhxpoint.github.io/gather/images/gather-external-change.png">
   <meta property="og:image:width" content="2560">
@@ -62,14 +62,14 @@
         <a href="#principles"><span>02</span>理念</a>
         <a href="#features"><span>03</span>能力</a>
         <a href="#cli"><span>04</span>CLI</a>
-        <a href="#download"><span>05</span>构建</a>
+        <a href="#download"><span>05</span>下载</a>
         <a href="#roadmap"><span>06</span>路线图</a>
       </nav>
 
       <div class="header-side">
         <a class="header-phase" href="#download">
           <span class="status-dot" aria-hidden="true"></span>
-          Phase 1 · 文件可靠性
+          Phase 1 · 预览已发布
         </a>
         <a class="header-github" href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer" aria-label="Gather GitHub 仓库（在新窗口打开）">
           GitHub
@@ -86,7 +86,7 @@
             <a href="#principles"><span>02</span>理念</a>
             <a href="#features"><span>03</span>能力</a>
             <a href="#cli"><span>04</span>CLI</a>
-            <a href="#download"><span>05</span>构建状态</a>
+            <a href="#download"><span>05</span>下载</a>
             <a href="#roadmap"><span>06</span>路线图</a>
             <a href="https://github.com/hhxpoint/gather" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
           </nav>
@@ -110,7 +110,11 @@
           <p class="hero-lede">Gather 是一个本地优先的 Markdown 写作工作台。文件留在磁盘；保存前拒绝覆盖外部修改，未保存内容有崩溃恢复快照。AI 审阅是下一步，不在这一阶段冒充已上线。</p>
 
           <div class="hero-actions">
-            <a class="button button--primary" href="#product">
+            <a class="button button--primary" href="#download">
+              下载 Phase 1 预览版
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"/></svg>
+            </a>
+            <a class="button button--ghost" href="#product">
               看真实界面
               <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"/></svg>
             </a>
@@ -184,7 +188,7 @@
             </div>
           </figure>
 
-          <p class="terminal-note">Phase 1 暂无公开安装包。终端为 CLI 交互示意；真实 CLI 已能从源码运行。</p>
+          <p class="terminal-note">Phase 1 预览安装包已发布。终端为 CLI 交互示意；真实 CLI 已能从源码运行。</p>
         </div>
       </div>
 
@@ -645,15 +649,15 @@
         <header class="section-head">
           <p class="section-marker"><span>05</span> Builds</p>
           <div class="section-heading">
-            <h2 id="download-title">还没有公开下载，<br>但已经跑起来。</h2>
-            <p>Phase 1 已产出未签名 Windows staging 目录包并实测打开/保存；它不是公开发行物。签名安装器、自动更新与 Linux 包仍未完成，这里不伪造下载链接。</p>
+            <h2 id="download-title">现在可以下载，<br>Phase 1 预览版。</h2>
+            <p>Windows 安装版/便携版与 Linux AppImage/deb 已作为未签名 prerelease 发布，下载直接指向 GitHub Release 中的真实资产。签名、自动更新、Linux 图形会话与 IME 矩阵仍未完成，这里不把预览版写成稳定版。</p>
           </div>
         </header>
 
         <div class="release-status-bar">
           <span class="micro-label">Release channel</span>
           <span>GitHub Releases</span>
-          <span class="release-status-bar-state"><i class="status-dot" aria-hidden="true"></i>Phase 1 · staging 已验证</span>
+          <span class="release-status-bar-state"><i class="status-dot" aria-hidden="true"></i>v0.1.0-phase.0 · prerelease 已发布</span>
         </div>
 
         <div class="release-manifest">
@@ -673,11 +677,17 @@
               </div>
               <p class="release-channel"><span>Channel</span>First release wave</p>
               <div class="release-state">
-                <span class="release-note">未签名 staging 已验证；安装器未发布</span>
-                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="Windows：尚无公开安装包。前往 GitHub Releases 查看进度">
-                  <span class="release-button-status"><i aria-hidden="true"></i>Not published</span>
-                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
-                </a>
+                <span class="release-note">安装版 + 便携版 · 未签名 · x64</span>
+                <div class="release-buttons">
+                  <a class="release-button" href="https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-Setup-0.1.0-phase.0.exe" target="_blank" rel="noopener noreferrer" aria-label="下载 Windows 安装版 Gather Setup 0.1.0-phase.0，约 102.2 MiB">
+                    <span class="release-button-status is-ready"><i aria-hidden="true"></i>NSIS installer · 102.2 MiB</span>
+                    <span class="release-button-action">Gather-Setup-0.1.0-phase.0.exe <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                  </a>
+                  <a class="release-button" href="https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-Portable-0.1.0-phase.0.exe" target="_blank" rel="noopener noreferrer" aria-label="下载 Windows 便携版 Gather Portable 0.1.0-phase.0，约 92.9 MiB">
+                    <span class="release-button-status is-ready"><i aria-hidden="true"></i>Portable · 92.9 MiB</span>
+                    <span class="release-button-action">Gather-Portable-0.1.0-phase.0.exe <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                  </a>
+                </div>
               </div>
             </li>
             <li class="release-row">
@@ -690,11 +700,17 @@
               </div>
               <p class="release-channel"><span>Channel</span>First release wave</p>
               <div class="release-state">
-                <span class="release-note">待 Linux 图形会话验证</span>
-                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="Linux：尚无公开安装包。前往 GitHub Releases 查看进度">
-                  <span class="release-button-status"><i aria-hidden="true"></i>Not published</span>
-                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
-                </a>
+                <span class="release-note">AppImage + deb · 未签名 · GUI 会话尚未实测</span>
+                <div class="release-buttons">
+                  <a class="release-button" href="https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-0.1.0-phase.0-linux-x86_64.AppImage" target="_blank" rel="noopener noreferrer" aria-label="下载 Linux AppImage Gather 0.1.0-phase.0 x86_64，约 118.7 MiB">
+                    <span class="release-button-status is-ready"><i aria-hidden="true"></i>AppImage · 118.7 MiB</span>
+                    <span class="release-button-action">Gather-0.1.0-phase.0-linux-x86_64.AppImage <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                  </a>
+                  <a class="release-button" href="https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/Gather-0.1.0-phase.0-linux-amd64.deb" target="_blank" rel="noopener noreferrer" aria-label="下载 Debian 包 Gather 0.1.0-phase.0 amd64，约 92.5 MiB">
+                    <span class="release-button-status is-ready"><i aria-hidden="true"></i>Debian package · 92.5 MiB</span>
+                    <span class="release-button-action">Gather-0.1.0-phase.0-linux-amd64.deb <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                  </a>
+                </div>
               </div>
             </li>
             <li class="release-row">
@@ -707,17 +723,31 @@
               </div>
               <p class="release-channel"><span>Channel</span>First release wave</p>
               <div class="release-state">
-                <span class="release-note">命令源码可用；尚无发行包</span>
-                <a class="release-button" href="https://github.com/hhxpoint/gather/releases" target="_blank" rel="noopener noreferrer" aria-label="CLI：源码可用，尚无公开发行包。前往 GitHub Releases 查看进度">
+                <span class="release-note"><code>doctor</code> / <code>new</code> / <code>export</code> 源码可用；无独立二进制</span>
+                <a class="release-button" href="https://github.com/hhxpoint/gather#cli-示例" target="_blank" rel="noopener noreferrer" aria-label="查看 Gather CLI 源码与用法">
                   <span class="release-button-status"><i aria-hidden="true"></i>Source only</span>
-                  <span class="release-button-action">GitHub Releases <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
+                  <span class="release-button-action">CLI in repository <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></span>
                 </a>
               </div>
             </li>
           </ul>
         </div>
 
-        <p class="manifest-caption">三个入口都指向同一个 GitHub Releases 发布页，目前不会触发任何下载。</p>
+        <p class="manifest-caption">下载直接指向 GitHub Release <a href="https://github.com/hhxpoint/gather/releases/tag/v0.1.0-phase.0" target="_blank" rel="noopener noreferrer">v0.1.0-phase.0</a>；站点不托管二进制。所有产物未签名，没有自动更新。</p>
+
+        <details class="release-checksums">
+          <summary>SHA-256 校验值 <span>4 个产物 · 与 SHA256SUMS.txt 一致</span></summary>
+          <div class="checksum-body">
+            <p>下载后校验，避免传输损坏。Linux 可运行 <code>sha256sum -c SHA256SUMS.txt</code>；Windows 可用 <code>Get-FileHash</code>。</p>
+            <ul class="checksum-list">
+              <li><span>Gather-Setup-0.1.0-phase.0.exe</span><code>cdacfcc18809fcbd0818fd249539a72b34d8e987b119ed30a5e46a94afaab249</code></li>
+              <li><span>Gather-Portable-0.1.0-phase.0.exe</span><code>74df9788937a96d563d431fdca05b90ef43f81b2e7218ae95bc1afed59f24b58</code></li>
+              <li><span>Gather-0.1.0-phase.0-linux-x86_64.AppImage</span><code>0342adf296686ded1dcea0a0476fcb177668eb62052903d011486451a0c59b26</code></li>
+              <li><span>Gather-0.1.0-phase.0-linux-amd64.deb</span><code>0f3d6f98e2de95a512ed708a231630c146eadcbd4a62fe5da7680af2d8996026</code></li>
+            </ul>
+            <a class="checksum-link" href="https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">下载 SHA256SUMS.txt <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#icon-arrow-ne"/></svg></a>
+          </div>
+        </details>
 
         <div class="release-facts">
           <div>
@@ -725,8 +755,8 @@
             <p>Electron 38.8.6，精确版本锁定。Tauri 是待验证候选，不会在四项硬门槛通过前替换。</p>
           </div>
           <div>
-            <p class="micro-label">Staging today</p>
-            <p>Windows 未签名目录包约 328 MB，已实测启动与保存；默认图标、无签名、无自动更新。</p>
+            <p class="micro-label">Release today</p>
+            <p>4 个未签名产物由 Actions 构建，SHA-256 与 GitHub 资产摘要一致；Windows 安装器在本机构建中实测安装/启动/卸载，Linux 运行时尚未实测。</p>
           </div>
           <div>
             <p class="micro-label">Source today</p>
@@ -754,8 +784,8 @@
               <span>真实矩阵与未验证边界</span>
             </a>
             <a href="https://github.com/hhxpoint/gather/tree/main/docs/adr" target="_blank" rel="noopener noreferrer">
-              <strong>ADR 0001–0004</strong>
-              <span>桌面壳、编辑器、文件安全、恢复</span>
+              <strong>ADR 0001–0013</strong>
+              <span>桌面壳、文件安全、阅读、分发</span>
             </a>
           </div>
         </div>
@@ -810,7 +840,7 @@
               <li>窗口 / 工作区 / 文稿恢复</li>
               <li>表格 / 本地图片 / 安全外链</li>
               <li>A4 PDF / 含本地图片的 HTML</li>
-              <li>未签名 staging 与工程日志</li>
+              <li>未签名预览安装包 / SHA-256</li>
             </ul>
             <span class="stage-state">进行中 / In progress</span>
           </li>
