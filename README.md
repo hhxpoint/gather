@@ -13,6 +13,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 ## 目录
 
 - [下载与校验](#下载与校验)
+- [下载后怎么用](#下载后怎么用)
 - [真实界面](#真实界面)
 - [项目状态](#项目状态)
 - [为什么做 Gather](#为什么做-gather)
@@ -58,6 +59,19 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 </details>
 
 安装包**没有代码签名**：Windows SmartScreen 可能提示“未知发布者”，只有在你信任此构建时才选择“仍要运行”。没有自动更新；Linux 包由 Actions 构建并通过产物校验，但尚未在真实 Linux 图形会话、IME 或 200% 缩放下验收。下载前可用 `sha256sum -c SHA256SUMS.txt`（Linux）或 `Get-FileHash`（Windows PowerShell）核对。AppImage 需要先 `chmod +x Gather-0.1.0-phase.0-linux-x86_64.AppImage`；deb 可用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。
+
+## 下载后怎么用
+
+不需要账号，也不需要把文稿上传到云端。第一次启动会显示一篇示例文稿；文稿只写进你选择的本地文件。
+
+1. **Windows**：双击 `Gather-Setup-0.1.0-phase.0.exe` 安装，或直接双击 `Gather-Portable-0.1.0-phase.0.exe`。SmartScreen 提示时确认来源与 SHA-256，再选择“更多信息 → 仍要运行”。
+2. **Linux**：AppImage 先 `chmod +x` 再运行；deb 用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。Linux 图形会话尚未进入已验证矩阵。
+3. **打开文稿/文件夹**：`Ctrl+O` 打开单个 `.md`，`Ctrl+Shift+O` 把整个文件夹作为工作区。首次出现的“未命名文稿”可以直接改写，用 `Ctrl+Shift+S` 另存为新文件。
+4. **写作与保存**：`Ctrl+S` 才写回原文件；标题栏未保存标记消失才算保存成功。Gather 不会自动改写原文件，恢复快照只用于崩溃恢复。
+5. **阅读与导出**：`Ctrl+Shift+R` 进入阅读模式，`Ctrl+Shift+Enter` 专注模式，`Ctrl+Shift+E` 导出 A4 PDF；“文件 → 导出 HTML…”导出独立 HTML。
+6. **升级与卸载**：当前没有自动更新，回到 [GitHub Releases](https://github.com/hhxpoint/gather/releases) 手动下载新版本。卸载步骤、故障排查与恢复快照位置见完整指南。
+
+完整步骤、快捷键表、数据位置与故障排查：[docs/QUICKSTART.md](docs/QUICKSTART.md)。
 
 ## 真实界面
 
@@ -387,8 +401,8 @@ gather/
 │  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
 │  └─ site/                     官网静态骨架
-│     ├─ index.html             项目站首页（约 39 KB）
-│     ├─ styles.css             站点样式（约 29 KB）
+│     ├─ index.html             项目站首页（约 56 KB）
+│     ├─ styles.css             站点样式（约 36 KB）
 │     ├─ build.mjs              复制静态文件到 dist/
 │     └─ package.json           @gather/site
 ├─ packages/
@@ -420,6 +434,7 @@ gather/
 │  ├─ adr/0011-reading-and-focus.md
 │  ├─ adr/0012-reading-navigation.md
 │  ├─ adr/0013-distribution-and-icons.md
+│  ├─ QUICKSTART.md             下载、安装、首次使用与故障排查
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ PLAYBOOK.md               工程方法、失败模式、检查表与学习路径
@@ -427,7 +442,8 @@ gather/
 │  └─ ROADMAP.md
 ├─ .github/workflows/
 │  ├─ ci.yml                    Ubuntu + Node 24：ci/typecheck/test/build
-│  └─ pages.yml                 构建 apps/site 并部署 GitHub Pages
+│  ├─ pages.yml                 构建 apps/site 并部署 GitHub Pages
+│  └─ release.yml               Windows/Ubuntu 安装包、SHA256SUMS 与 prerelease
 ├─ .nvmrc                       Node 24
 ├─ LICENSE                      GNU AGPL v3 全文
 ├─ package.json                 npm workspaces 根
@@ -687,6 +703,7 @@ https://hhxpoint.github.io/gather/
 
 每次 bug 修复、失败测试、平台差异与发布状态变化都记录在仓库内，而不是只留在对话里：
 
+- [docs/QUICKSTART.md](docs/QUICKSTART.md)：下载、校验、Windows/Linux 安装、首次打开、快捷键、数据位置、升级卸载与故障排查。
 - [docs/DEBUG_LOG.md](docs/DEBUG_LOG.md)：按“现象 / 根因 / 修复 / 证据 / 防回归”记录 Phase 0/1 的真实踩坑与修正；包含被推翻的初始判断。
 - [docs/VERIFICATION.md](docs/VERIFICATION.md)：当前可复现命令、测试清单、Windows 真实窗口矩阵、失败注入矩阵和明确未验证项。
 

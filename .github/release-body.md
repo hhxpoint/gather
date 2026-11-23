@@ -18,6 +18,14 @@ sha256sum -c SHA256SUMS.txt
 Get-FileHash .\Gather-Setup-0.1.0-phase.0.exe -Algorithm SHA256
 ```
 
+## 下载后怎么用
+
+1. Windows 双击 `Gather-Setup-*.exe` 安装，或直接运行 `Gather-Portable-*.exe`。SmartScreen 提示时先确认来源与 SHA-256，再选择“更多信息 → 仍要运行”。
+2. Linux AppImage 先 `chmod +x` 再运行；deb 用 `sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb`。
+3. 启动后直接改写示例文稿，或按 `Ctrl+O` 打开已有 Markdown、`Ctrl+Shift+O` 打开文件夹；用 `Ctrl+Shift+S` 另存为新文件。
+4. `Ctrl+S` 才会写回原文件，标题栏未保存标记消失才算成功；Gather 不会自动改写原文件。
+5. `Ctrl+Shift+R` 阅读模式，`Ctrl+Shift+Enter` 专注模式，`Ctrl+Shift+E` 导出 A4 PDF。完整步骤、快捷键与故障排查见 [下载后怎么用](https://github.com/hhxpoint/gather/blob/main/docs/QUICKSTART.md)。
+
 ## 重要说明
 
 - 这是 **Phase 1 预览**，未签名。Windows SmartScreen 可能提示“未知发布者”；只有在你信任此构建时才选择“仍要运行”。
