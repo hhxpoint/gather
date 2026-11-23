@@ -449,6 +449,7 @@
   - 代码块 37 个 token span，类如 `tok-keyword`、`tok-typeName`、`tok-definition`；760×600 阅读无横向溢出；PDF 按钮打开“导出 PDF”保存对话框，取消后阅读保持。
   - 标题级进入同步：编辑器 Ctrl+End 后进入阅读，滚动到 81–100% 分区；退出落回最后标题源行。该同步不精确到段落/字符。
   - 截图 `docs/images/gather-reading-tools.png`（1184×755，88,464 bytes，目录 + 代码高亮 + 表格）。
+  - 批次闭环：PR #27 合并为 `9c233e1`；PR CI [45126930876](https://github.com/hhxpoint/gather/actions/runs/45126930876)、main CI [45127144335](https://github.com/hhxpoint/gather/actions/runs/45127144335) 与 Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 均成功；公网 HTML/工具截图 SHA-256 与本地一致，10 张产品截图在 1440/390 全部加载。
 - **防回归**：查找高亮必须在代码高亮完成后重跑；阅读浮层 Esc 必须先于 App 退出；表格必须经 `.reading-table`；退出同步必须处理 near-bottom；目录/查找不得修改 Markdown 或编辑器历史。
 
 ---

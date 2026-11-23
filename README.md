@@ -184,7 +184,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：16 个测试文件、126 个测试，124 通过、2 个 POSIX-only 跳过；上一批阅读 CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 为 121 个测试，本批新增 5 个阅读大纲测试 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：16 个测试文件、126 个测试，124 通过、2 个 POSIX-only 跳过；阅读工具批次 PR CI [45126930876](https://github.com/hhxpoint/gather/actions/runs/45126930876) 与 main CI [45127144335](https://github.com/hhxpoint/gather/actions/runs/45127144335) 均为 Ubuntu 126 全过、Windows 124 通过 + 2 跳过 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -240,6 +240,7 @@ Gather 不打算做这些事：
 - [x] **会话批次已合并并部署。** PR [#23](https://github.com/hhxpoint/gather/pull/23) 合并为 `f4825c8`；main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947) 与 Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功。公网 `index.html` SHA-256 `f5ea5685…`、CSS `5b76a1b0…` 与本地构建一致；页面显示 121 个测试；8 张产品截图在 1440/390 全部加载。
 - [x] **专注与阅读模式已在真实窗口验证。** 专注模式四块 chrome 隐藏、`Esc` 恢复；阅读模式 680px 版心、引用/代码/表格/本地图片、63.71% 进度、纸色/夜读与持久化；阅读时隐藏编辑器不可输入，退出后 Undo 历史仍可恢复；`Ctrl+Shift+R` / `Ctrl+Shift+Enter` 快捷键生效。远程图片在进入 DOM 前被替换为占位，`performance` 无请求。
 - [x] **阅读导航与代码高亮已在真实窗口验证。** 目录 5 个标题可跳转、当前标题高亮；查找 `写作` 2 个匹配与当前高亮，无匹配清空；代码块 37 个 token span；Esc 先关查找/目录再退出阅读；阅读 PDF 按钮打开保存对话框；进入/退出按标题同步源行（近似，不精确到段落）。
+- [x] **阅读工具批次已合并并部署。** PR [#27](https://github.com/hhxpoint/gather/pull/27) 合并为 `9c233e1`；main CI [45127144335](https://github.com/hhxpoint/gather/actions/runs/45127144335) 与 Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功。公网 `index.html` SHA-256 `242551f7…`；阅读工具截图 88,464 bytes / `b4462835…`，10 张产品截图在 1440/390 全部加载。
 - [x] **阅读批次已合并并部署。** PR [#25](https://github.com/hhxpoint/gather/pull/25) 合并为 `b21ee48`；main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 与 Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功。公网 `index.html` SHA-256 `163bc0bc…` 与本地一致；阅读截图 94,878 bytes / SHA-256 `3c6dbcc4…`，9 张产品截图在 1440/390 全部加载。
 - [ ] **阅读模式还不是完整阅读器。** 没有标注、精确到段落/字符的滚动同步、打印专用版式；夜间主题只覆盖阅读外壳，不改变编辑界面；目录/查找不跨文稿。
 - [ ] **工作区还没有树形折叠、新建/重命名/删除文件。** 外部新增文件需要手动刷新；没有最近工作区列表、滚动位置/光标恢复、单文件（无工作区）会话。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
@@ -470,7 +471,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-阅读批次 [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 121 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 119 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。本批新增 5 个阅读大纲测试，本地 126 个测试（124 通过 + 2 跳过），CI 结果在合并后补。阅读查找/目录/代码高亮/源行同步没有自动化 UI 测试，由真实窗口验收；CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、阅读/专注模式、窗口恢复矩阵、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
+阅读工具批次 [45126930876](https://github.com/hhxpoint/gather/actions/runs/45126930876) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 126 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 124 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。上一批阅读 [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 为 121 个测试。阅读查找/目录/代码高亮/源行同步没有自动化 UI 测试，由真实窗口验收；CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、阅读/专注模式、窗口恢复矩阵、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
 
 ### 桌面打包（staging 已验证，安装器未产出）
 
@@ -651,6 +652,7 @@ https://hhxpoint.github.io/gather/
 - 2026-11-23 工作区搜索批次上线：产品区增加 `08 / Search`，能力区更新 111 个测试；Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功，公网 HTML/CSS/截图 SHA-256 与本地构建一致，8 张产品截图在 1440/390 均加载。
 - 2026-11-23 会话批次上线：窗口/工作区/最后文稿跨重启恢复，能力区更新 121 个测试；Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功，公网 HTML/CSS SHA-256 与本地构建一致，1440/390 均无横向溢出。
 - 2026-11-23 阅读批次上线：新增 `09 / Reading`、专注/阅读/夜读与 760px 编辑版心；Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功，公网 9 张产品截图在 1440/390 全部加载。
+- 2026-11-23 阅读工具批次上线：新增 `10 / Reading tools`、目录、全文查找、代码语法高亮与阅读导出；Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功，10 张产品截图在 1440/390 全部加载。
 - 站点明确写着“Phase 1、没有公开下载”，没有伪造下载按钮、版本号或用户文稿。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
