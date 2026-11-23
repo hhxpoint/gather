@@ -47,7 +47,10 @@ describe('workspace listing', () => {
   });
 
   it('rejects a file that is not a directory', async () => {
-    await expect(listWorkspace(join(root, 'a.md'))).rejects.toThrow(/文件夹/);
+    await expect(listWorkspace(join(root, 'a.md'))).rejects.toMatchObject({
+      message: expect.stringMatching(/文件夹/),
+      code: 'ENOTDIR',
+    });
   });
 });
 

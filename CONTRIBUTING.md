@@ -37,7 +37,7 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入、导出、预览、工作区目录与工作区搜索，共 14 个测试文件、111 个测试；Ubuntu CI 111 全过（含 2 个真实 POSIX 只读目录），Windows 109 通过 + 2 个 POSIX-only 跳过。
+- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入、导出、预览、工作区目录与搜索、窗口/工作区会话，共 15 个测试文件、121 个测试；Ubuntu CI 121 全过（含 2 个真实 POSIX 只读目录），Windows 119 通过 + 2 个 POSIX-only 跳过。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
 - `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；最近 main CI [45102465517](https://github.com/hhxpoint/gather/actions/runs/45102465517) 全绿，工作区搜索代码批次为 [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935)。
 - CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示/20 MiB 拒绝已手工验证；Windows staging 目录包已验证可启动并保存；Linux 桌面与会话级验证仍未做。
@@ -100,6 +100,7 @@ npm run build -w @gather/cli
 - `apps/desktop/test/external-links.test.ts`：http/https 放行、危险协议/凭据/畸形值拒绝。
 - `apps/desktop/test/workspace.test.ts`：工作区递归/跳过目录/排序与路径边界。
 - `apps/desktop/test/workspace-search.test.ts`：字面量/正则、非法模式、BOM+CRLF 行号、预算、二进制/超大文件与目录逃逸。
+- `apps/desktop/test/session.test.ts`：窗口矩形归一化、主/副屏选择、最小尺寸、同步/异步存储、损坏/版本与工作区会话路径。
 - `apps/desktop/test/export-html.test.ts`：导出图片 data URI、目录逃逸、SVG/缺失告警、代码块与远程图片边界。
 
 提交恢复/文件监视相关改动时，至少覆盖：
@@ -124,6 +125,13 @@ npm run build -w @gather/cli
 - 工作区搜索的字面量/正则/大小写、无效正则、空结果、结果上限与超时。
 - 点击结果是否打开正确文稿并定位行列；脏文稿切换是否仍有确认。
 - 工作区路径是否经过 `realpath` 边界；工具进程结束后主进程是否仍存活。
+
+提交会话/窗口改动时，至少覆盖：
+
+- 调整窗口位置/尺寸/最大化后重启，普通 bounds 与最大化状态是否恢复。
+- 工作区/最后文稿是否恢复；删除文稿、重命名根目录后是否降级而不崩溃。
+- 关闭工作区后重启是否不再自动打开；会话 JSON 是否被清除。
+- 强杀后恢复快照横幅是否仍出现，恢复后是否进入未保存状态。
 
 Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进入编辑器状态，再写出，比较字节。无法字节一致的场景必须写明规范化规则，并让用户可见。
 

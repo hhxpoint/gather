@@ -64,7 +64,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0009](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0010](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
 
 ## 项目状态
 
@@ -117,6 +117,7 @@ Gather 不打算做这些事：
 | 打开 Markdown | 已验证（本地 Windows） | 系统文件对话框打开仓库内 Markdown 并渲染成功 |
 | 文件夹工作区 | 已验证（本地 Windows） | 目录对话框打开工作区，递归列出 Markdown/TXT（最多 2000 个、深度 8），跳过隐藏目录、`node_modules`、构建目录与符号链接；侧栏切换、刷新、关闭；切换脏文稿前确认；打开文件时再次做目录边界校验 |
 | 工作区搜索 | 已验证（本地 Windows + 单元测试） | `Ctrl/Cmd+Shift+F` 在独立 `utilityProcess` 扫描当前文件夹；`Gather` 返回 8 处 / 4 个文稿，区分大小写 6 处 / 3 个文稿，正则日期 2 处 / 2 个文稿；200 条结果、2 MiB 单文件、64 MiB 总量、8 秒超时；点击结果打开文稿并跳到行列 |
+| 会话恢复 | 已验证（本地 Windows + 单元测试） | 窗口位置/尺寸/最大化跨重启恢复；最近工作区与最后文稿自动恢复；根目录/文稿缺失时降级；关闭工作区清除会话；强杀后恢复快照横幅仍出现 |
 | 保存 / 另存为 | 已验证（本地 Windows） | 保留 LF/CRLF 与 BOM；临时文件写入 + `fsync` + `rename`；另存为恢复路径已验证 |
 | 导出 PDF / HTML | 已验证（本地 Windows） | 使用当前编辑器内容；隐藏窗口 `printToPDF` 输出 A4，中文/表格/代码块/本地图片进入 PDF；HTML 中本地图片嵌入为 data URI（远程图片仍保留原 URL）；原子写目标文件，失败不保留半个导出文件 |
 | 本地图片嵌入 | 已验证（本地 + 单元测试） | 相对路径 `png/jpg/jpeg/gif/webp/avif/bmp` 限制在文稿目录内并转 data URI；目录外绝对路径、SVG、缺失文件与超预算图片只告警，不阻止导出 |
@@ -174,7 +175,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：14 个测试文件、111 个测试，109 通过、2 个 POSIX-only 跳过；工作区搜索批次 [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 与 main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 均为 Ubuntu 111 全过、Windows 109 通过 + 2 跳过 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：15 个测试文件、121 个测试，119 通过、2 个 POSIX-only 跳过；上一批工作区搜索 CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 为 111 个测试，本批新增 10 个会话/窗口测试 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -226,7 +227,8 @@ Gather 不打算做这些事：
 - [x] **单文件查找/替换已在真实窗口验证。** `Ctrl/Cmd+F` 打开中文面板，`Ctrl/Cmd+H` 聚焦替换；搜索 `Gather` 命中 7 处并高亮，全部替换后正文更新，Ctrl+Z 恢复原文；Escape 关闭面板。正则/大小写/整词开关已在面板中可见，但尚未逐项做替换矩阵。
 - [x] **工作区搜索已在真实窗口验证。** `Ctrl/Cmd+Shift+F` 打开侧栏搜索，`Gather` 返回 8 处 / 4 个文稿；区分大小写后 6 处 / 3 个文稿；正则 `2026-\d{2}-\d{2}` 返回 2 处 / 2 个文稿；非法正则显示错误；无匹配显示空状态。点击 `nested/deep/清单.md:4:7` 打开文稿，光标落在第 4 行第 7 列；760×600 视口无横向溢出。灾难性正则在 8 秒被独立进程超时终止，应用保持运行。
 - [x] **工作区搜索批次已合并并部署。** PR [#20](https://github.com/hhxpoint/gather/pull/20) 合并为 `a6b51e1`；main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 与 Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功。公网 `index.html` SHA-256 `0c5def43…`、CSS `5b76a1b0…` 与本地构建一致；工作区搜索截图 61,289 bytes、SHA-256 `85a26ea2…`，HTTP 200；公网 1440/390 视口无横向溢出，8 张产品截图全部加载。
-- [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
+- [x] **窗口与工作区会话已跨重启验证。** 窗口 120,80,1000×700 重启恢复；最大化重启 1920×1032；工作区与 `nested/笔记.md` 自动恢复；删除最后文稿/重命名根目录会降级并提示；关闭工作区后不恢复；强杀后恢复快照横幅仍出现。
+- [ ] **工作区还没有树形折叠、新建/重命名/删除文件。** 外部新增文件需要手动刷新；没有最近工作区列表、滚动位置/光标恢复、单文件（无工作区）会话。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
 - [ ] **工作区搜索仍是只读的。** 没有跨文稿替换、搜索历史、包含/排除规则或流式结果；单文件超过 2 MiB、二进制文件会跳过并在摘要中计数；正则可能很慢，由 8 秒超时兜底。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
@@ -318,6 +320,7 @@ gather/
 │  │  ├─ src/main/workspace-search.ts  工作区扫描核心、预算与预览
 │  │  ├─ src/main/workspace-search-service.ts  utilityProcess 启动、超时与取消
 │  │  ├─ src/main/workspace-search-worker.ts   独立进程入口
+│  │  ├─ src/main/session.ts    窗口/工作区会话存储与显示器归一化
 │  │  ├─ src/shared/files.ts    主进程/preload/renderer 共享文件类型
 │  │  ├─ src/shared/external-links.ts  http/https 外链校验
 │  │  ├─ src/shared/errors.ts   IPC 错误前缀清理
@@ -332,6 +335,7 @@ gather/
 │  │  ├─ test/external-links.test.ts http/https 与危险协议拒绝
 │  │  ├─ test/workspace.test.ts  工作区递归、跳过目录与路径边界
 │  │  ├─ test/workspace-search.test.ts  字面量/正则、行号、预算与逃逸拒绝
+│  │  ├─ test/session.test.ts    窗口归一化、同步写与会话路径校验
 │  │  ├─ electron.vite.config.ts
 │  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
@@ -365,6 +369,7 @@ gather/
 │  ├─ adr/0007-workspace.md
 │  ├─ adr/0008-search.md
 │  ├─ adr/0009-workspace-search.md
+│  ├─ adr/0010-session-continuity.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ PLAYBOOK.md               工程方法、失败模式、检查表与学习路径
@@ -436,7 +441,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（14 个测试文件、111 个测试；109 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（15 个测试文件、121 个测试；119 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -722,5 +727,6 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0007：文件夹工作区](docs/adr/0007-workspace.md)
 - [ADR 0008：单文件查找替换](docs/adr/0008-search.md)
 - [ADR 0009：工作区搜索](docs/adr/0009-workspace-search.md)
+- [ADR 0010：会话连续](docs/adr/0010-session-continuity.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。

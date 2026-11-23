@@ -375,6 +375,31 @@
   - 批次闭环：PR #20 合并为 `a6b51e1`；PR CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501)、main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 与 Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 均成功；公网 HTML/CSS/截图 SHA-256 与本地一致，8 张产品截图在 1440/390 全部加载。
 - **防回归**：`utilityProcess` 必须同时监听 `message`、`error`、`exit` 和 `spawn`；结果定位必须等待文稿版本提交；搜索读取必须重新过工作区边界；8 秒超时不能移除。
 
+### P1-31 会话恢复：窗口越界、最后文稿失效与恢复快照共存
+
+- **现象/需求**：重启后总是默认窗口和示例文稿；用户刚编辑的工作区、最后打开的文稿、窗口位置与尺寸全部丢失。需要“继续上次写的地方”，但不能绕过工作区边界、恢复快照或冲突检测。
+- **实现**：
+  - 新增 `session.ts`：`WindowStateStore` 与 `WorkspaceSessionStore` 两个独立、带版本的 JSON；异步原子写，窗口关闭使用同步原子写。
+  - 窗口保存 `getNormalBounds` + `isMaximized`；启动按当前显示器 `workArea` 选择最大重叠、夹紧尺寸/位置，完全在屏外时在主显示器居中。
+  - 工作区会话只保存 `{root, relativePath}`；打开工作区、打开工作区文件、File > Open、Save As 与关闭工作区时更新/清除。
+  - 启动 `workspace:restore` 重新 `listWorkspace`，文件只在列表中才恢复；根目录 ENOENT/ENOTDIR 清除记录，权限等暂时错误保留。
+  - 渲染层用共享 Promise 只恢复一次（兼容 StrictMode）；若用户已经打开工作区/文件，忽略迟到结果。
+- **实际踩坑/判断**：
+  - QA 最初直接调用 `window.gather.openWorkspace()`，主进程写入了会话但 App 状态没有更新；这不是产品路径，但说明“会话写入”和“界面状态”必须由同一个 App 动作驱动。正式验证改为点击“打开文件夹”，让 `openFolder` 完成两条链路。
+  - 原生文件对话框和快捷键在 QA 中会受窗口焦点影响；改用 UI 自动化元素索引后稳定。产品快捷键此前已单独验证，不把测试工具问题写成产品 bug。
+  - 最大化测试中 `Alt+Space` 系统菜单没有被测试工具捕获；双击标题栏才成功。窗口状态文件记录 `maximized:true` 且保留普通 bounds，重启后 `outerWidth=1920 / outerHeight=1032`（主屏 1920×1080），恢复正确。
+  - **恢复快照必须仍然出现。** 强杀后恢复工作区/文稿是“打开文件”，不是“恢复未保存内容”；横幅仍显示，用户点击“恢复”后才进入脏状态。
+- **证据**：
+  - 窗口 120,80,1000×700 → 关闭 → 重启，`screenX=120 / screenY=80 / outerWidth=1000 / outerHeight=700`。
+  - 最大化后重启：`window-state.json` 保留 120,80,1000×700 与 `maximized:true`；窗口实际 1920×1032。
+  - 工作区 + `nested/笔记.md` 重启：title `笔记.md · Gather`，状态“已恢复上次工作区与文稿 笔记.md”，侧栏 3 个文稿。
+  - 删除最后文稿：工作区恢复到 2 个文稿，示例文稿保留，状态“已恢复工作区 … · 上次文稿已不在文件夹”，会话 `relativePath:null`。
+  - 重命名根目录：无侧栏、示例文稿保留，状态“上次工作区已不存在，记录已清除”，会话文件被删除。
+  - 关闭工作区后重启：无侧栏、示例文稿，窗口尺寸仍恢复；会话文件已删除。
+  - 编辑后强杀重启：恢复横幅存在，点击“恢复”得到插入文本，标题变脏，状态“已恢复 笔记.md · 尚未保存”。
+  - 单元测试 `apps/desktop/test/session.test.ts` 10 个：矩形归一化、主屏/副屏选择、最小尺寸、异步/同步往返、损坏/版本、非法根/相对路径、清除。
+- **防回归**：窗口 bounds 必须经过显示器归一化；工作区会话只存路径且恢复必须重新列目录；关闭工作区必须清除会话；Session 恢复不能替代恢复快照；StrictMode 下只能发起一次恢复。
+
 ---
 
 ## 维护约定

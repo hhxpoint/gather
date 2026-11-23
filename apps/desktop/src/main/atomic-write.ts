@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { closeSync, fsyncSync, openSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { open, rename, unlink } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
@@ -66,4 +67,45 @@ export async function replaceFileAtomically(
   const temporary = join(dirname(target), `.${basename(target)}.gather-${randomUUID()}.tmp`);
   await writeTemporaryFile(temporary, data, ops);
   await renameTemporaryFile(temporary, target, ops);
+}
+
+/**
+ * Flush a tiny session file during `close`/`quit`, where an async write may not
+ * finish. The same temp + fsync + rename sequence keeps the old file intact on
+ * failure.
+ */
+export function replaceFileAtomicallySync(target: string, data: Uint8Array | string): void {
+  const temporary = join(dirname(target), `.${basename(target)}.gather-${randomUUID()}.tmp`);
+  let descriptor: number | undefined;
+  try {
+    descriptor = openSync(temporary, 'wx', 0o600);
+    writeFileSync(descriptor, data);
+    fsyncSync(descriptor);
+    closeSync(descriptor);
+    descriptor = undefined;
+  } catch (error) {
+    if (descriptor !== undefined) {
+      try {
+        closeSync(descriptor);
+      } catch {
+        // Preserve the original failure.
+      }
+    }
+    try {
+      unlinkSync(temporary);
+    } catch {
+      // The temp file may not exist.
+    }
+    throw error;
+  }
+  try {
+    renameSync(temporary, target);
+  } catch (error) {
+    try {
+      unlinkSync(temporary);
+    } catch {
+      // Already gone.
+    }
+    throw error;
+  }
 }

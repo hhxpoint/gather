@@ -25,7 +25,11 @@ function isMarkdownFile(name: string): boolean {
 export async function listWorkspace(folderPath: string): Promise<Workspace> {
   const root = await realpath(folderPath);
   const info = await stat(root);
-  if (!info.isDirectory()) throw new Error('请选择一个文件夹。');
+  if (!info.isDirectory()) {
+    const error = new Error('请选择一个文件夹。') as NodeJS.ErrnoException;
+    error.code = 'ENOTDIR';
+    throw error;
+  }
 
   const files: WorkspaceFile[] = [];
   let truncated = false;
