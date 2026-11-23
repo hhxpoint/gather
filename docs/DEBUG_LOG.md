@@ -522,6 +522,24 @@
   - 公网 CDP：桌面 1440 `scrollWidth=1425`，390 `scrollWidth=390`；下载区 4 个安装链接 + SHA256SUMS 链接；5 个按钮在 390 下宽度均 320；页面无 `Not published`/“还没有公开下载”；hero CTA 为“下载 Phase 1 预览版”。
 - **防回归**：站点只能链接真实存在的 Release 资产；发布核对必须比较 LF 归一哈希；1440/390 都要检查下载区溢出；资产 digest 与 `SHA256SUMS.txt` 必须同时核对；未下载/未安装的二进制不得写成已验证。
 
+### P1-37 下载后上手指南：保存语义、恢复快照与“没有新建菜单”
+
+- **现象/需求**：下载页已经列出真实安装包，但第一次使用的人仍可能不知道下载后做什么：安装器/便携版区别、SmartScreen、AppImage 权限、首次示例文稿、怎样打开文件夹、`Ctrl+S` 与恢复快照的关系、卸载后配置留在哪里。
+- **实现**：
+  - 新增 [QUICKSTART](../QUICKSTART.md)：选择并校验资产、Windows 安装/便携、Linux AppImage/deb、首次启动、打开文稿/文件夹、快捷键表、保存/恢复/隐私、升级卸载、故障排查和边界。
+  - 站点下载区新增“下载后怎么用”三步块：安装/运行、打开文稿或文件夹、保存/阅读/导出，链接完整指南。
+  - README 新增“下载后怎么用”段落、目录入口与文件索引；Release notes 同步安装与首次使用步骤。
+- **实际判断**：
+  - **桌面端没有单独的“新建空白文稿”菜单。** 首次出现的未命名示例文稿可以改写并“另存为”，或打开已有 `.md`。指南明确写这个限制，不虚构“新建文件”交互。
+  - **恢复快照不是自动保存。** 快照只用于崩溃恢复，不写回原文件；指南强调 `Ctrl+S` 与标题栏脏标记，避免用户以为编辑器会自动保存。
+  - **Linux 安装说明只能写成预期流程。** AppImage `chmod +x`、FUSE 2 运行库与 deb `apt install` 是标准安装步骤，但 Linux 图形会话仍未实测；页面/指南保留该边界。
+  - **下载页的引导必须可读而非装饰。** 指南链接在 390 视口是 159px 宽的按钮，三步各 358px，页面 `scrollWidth=390`；桌面 1425/1440。
+- **证据**：
+  - 站点 PR [#39](https://github.com/hhxpoint/gather/pull/39) 合并为 `7b380d1`；main CI [45148678762](https://github.com/hhxpoint/gather/actions/runs/45148678762)、Pages [45148678830](https://github.com/hhxpoint/gather/actions/runs/45148678830) 成功。
+  - 公网 `index.html` 57,780 bytes / LF 归一 `0ecc3d7a…`；CSS 37,996 bytes / `bfc60401…`，均与本地 `dist` 一致。
+  - 公网 CDP：桌面 `scrollWidth=1425`；390 `scrollWidth=390`，三步宽度 358，指南链接指向 `https://github.com/hhxpoint/gather/blob/main/docs/QUICKSTART.md`；Release notes 已用 `gh release edit` 更新并包含指南链接。
+- **防回归**：下载页/README/Release notes 必须同时说明“保存才写盘、恢复快照不是自动保存”；桌面没有新建菜单时不得写“点击新建”；Linux 未实测边界必须保留；新增菜单/快捷键后同步 QUICKSTART 与站点步骤。
+
 ---
 
 ## 维护约定

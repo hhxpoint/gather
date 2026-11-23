@@ -90,7 +90,7 @@ sudo apt install ./Gather-0.1.0-phase.0-linux-amd64.deb
 ## 5. 文稿、恢复与隐私
 
 - 文稿保存在你打开或另存为的本地路径；Gather 不建立云端副本，也不要求登录。
-- 未保存内容会定期写入恢复快照：Windows 为 `%APPDATA%\Gather\recovery`，Linux 默认在 `~/.config/Gather/recovery`。它是崩溃恢复，不是自动保存原文件。
+- 未保存内容会定期写入恢复快照：Windows 为 `%APPDATA%\Gather\recovery`，Linux 通常为 `~/.config/Gather/recovery`。它是崩溃恢复，不是自动保存原文件。
 - 强杀或崩溃后重启，应用会显示恢复横幅；点击恢复后仍需主动保存。
 - 如果磁盘文件被其他程序修改，保存会被拒绝，并让你选择载入磁盘版本或另存为。不会静默覆盖外部内容。
 - 恢复快照未加密，依赖操作系统账户权限；重要文稿仍应使用 `git` 或外部备份。
