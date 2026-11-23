@@ -5,10 +5,18 @@
 ## 下载
 
 - **Windows 安装版**：`Gather-Setup-*.exe`
-- **Windows 便携版**：`Gather *.exe`（无需安装，直接运行）
-- **Linux AppImage**：`Gather-*.AppImage`
-- **Linux deb**：`Gather-*_amd64.deb`
+- **Windows 便携版**：`Gather-Portable-*.exe`（无需安装，直接运行）
+- **Linux AppImage**：`Gather-*-linux-x86_64.AppImage`
+- **Linux deb**：`Gather-*-linux-amd64.deb`
 - **SHA-256**：`SHA256SUMS.txt`，请下载后校验。
+
+```bash
+# Linux / macOS
+sha256sum -c SHA256SUMS.txt
+
+# Windows PowerShell（逐个文件）
+Get-FileHash .\Gather-Setup-0.1.0-phase.0.exe -Algorithm SHA256
+```
 
 ## 重要说明
 
