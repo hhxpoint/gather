@@ -20,6 +20,9 @@ for (const asset of assets) {
   console.log(`copied  ${asset.padEnd(12)} ${info.size.toLocaleString('en-US')} bytes`);
 }
 
+await cp(join(root, 'assets'), join(dist, 'assets'), { recursive: true });
+console.log(`copied  assets/`);
+
 const imageInfo = await stat(images);
 if (!imageInfo.isDirectory()) {
   throw new Error(`Expected screenshot assets at ${images}`);

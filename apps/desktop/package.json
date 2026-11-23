@@ -34,27 +34,51 @@
   "build": {
     "appId": "com.gather.editor",
     "productName": "Gather",
+    "copyright": "Copyright © 2026 Gather contributors",
     "electronVersion": "38.8.6",
     "asar": true,
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "out/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "portable"
-      ]
+      ],
+      "compression": "normal"
+    },
+    "nsis": {
+      "artifactName": "Gather-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gather",
+      "uninstallDisplayName": "Gather",
+      "deleteAppDataOnUninstall": false
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": [
         "AppImage",
         "deb"
       ],
-      "category": "Office"
+      "category": "Office",
+      "synopsis": "Local-first Markdown writing workspace",
+      "description": "Gather is a local-first Markdown writing workspace with file safety, recovery, reading modes and first-class CLI."
     }
   }
 }

@@ -259,6 +259,11 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | --- | --- | --- |
 | Windows 目录包 | `npm run stage -w @gather/desktop`，复制 Electron dist + out | 通过：328 MB，`Gather.exe` 可运行并保存文稿 |
 | staging 可执行文件校验 | 本地 Windows 构建 | `Gather.exe` 210,149,888 bytes；SHA-256 `62c62d170a95aa4a3eb3df05f0d56a3654ab4344f7452e21dea1334afed7100f`（重建会变化，不是发布校验和） |
+| NSIS 安装包 | electron-builder，本地 Windows | `Gather-Setup-0.1.0-phase.0.exe` 107,158,982 bytes；未签名；ProductName Gather / ProductVersion 0.1.0.0 |
+| 便携版 | electron-builder portable | `Gather 0.1.0-phase.0.exe` 97,381,784 bytes；启动到 1184×755 窗口，标题“未命名文稿 · Gather” |
+| 安装/卸载 | PowerShell 静默 `/S` 到 `C:/Users/Public/GatherInstallQA` | 安装 exit 0；启动 installed app；卸载器 `/S` exit 0；临时目录删除 |
+| 应用图标 | SVG → Chrome 1024 PNG → Pillow ICO | 16–256 多尺寸；exe 关联 32×32 图标提取成功；`resources/icon.png` 598,018 bytes |
+| Release 工作流 | `.github/workflows/release.yml` | YAML 可解析；Windows/Ubuntu matrix + SHA256SUMS + prerelease；尚未执行 |
 | staging 主进程 bundle | 本地 Windows 构建 | `resources/app/out/main/index.js` 31,340 bytes；SHA-256 `261af9393c845a851dace38551183a7652b45a571c8c7f95081f2588c119df77` |
 | Windows NSIS/portable | electron-builder | 未产出：第二次远程工具请求 600 秒超时；已记录并保留配置 |
 | Linux AppImage/deb | electron-builder | 未执行（无 Linux 桌面环境） |

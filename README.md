@@ -1,5 +1,7 @@
 # Gather
 
+<p align="center"><img src="docs/images/gather-icon.png" width="96" height="96" alt="Gather app icon: an open book with a golden leaf on a forest-green tile"></p>
+
 [![CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)
 
 > 本地优先、AI 修改可审阅的 Markdown 写作工作台。
@@ -72,7 +74,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0012](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0013](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
 
 ## 项目状态
 
@@ -390,6 +392,7 @@ gather/
 │  ├─ adr/0010-session-continuity.md
 │  ├─ adr/0011-reading-and-focus.md
 │  ├─ adr/0012-reading-navigation.md
+│  ├─ adr/0013-distribution-and-icons.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ PLAYBOOK.md               工程方法、失败模式、检查表与学习路径
@@ -753,5 +756,6 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0010：会话连续](docs/adr/0010-session-continuity.md)
 - [ADR 0011：阅读与专注模式](docs/adr/0011-reading-and-focus.md)
 - [ADR 0012：阅读查找、目录与源行同步](docs/adr/0012-reading-navigation.md)
+- [ADR 0013：应用图标、安装包与 Releases](docs/adr/0013-distribution-and-icons.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。
