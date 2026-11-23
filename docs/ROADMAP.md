@@ -66,7 +66,7 @@
 | 测试/类型检查 | 本地 Windows 与 Ubuntu/Windows CI 均通过 |
 | `npm run build` | 本地与双平台 CI 均成功 |
 | 官网 | `apps/site` 已构建并部署；公网 URL 浏览器验证通过 |
-| CI | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，工作区搜索批次 45102037935 全绿 |
+| CI | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，会话批次 45110083947 全绿 |
 | 安装包/签名 | 未开始 |
 
 Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩阵、字节保真与文件安全、性能/可访问性基线、安装包与签名。这些属于 beta 门槛，不会因为 CI 绿而自动成立。
@@ -116,8 +116,8 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [x] 工作区已在真实窗口验收：3 个文稿侧栏、嵌套路径、脏状态确认、保存；快捷键 `Ctrl+Shift+O` 正确打开文件夹。工作区路径边界与跳过目录有单元测试。
 - [x] 单文件查找/替换已在真实窗口验收：中文面板、7 处匹配、全部替换、Ctrl+Z 恢复、Escape 关闭；搜索批次 CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 双平台通过。正则/大小写/整词组合矩阵未逐项跑。
 - [x] 工作区搜索已在真实窗口验收：`Ctrl+Shift+F`、8 处 / 4 个文稿、区分大小写 6 处 / 3 个文稿、正则 2 处 / 2 个文稿；点击结果打开文稿并定位第 4 行第 7 列；非法正则与 8 秒超时都不崩溃。工作区搜索批次 CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 双平台通过。跨文稿替换未实现。
-- [x] 会话连续已在真实窗口验收：窗口 120,80,1000×700 重启恢复；最大化重启 1920×1032；工作区与 `nested/笔记.md` 自动恢复；最后文稿/根目录缺失时降级；强杀后恢复横幅仍出现；关闭工作区后不恢复。多显示器拔插与 Linux 窗口恢复未跑。
-- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链/工作区目录与搜索、窗口/工作区会话的关键路径（15 个文件、121 个测试）；工作区搜索批次 [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) Ubuntu 111 全过、Windows 109 通过 + 2 跳过。
+- [x] 会话连续已在真实窗口验收：窗口 120,80,1000×700 重启恢复；最大化重启 1920×1032；工作区与 `nested/笔记.md` 自动恢复；最后文稿/根目录缺失时降级；强杀后恢复横幅仍出现；关闭工作区后不恢复。会话批次 CI [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) 双平台通过；多显示器拔插与 Linux 窗口恢复未跑。
+- [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链/工作区目录与搜索、窗口/工作区会话的关键路径（15 个文件、121 个测试）；会话批次 [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) Ubuntu 121 全过、Windows 119 通过 + 2 跳过。
 - [x] 桌面端 PDF/HTML 导出已在真实窗口导出并回渲染核验：4 页 A4 PDF、中文、GFM 表格、代码块与本地图片；HTML 中本地图片为 data URI（远程图片仍为 URL）。CLI PDF 与 DOCX 仍未实现。
 
 ### 非目标
