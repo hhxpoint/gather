@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (for example v0.1.0-phase.0)
+        required: true
+        default: v0.1.0-phase.0
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build installers
+        run: npm run dist -w @gather/desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/*.deb
+
+  publish:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installers-*
+          merge-multiple: true
+          path: dist
+      - name: Generate checksums
+        run: |
+          cd dist
+          ls -lh
+          : > SHA256SUMS.txt
+          for pattern in '*.exe' '*.AppImage' '*.deb'; do
+            for file in $pattern; do
+              if [ -f "$file" ]; then sha256sum "$file" >> SHA256SUMS.txt; fi
+            done
+          done
+          sort -k2 SHA256SUMS.txt -o SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Gather ${{ env.RELEASE_TAG }}
+          body_path: .github/release-body.md
+          prerelease: true
+          fail_on_unmatched_files: true
+          target_commitish: ${{ github.sha }}
+          files: dist/*

@@ -540,8 +540,12 @@ function createWindow(savedState: SavedWindowState | null, windowStateStore: Win
         height: savedState.height,
       }
     : { width: 1200, height: 820 };
+  const iconPath = app.isPackaged
+    ? join(process.resourcesPath, 'icon.png')
+    : join(__dirname, '../../build/icon.png');
   mainWindow = new BrowserWindow({
     ...bounds,
+    icon: iconPath,
     minWidth: 760,
     minHeight: 520,
     backgroundColor: '#fbfaf5',

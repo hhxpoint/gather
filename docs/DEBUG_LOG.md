@@ -452,6 +452,27 @@
   - 批次闭环：PR #27 合并为 `9c233e1`；PR CI [45126930876](https://github.com/hhxpoint/gather/actions/runs/45126930876)、main CI [45127144335](https://github.com/hhxpoint/gather/actions/runs/45127144335) 与 Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 均成功；公网 HTML/工具截图 SHA-256 与本地一致，10 张产品截图在 1440/390 全部加载。
 - **防回归**：查找高亮必须在代码高亮完成后重跑；阅读浮层 Esc 必须先于 App 退出；表格必须经 `.reading-table`；退出同步必须处理 near-bottom；目录/查找不得修改 Markdown 或编辑器历史。
 
+### P1-34 安装包、应用图标与 Release：压缩、静默参数和签名边界
+
+- **现象/需求**：项目只有未签名 staging 目录包和默认 Electron 图标，没有安装器、应用图标、公开下载或校验和；GitHub Pages 的下载区仍是“Not published”。
+- **实现**：
+  - 新增 SVG 源图标 `apps/desktop/build/icon.svg`：深森林绿圆角板、米白书页、金色叶芽；Chrome 透明背景渲染 1024 PNG，Pillow 生成 16–256 ICO、512 文档图与站点 favicon/Apple touch icon。
+  - electron-builder：`win.icon`、`linux.icon`、NSIS 非一键安装/可选目录/快捷方式、portable、`extraResources` 运行时图标；窗口 `icon` 指向 packaged resources 或开发 build。
+  - 本地产出 `Gather-Setup-0.1.0-phase.0.exe` 107,158,982 bytes、`Gather 0.1.0-phase.0.exe` 97,381,784 bytes；均未签名。
+  - 新增 `.github/workflows/release.yml`：Windows/Ubuntu matrix 构建，publish job 生成 `SHA256SUMS.txt` 并通过 `softprops/action-gh-release` 发布 prerelease；补 `.github/release-body.md` 说明。
+- **实际踩坑/判断**：
+  - electron-builder 第二次本地构建在 NSIS 压缩阶段长时间占用 7za；第一次最大压缩等待超过 15 分钟被移到后台，随后确认 NSIS 已生成、portable 仍在压缩。改为 `win.compression: normal` 后仍会生成 `.nsis.7z`，但安装器已完成，portable 最终成功；记录的不是“命令失败”，而是大包压缩耗时。
+  - Git Bash 会把 `/S` 当路径参数，导致静默安装反而弹出 NSIS 安装选项；用 PowerShell `Start-Process -ArgumentList '/S','/D=...'` 才真正静默。安装到 `C:\Users\Public\GatherInstallQA` 成功，卸载器 `/S` 退出 0，目录清理；便携版也能启动并显示 1184×755 窗口。
+  - NSIS 安装后的 `Gather.exe` ProductName=Gather、ProductVersion=0.1.0.0、CompanyName=Gather contributors；`resources/icon.png` 存在；提取 exe 关联图标为 32×32 新图标。
+  - `release/` 仍被 `.gitignore` 忽略；不要把安装包提交进仓库或 Pages，Release 资产才是分发渠道。
+  - 没有证书；所有签名步骤被跳过，必须在 Release/站点明确 unsigned 与 SmartScreen 风险。
+- **证据**：
+  - 本地 SHA-256：Setup `43eb057f…`、Portable `d492ffa8…`（本地构建，最终 Release 以 CI 产物和 `SHA256SUMS.txt` 为准）。
+  - 安装/卸载：PowerShell 静默安装 exit 0；启动 installed Gather；关闭后 uninstaller `/S` exit 0；临时目录删除。
+  - 图标：exe 关联图标 32×32 提取成功；窗口标题栏显示新图标；`resources/icon.png` 598,018 bytes。
+  - 站点 favicon 已进入 `apps/site/dist/assets`；Release workflow YAML 通过解析，尚未执行。
+- **防回归**：图标必须从 SVG 重生成并检查小尺寸；安装包必须在 Release 附带 SHA256SUMS；静默安装 QA 不能用 Git Bash 直接传 `/S`；unsigned 不得写成签名发布。
+
 ---
 
 ## 维护约定
