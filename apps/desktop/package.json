@@ -81,7 +81,9 @@
       "description": "Gather is a local-first Markdown writing workspace with file safety, recovery, reading modes and first-class CLI.",
       "executableName": "gather",
       "syncDesktopName": true,
-      "maintainer": "Gather contributors <hhxpoint@users.noreply.github.com>",
+      "maintainer": "Gather contributors <hhxpoint@users.noreply.github.com>"
+    },
+    "deb": {
       "packageName": "gather"
     }
   },
