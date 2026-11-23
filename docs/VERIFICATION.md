@@ -246,6 +246,8 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | 阅读工具批次 [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功；阅读 [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 与会话 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功 |
 | 公网内容 | `curl` + 本地构建对照 | 阅读工具批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`242551f7…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `10 / Reading tools`、126 个测试与 10 张产品截图 |
+| 公网 Pages（下载页） | [45144561805](https://github.com/hhxpoint/gather/actions/runs/45144561805) | 成功；main CI [45144561882](https://github.com/hhxpoint/gather/actions/runs/45144561882) 双平台通过 |
+| 公网下载页内容 | `curl` + CDP + 本地构建对照 | `index.html` 56,069 bytes，LF 归一 SHA-256 `0ae7957d…` 与本地一致；CSS 36,255 bytes / `f957b6a1…` 一致；4 个安装包直链 + `SHA256SUMS.txt`；无 `Not published`/“还没有公开下载”；1440 `scrollWidth=1425`，390 `scrollWidth=390`；5 个下载按钮在 390 下均为 320px 宽 |
 | 公网截图资源 | HTTP GET + SHA-256 | `gather-reading-tools.png` HTTP 200、88,464 bytes、SHA-256 `b4462835…`；`gather-reading.png` 94,878 bytes / `3c6dbcc4…`；其余截图继续可访问 |
 | 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；10 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
 | 阅读工具公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；`10 / Reading tools` 加载为 1184×755，10 张产品截图全部加载，无横向溢出元素 |
