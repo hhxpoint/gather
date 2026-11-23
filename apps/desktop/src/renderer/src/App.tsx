@@ -29,7 +29,7 @@ import {
   Sun,
   X,
 } from 'lucide-react';
-import { ReadingView } from './ReadingView';
+import { ReadingView, type ReadingViewHandle } from './ReadingView';
 import { describeTextFormat } from '@gather/core/text-format';
 import { MarkdownEditor, countText, type MarkdownEditorHandle } from '@gather/editor';
 import { errorMessage } from '../../shared/errors';
@@ -132,6 +132,7 @@ export default function App() {
   const [dirty, setDirty] = useState(false);
   const [livePreview, setLivePreview] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
+  const [readingStartLine, setReadingStartLine] = useState(1);
   const [readingTheme, setReadingTheme] = useState<ReadingTheme>(() => {
     try {
       return window.localStorage.getItem('gather.readingTheme') === 'night' ? 'night' : 'paper';
@@ -170,6 +171,7 @@ export default function App() {
   const workspaceRef = useRef<Workspace | null>(workspace);
   workspaceRef.current = workspace;
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const readingRef = useRef<ReadingViewHandle>(null);
   const searchRequestRef = useRef(0);
   const pendingRevealRef = useRef<{ path: string; line: number; column: number } | null>(null);
   const restorePromiseRef = useRef<Promise<WorkspaceRestoreResult> | null>(null);
@@ -610,13 +612,20 @@ export default function App() {
   }
 
   function exitViewMode() {
+    const readingLine = viewMode === 'reading'
+      ? readingRef.current?.getActiveSourceLine() ?? null
+      : null;
     setViewMode('edit');
-    window.requestAnimationFrame(() => editorRef.current?.refreshLayout());
+    window.requestAnimationFrame(() => {
+      editorRef.current?.refreshLayout();
+      if (readingLine) editorRef.current?.revealLine(readingLine, 1);
+    });
   }
 
   function enterReading() {
     setSearchOpen(false);
     editorRef.current?.closeSearch();
+    setReadingStartLine(editorRef.current?.getCursorLine() ?? 1);
     (document.activeElement as HTMLElement | null)?.blur();
     setViewMode('reading');
   }
@@ -649,7 +658,8 @@ export default function App() {
   }
 
   function find() {
-    editorRef.current?.openSearch();
+    if (viewMode === 'reading') readingRef.current?.openSearch();
+    else editorRef.current?.openSearch();
   }
 
   function replace() {
@@ -1233,9 +1243,21 @@ export default function App() {
               <span>{counts.words} 字 · {counts.lines} 行</span>
             </div>
             <div className="reading-actions">
+              <button type="button" className="reading-icon" onClick={() => readingRef.current?.openSearch()} title="在阅读中查找 (Ctrl/Cmd+F)" aria-label="在阅读中查找">
+                <Search size={14} />
+              </button>
+              <button type="button" className="reading-icon" onClick={() => readingRef.current?.toggleToc()} title="文内目录" aria-label="文内目录">
+                <List size={14} />
+              </button>
               <button type="button" onClick={toggleReadingTheme} title={readingTheme === 'night' ? '切换为纸色阅读' : '切换为夜读'}>
                 {readingTheme === 'night' ? <Sun size={14} /> : <Moon size={14} />}
                 {readingTheme === 'night' ? '纸读' : '夜读'}
+              </button>
+              <button type="button" className="reading-icon" onClick={() => void exportAs('pdf')} disabled={exporting !== null} title="导出 PDF" aria-label="导出 PDF">
+                <Printer size={14} />
+              </button>
+              <button type="button" className="reading-icon" onClick={() => void exportAs('html')} disabled={exporting !== null} title="导出 HTML" aria-label="导出 HTML">
+                <FileCode2 size={14} />
               </button>
               <button type="button" onClick={exitViewMode} title="返回编辑 (Esc)">
                 <Minimize2 size={14} />
@@ -1244,7 +1266,13 @@ export default function App() {
               </button>
             </div>
           </header>
-          <ReadingView markdown={doc} resolveImage={resolvePreviewImageSrc} onOpenLink={openLink} />
+          <ReadingView
+            ref={readingRef}
+            markdown={doc}
+            resolveImage={resolvePreviewImageSrc}
+            onOpenLink={openLink}
+            initialLine={readingStartLine}
+          />
         </section>
       )}
 

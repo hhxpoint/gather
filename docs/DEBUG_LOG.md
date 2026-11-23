@@ -427,6 +427,30 @@
   - 批次闭环：PR #25 合并为 `b21ee48`；PR CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938)、main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 与 Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 均成功；公网 HTML/阅读截图 SHA-256 与本地一致，9 张产品截图在 1440/390 全部加载。
 - **防回归**：阅读视图必须来自 `renderMarkdown` 且在进入 DOM 前剥离非 data 图片 `src`；编辑器不得在阅读模式卸载或保持可编辑；远程图片不得自动加载；阅读模式隐藏编辑器时应关闭搜索面板；专注/阅读 Esc 必须可退出且不吞搜索 Escape。
 
+### P1-33 阅读查找/目录：高亮被代码高亮重写、表格宽度与 Esc 冲突
+
+- **现象/需求**：阅读模式只能从头往下读。需要全文查找、目录、进入/退出时的位置同步、代码语法高亮与阅读导出，同时保持只读派生视图、远程图片阻断和 Undo 历史。
+- **实现**：
+  - `reading-utils.ts` 解析 ATX/Setext 标题并跳过 fenced code；渲染后按顺序给标题赋 id、`data-source-line`、`data-heading-index`，生成目录与源行映射。
+  - 查找在渲染 DOM 上用 `TreeWalker` 生成 Range，CSS Custom Highlight API 注册全部/当前高亮；计数、上一个/下一个、Enter/Shift+Enter、无匹配状态；上限 500。
+  - 目录面板、当前标题高亮、点击跳转；进入阅读滚到最近标题，退出把当前标题行交给 `revealLine`。
+  - 代码块按 `language-*` 用现有 CodeMirror/Lezer 语言表解析，`highlightTree` + `classHighlighter` 重建 token span，不新增高亮依赖。
+  - 阅读 bar 增加查找/目录/PDF/HTML/返回按钮；PDF/HTML 复用既有 `exportAs`。
+  - `.reading-table` 包裹表格，宽表在版心内滚动。
+- **实际踩坑/判断**：
+  - **查找高亮被异步代码高亮冲掉。** 代码 token span 是在挂载后异步重建的；如果搜索先完成，先前 Range 会失效。增加 `contentVersion`，代码高亮完成后重跑查找。
+  - **表格 `display:block` 不撑满。** 表格块宽度看似 100%，但单元格只占内容宽；改为 `.reading-table` 包裹 + `table width:100%`，三列表格从约 300px 撑到 568px 内容宽。
+  - **滚动到底部时退出同步回退到上一节。** 原来只取视口上方 120px 内的标题；到文档底部时最后一个标题在阈值下方，退出会回到上一节。增加 near-bottom 时选取最后一个标题，实测底部退出落在 `三、搜索与目录`。
+  - **Esc 有三层。** 阅读查找/目录的 Esc 必须在 capture 阶段关闭浮层并 stopPropagation，否则 App 会直接退出阅读；两者都关闭后，下一次 Esc 才退出阅读。
+  - 阅读导出按钮会打开既有保存对话框；取消不改动文稿。按钮不另写导出逻辑。
+- **证据**：
+  - 1184×755 staging：目录 5 个标题，点击第 3 项跳到 `scrollTop=655`、进度 36.98%；当前标题高亮；退出后 active line 为 `### 一份小清单`（源行 13）。
+  - 查找 `写作`：`1 / 2` → 下一个 `2 / 2`，CSS highlight all=2/current=1；`不存在的词` 显示“无匹配”且 highlight 清空；Esc 关闭查找仍留在阅读。
+  - 代码块 37 个 token span，类如 `tok-keyword`、`tok-typeName`、`tok-definition`；760×600 阅读无横向溢出；PDF 按钮打开“导出 PDF”保存对话框，取消后阅读保持。
+  - 标题级进入同步：编辑器 Ctrl+End 后进入阅读，滚动到 81–100% 分区；退出落回最后标题源行。该同步不精确到段落/字符。
+  - 截图 `docs/images/gather-reading-tools.png`（1184×755，88,464 bytes，目录 + 代码高亮 + 表格）。
+- **防回归**：查找高亮必须在代码高亮完成后重跑；阅读浮层 Esc 必须先于 App 退出；表格必须经 `.reading-table`；退出同步必须处理 near-bottom；目录/查找不得修改 Markdown 或编辑器历史。
+
 ---
 
 ## 维护约定

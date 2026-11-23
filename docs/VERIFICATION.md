@@ -40,7 +40,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 ## 自动化测试清单
 
-当前 15 个测试文件、121 个测试（Windows 上 119 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
+当前 16 个测试文件、126 个测试（Windows 上 124 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
 
 | 文件 | 数量 | 覆盖 |
 | --- | --- | --- |
@@ -53,6 +53,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 | `apps/desktop/test/workspace.test.ts` | 5 | 工作区递归/跳过目录/排序、目录边界、绝对路径/穿越/缺失/目录拒绝 |
 | `apps/desktop/test/workspace-search.test.ts` | 10 | 字面量大小写、正则/非法模式、BOM+CRLF 行号、每行/总量上限、二进制/超大文件跳过、预览 span、目录逃逸拒绝 |
 | `apps/desktop/test/session.test.ts` | 10 | 窗口矩形归一化/副屏/最小尺寸、异步与同步往返、损坏/版本、工作区会话根/相对路径与清除 |
+| `apps/desktop/test/reading-utils.test.ts` | 5 | ATX/Setext 标题、fenced code 跳过、标题清理、最近标题源行映射、HR/引用不误判 |
 | `apps/desktop/test/file-io.test.ts` | 11 | 真实临时目录 round-trip、外部修改拒绝、Save As、20 MiB、POSIX 只读目录 |
 | `apps/desktop/test/file-watcher.test.ts` | 4 | 外部修改、自写忽略、删除/重建、轮询差异 |
 | `apps/desktop/test/recovery.test.ts` | 9 | 快照读写/覆盖/丢弃/损坏/写删串行、注入失败、POSIX 只读目录 |
@@ -179,6 +180,13 @@ Phase 1 CI 基线：
 | 夜读 | 阅读 bar 切换 | `data-reading-theme=night`，背景 `rgb(28,33,29)`、正文 `rgb(217,215,202)`；`localStorage` 持久化 |
 | 只读 | 阅读模式聚焦 `.cm-content` + `Input.insertText` | contenteditable=false；文本长度保持 524，无脏修改 |
 | 撤销保留 | 插入 `UNDO-MARKER` → 进入阅读 → 退出 → Ctrl+Z | 标记移除，长度回到 524；编辑器从未卸载 |
+| 阅读目录 | 真实阅读页面，点击标题 | 5 个标题；跳到第 3 项 `scrollTop=655`、进度 36.98%；当前标题高亮；Esc 关闭目录不退出阅读 |
+| 阅读查找 | `Ctrl/Cmd+F` 等价入口，输入 `写作` | `1 / 2` → 下一个 `2 / 2`；CSS highlight all=2/current=1；无匹配显示“无匹配”并清空高亮 |
+| 查找/目录 Esc | 真实键盘 | 第一次 Esc 关闭浮层并留在阅读；再次 Esc 才退出阅读 |
+| 代码语法高亮 | 阅读 `ts` fenced code | 37 个 token span，含 `tok-keyword`/`tok-typeName`/`tok-definition`；无语言时保持纯文本 |
+| 源行同步 | 编辑器 Ctrl+End → 阅读 → 退出 | 进入滚到后段；退出落回最后标题 `三、搜索与目录`（标题级近似） |
+| 阅读导出 | 点击阅读 bar PDF | 打开“导出 PDF”保存对话框；取消后阅读保持；复用既有导出管线 |
+| 阅读 760 | CDP `Emulation` 760×600 | 阅读正文 640px、无横向溢出；工具栏 328.8px |
 | 远程图片 | 真实注入 `https://example.com/gather-remote.png` | DOM 无 http `img`，显示“远程图片未自动加载”占位；`performance.getEntriesByType("resource")` 无 example.com 请求 |
 | 表格/图片/链接 | 真实阅读页面 | 本地图片经主进程 data URI；链接仅 http/https；表格与代码块由清洗 HTML 渲染 |
 
@@ -227,17 +235,18 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 9 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换、工作区搜索、阅读模式；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 10 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换、工作区搜索、阅读模式、阅读工具；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
 | 工作区搜索截图 | 1184×755，staged Windows + CDP | 61,289 bytes；侧栏 8 处 / 4 个文稿，清单文稿第 4 行激活，光标位于 `Gather` 前；SHA-256 `85a26ea2…` |
 | 阅读模式截图 | 1184×755，staged Windows + CDP | 94,878 bytes；纸色 680px 版心、引用、进度线、夜读/返回编辑；SHA-256 `3c6dbcc4…` |
+| 阅读工具截图 | 1184×755，staged Windows + CDP | 88,464 bytes；文内目录、token 高亮代码、表格与阅读工具栏；SHA-256 `b4462835…` |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400/900，headless Edge/Chrome + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | 阅读批次 [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功；会话 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 与工作区搜索 [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功 |
 | 公网内容 | `curl` + 本地构建对照 | 阅读批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`163bc0bc…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `09 / Reading`、121 个测试与 9 张产品截图 |
 | 公网截图资源 | HTTP GET + SHA-256 | `gather-reading.png` HTTP 200、94,878 bytes、SHA-256 `3c6dbcc4…`；`gather-workspace-search.png` 61,289 bytes / `85a26ea2…`；其余截图继续可访问 |
-| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；9 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
+| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；10 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
 | 阅读批次公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；`09 / Reading` 加载为 1184×755，9 张产品截图全部加载，无横向溢出元素 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
@@ -293,7 +302,7 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 - 最近工作区列表、单文件（无工作区）会话、滚动位置/光标恢复。
 - 工作区树形折叠、新建/重命名/删除、跨文稿替换、外部新增自动刷新。
 - 工作区搜索历史、包含/排除规则、流式结果与结果分组折叠。
-- 阅读模式全文查找、目录、标注、滚动/光标同步、打印/导出；全应用夜间主题；Linux 字体回退与 200% 缩放。
+- 阅读标注、段落/字符级滚动同步、打印专用版式；全应用夜间主题；Linux 字体回退与 200% 缩放。
 - 工作区 2000 文件/深度 8 截断的真实目录与性能。
 
 ## 维护
