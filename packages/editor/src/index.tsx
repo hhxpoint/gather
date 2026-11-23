@@ -39,6 +39,8 @@ export interface MarkdownEditorHandle {
   /** Re-measure after the editor was hidden by reading mode. */
   refreshLayout: () => void;
   closeSearch: () => void;
+  /** 1-based line number for reading-mode scroll sync. */
+  getCursorLine: () => number;
   getText: () => string;
 }
 
@@ -282,6 +284,11 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
       const view = viewRef.current;
       if (!view) return;
       closeSearchPanel(view);
+    },
+    getCursorLine() {
+      const view = viewRef.current;
+      if (!view) return 1;
+      return view.state.doc.lineAt(view.state.selection.main.head).number;
     },
     getText() {
       return viewRef.current?.state.doc.toString() ?? '';

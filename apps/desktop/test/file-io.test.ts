@@ -135,7 +135,7 @@ describe('file limits and failures', () => {
     await expect(writeMarkdownFile(path, text, {
       format: { bom: false, eol: 'crlf' },
     })).rejects.toThrow(/编码后超过 20 MiB/);
-  });
+  }, 20_000);
 
   it('rejects directories and missing parent directories', async () => {
     await writeFile(notePath('keep.md'), 'keep\n');

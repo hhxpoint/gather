@@ -64,11 +64,15 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *阅读模式使用独立排版版心与纸色/夜读主题；编辑器保持只读挂载，退出后撤销历史仍在。*
 
+<img src="docs/images/gather-reading-tools.png" alt="Gather 阅读工具真实截图：文内目录覆盖层、语法高亮代码块、阅读工具栏与导出按钮" width="880">
+
+*阅读目录、全文查找、代码语法高亮和 PDF/HTML 导出；查找高亮不修改正文 DOM，目录跳转与退出按标题同步源行。*
+
 <img src="docs/images/gather-pdf-export.png" alt="Gather 导出的 A4 PDF 真实渲染：中文标题、GFM 表格与页边距，图片来自 pdfjs 渲染结果" width="620">
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0011](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0012](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
 
 ## 项目状态
 
@@ -122,7 +126,7 @@ Gather 不打算做这些事：
 | 文件夹工作区 | 已验证（本地 Windows） | 目录对话框打开工作区，递归列出 Markdown/TXT（最多 2000 个、深度 8），跳过隐藏目录、`node_modules`、构建目录与符号链接；侧栏切换、刷新、关闭；切换脏文稿前确认；打开文件时再次做目录边界校验 |
 | 工作区搜索 | 已验证（本地 Windows + 单元测试） | `Ctrl/Cmd+Shift+F` 在独立 `utilityProcess` 扫描当前文件夹；`Gather` 返回 8 处 / 4 个文稿，区分大小写 6 处 / 3 个文稿，正则日期 2 处 / 2 个文稿；200 条结果、2 MiB 单文件、64 MiB 总量、8 秒超时；点击结果打开文稿并跳到行列 |
 | 会话恢复 | 已验证（本地 Windows + 单元测试） | 窗口位置/尺寸/最大化跨重启恢复；最近工作区与最后文稿自动恢复；根目录/文稿缺失时降级；关闭工作区清除会话；强杀后恢复快照横幅仍出现 |
-| 专注 / 阅读模式 | 已验证（本地 Windows） | 专注模式隐藏 header/toolbar/sidebar/footer，保留编辑与 `Esc` 退出；阅读模式 680px 版心、标题/引用/代码/表格/图片、阅读进度、纸色/夜读、远程图片占位；编辑器只读挂载，退出后 Undo 保留 |
+| 专注 / 阅读模式 | 已验证（本地 Windows） | 专注模式隐藏 chrome、保留编辑与 `Esc`；阅读模式 680px 版心、纸色/夜读、进度、目录、全文查找、代码语法高亮、PDF/HTML 导出、标题级源行同步；编辑器只读挂载，退出后 Undo 保留 |
 | 保存 / 另存为 | 已验证（本地 Windows） | 保留 LF/CRLF 与 BOM；临时文件写入 + `fsync` + `rename`；另存为恢复路径已验证 |
 | 导出 PDF / HTML | 已验证（本地 Windows） | 使用当前编辑器内容；隐藏窗口 `printToPDF` 输出 A4，中文/表格/代码块/本地图片进入 PDF；HTML 中本地图片嵌入为 data URI（远程图片仍保留原 URL）；原子写目标文件，失败不保留半个导出文件 |
 | 本地图片嵌入 | 已验证（本地 + 单元测试） | 相对路径 `png/jpg/jpeg/gif/webp/avif/bmp` 限制在文稿目录内并转 data URI；目录外绝对路径、SVG、缺失文件与超预算图片只告警，不阻止导出 |
@@ -180,7 +184,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：15 个测试文件、121 个测试，119 通过、2 个 POSIX-only 跳过；阅读批次 PR CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 与 main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 均为 Ubuntu 121 全过、Windows 119 通过 + 2 跳过 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：16 个测试文件、126 个测试，124 通过、2 个 POSIX-only 跳过；上一批阅读 CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 为 121 个测试，本批新增 5 个阅读大纲测试 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -235,8 +239,9 @@ Gather 不打算做这些事：
 - [x] **窗口与工作区会话已跨重启验证。** 窗口 120,80,1000×700 重启恢复；最大化重启 1920×1032；工作区与 `nested/笔记.md` 自动恢复；删除最后文稿/重命名根目录会降级并提示；关闭工作区后不恢复；强杀后恢复快照横幅仍出现。
 - [x] **会话批次已合并并部署。** PR [#23](https://github.com/hhxpoint/gather/pull/23) 合并为 `f4825c8`；main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947) 与 Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功。公网 `index.html` SHA-256 `f5ea5685…`、CSS `5b76a1b0…` 与本地构建一致；页面显示 121 个测试；8 张产品截图在 1440/390 全部加载。
 - [x] **专注与阅读模式已在真实窗口验证。** 专注模式四块 chrome 隐藏、`Esc` 恢复；阅读模式 680px 版心、引用/代码/表格/本地图片、63.71% 进度、纸色/夜读与持久化；阅读时隐藏编辑器不可输入，退出后 Undo 历史仍可恢复；`Ctrl+Shift+R` / `Ctrl+Shift+Enter` 快捷键生效。远程图片在进入 DOM 前被替换为占位，`performance` 无请求。
+- [x] **阅读导航与代码高亮已在真实窗口验证。** 目录 5 个标题可跳转、当前标题高亮；查找 `写作` 2 个匹配与当前高亮，无匹配清空；代码块 37 个 token span；Esc 先关查找/目录再退出阅读；阅读 PDF 按钮打开保存对话框；进入/退出按标题同步源行（近似，不精确到段落）。
 - [x] **阅读批次已合并并部署。** PR [#25](https://github.com/hhxpoint/gather/pull/25) 合并为 `b21ee48`；main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 与 Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功。公网 `index.html` SHA-256 `163bc0bc…` 与本地一致；阅读截图 94,878 bytes / SHA-256 `3c6dbcc4…`，9 张产品截图在 1440/390 全部加载。
-- [ ] **阅读模式还不是完整阅读器。** 没有全文查找、目录、标注、滚动/光标同步、打印或导出；夜间主题只覆盖阅读外壳，不改变编辑界面。阅读默认从顶部开始。
+- [ ] **阅读模式还不是完整阅读器。** 没有标注、精确到段落/字符的滚动同步、打印专用版式；夜间主题只覆盖阅读外壳，不改变编辑界面；目录/查找不跨文稿。
 - [ ] **工作区还没有树形折叠、新建/重命名/删除文件。** 外部新增文件需要手动刷新；没有最近工作区列表、滚动位置/光标恢复、单文件（无工作区）会话。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
 - [ ] **工作区搜索仍是只读的。** 没有跨文稿替换、搜索历史、包含/排除规则或流式结果；单文件超过 2 MiB、二进制文件会跳过并在摘要中计数；正则可能很慢，由 8 秒超时兜底。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
@@ -335,7 +340,8 @@ gather/
 │  │  ├─ src/shared/errors.ts   IPC 错误前缀清理
 │  │  ├─ src/preload/index.ts   最小 contextBridge API
 │  │  ├─ src/renderer/          React 渲染进程
-│  │  ├─ src/renderer/src/ReadingView.tsx  阅读模式 HTML、图片与进度
+│  │  ├─ src/renderer/src/ReadingView.tsx  阅读 HTML、查找、目录与代码高亮
+│  │  ├─ src/renderer/src/reading-utils.ts 标题大纲与源行映射
 │  │  ├─ test/file-io.test.ts   临时目录真实写盘、冲突与 20 MiB 边界
 │  │  ├─ test/file-watcher.test.ts  外部变更/删除/自写忽略
 │  │  ├─ test/recovery.test.ts  快照读写、覆盖、丢弃、失败隔离
@@ -346,6 +352,7 @@ gather/
 │  │  ├─ test/workspace.test.ts  工作区递归、跳过目录与路径边界
 │  │  ├─ test/workspace-search.test.ts  字面量/正则、行号、预算与逃逸拒绝
 │  │  ├─ test/session.test.ts    窗口归一化、同步写与会话路径校验
+│  │  ├─ test/reading-utils.test.ts 标题大纲与源行映射
 │  │  ├─ electron.vite.config.ts
 │  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
@@ -381,6 +388,7 @@ gather/
 │  ├─ adr/0009-workspace-search.md
 │  ├─ adr/0010-session-continuity.md
 │  ├─ adr/0011-reading-and-focus.md
+│  ├─ adr/0012-reading-navigation.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ PLAYBOOK.md               工程方法、失败模式、检查表与学习路径
@@ -452,7 +460,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（15 个测试文件、121 个测试；119 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（16 个测试文件、126 个测试；124 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -462,7 +470,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-阅读批次 [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 121 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 119 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。上一批会话 [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) 同为 121 个测试。阅读/专注模式没有自动化 UI 测试，由真实窗口验证；CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、阅读/专注模式、窗口恢复矩阵、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
+阅读批次 [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 121 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 119 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。本批新增 5 个阅读大纲测试，本地 126 个测试（124 通过 + 2 跳过），CI 结果在合并后补。阅读查找/目录/代码高亮/源行同步没有自动化 UI 测试，由真实窗口验收；CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、阅读/专注模式、窗口恢复矩阵、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
 
 ### 桌面打包（staging 已验证，安装器未产出）
 
@@ -742,5 +750,6 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0009：工作区搜索](docs/adr/0009-workspace-search.md)
 - [ADR 0010：会话连续](docs/adr/0010-session-continuity.md)
 - [ADR 0011：阅读与专注模式](docs/adr/0011-reading-and-focus.md)
+- [ADR 0012：阅读查找、目录与源行同步](docs/adr/0012-reading-navigation.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。
