@@ -372,6 +372,7 @@
   - 点击 `nested/deep/清单.md:4:7` 打开文稿，active line 为第 4 行，DOM selection 位于 `Gather` 前，列号正确；760×600 视口无横向溢出。
   - 截图 `docs/images/gather-workspace-search.png`（1184×755，真实 staging 构建）。
   - 单元测试 `apps/desktop/test/workspace-search.test.ts` 10 个：大小写、正则、非法模式、BOM/CRLF 行号、每行/总量上限、二进制、超大文件、目录逃逸。
+  - 批次闭环：PR #20 合并为 `a6b51e1`；PR CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501)、main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 与 Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 均成功；公网 HTML/CSS/截图 SHA-256 与本地一致，8 张产品截图在 1440/390 全部加载。
 - **防回归**：`utilityProcess` 必须同时监听 `message`、`error`、`exit` 和 `spawn`；结果定位必须等待文稿版本提交；搜索读取必须重新过工作区边界；8 秒超时不能移除。
 
 ---

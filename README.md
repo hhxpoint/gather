@@ -174,7 +174,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：14 个测试文件、111 个测试，109 通过、2 个 POSIX-only 跳过；上一批搜索 CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 为 101 个测试，本批新增 10 个工作区搜索测试 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：14 个测试文件、111 个测试，109 通过、2 个 POSIX-only 跳过；工作区搜索批次 [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 与 main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 均为 Ubuntu 111 全过、Windows 109 通过 + 2 跳过 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -225,6 +225,7 @@ Gather 不打算做这些事：
 - [x] **搜索批次已合并并部署。** PR [#18](https://github.com/hhxpoint/gather/pull/18) 合并为 `a4c63f2`；main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444) 与 Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 成功。公网 `index.html` SHA-256 `8624aade…`、CSS `5b76a1b0…` 与本地构建一致；查找截图 47,320 bytes、SHA-256 `1c1424d6…`，HTTP 200；公网 1440 与 390 视口无横向溢出，7 张产品截图 naturalWidth 全非零。
 - [x] **单文件查找/替换已在真实窗口验证。** `Ctrl/Cmd+F` 打开中文面板，`Ctrl/Cmd+H` 聚焦替换；搜索 `Gather` 命中 7 处并高亮，全部替换后正文更新，Ctrl+Z 恢复原文；Escape 关闭面板。正则/大小写/整词开关已在面板中可见，但尚未逐项做替换矩阵。
 - [x] **工作区搜索已在真实窗口验证。** `Ctrl/Cmd+Shift+F` 打开侧栏搜索，`Gather` 返回 8 处 / 4 个文稿；区分大小写后 6 处 / 3 个文稿；正则 `2026-\d{2}-\d{2}` 返回 2 处 / 2 个文稿；非法正则显示错误；无匹配显示空状态。点击 `nested/deep/清单.md:4:7` 打开文稿，光标落在第 4 行第 7 列；760×600 视口无横向溢出。灾难性正则在 8 秒被独立进程超时终止，应用保持运行。
+- [x] **工作区搜索批次已合并并部署。** PR [#20](https://github.com/hhxpoint/gather/pull/20) 合并为 `a6b51e1`；main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935) 与 Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功。公网 `index.html` SHA-256 `0c5def43…`、CSS `5b76a1b0…` 与本地构建一致；工作区搜索截图 61,289 bytes、SHA-256 `85a26ea2…`，HTTP 200；公网 1440/390 视口无横向溢出，8 张产品截图全部加载。
 - [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
 - [ ] **工作区搜索仍是只读的。** 没有跨文稿替换、搜索历史、包含/排除规则或流式结果；单文件超过 2 MiB、二进制文件会跳过并在摘要中计数；正则可能很慢，由 8 秒超时兜底。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
@@ -444,7 +445,7 @@ npm run build
 node packages/cli/dist/cli.js doctor --json
 ```
 
-搜索批次 [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 101 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 99 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。上一批工作区 [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) 同为 101 个测试。搜索面板本身没有自动化 UI 测试，替换与撤销由真实窗口验收。CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、搜索面板、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
+工作区搜索批次 [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 在 Ubuntu 与 Windows 全部步骤成功：Ubuntu 111 个测试全过（含 2 个真实 POSIX 只读目录测试），Windows 109 通过 + 2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 同样成功。上一批搜索 [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 为 101 个测试。工作区搜索面板与 `utilityProcess` 生命周期没有自动化 UI 测试，超时、点击跳转与进程错误由真实窗口验收。CI 不覆盖 IME、桌面图形会话、真实文件对话框、真实 PDF 打印、预览点击、搜索面板、外部浏览器打开与工作区原生目录对话框；这些仍必须手工验证。
 
 ### 桌面打包（staging 已验证，安装器未产出）
 
@@ -622,6 +623,7 @@ https://hhxpoint.github.io/gather/
 - 2026-11-22 预览批次上线：产品区增加表格/图片预览两张真实截图，能力区更新 96 个测试；Pages [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功，公网 HTML/CSS SHA-256 与本地构建一致，图片字节数一致。
 - 2026-11-22 工作区批次上线：产品区增加文件夹工作区截图，能力区更新 101 个测试；Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功，公网 HTML/CSS 与本地构建 SHA-256 一致。
 - 2026-11-22 搜索批次上线：产品区增加 `07 / Find` 查找替换截图，能力区与路线图同步；Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 成功，公网 HTML/CSS/截图 SHA-256 与本地构建一致，390/1440 均无横向溢出。
+- 2026-11-23 工作区搜索批次上线：产品区增加 `08 / Search`，能力区更新 111 个测试；Pages [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功，公网 HTML/CSS/截图 SHA-256 与本地构建一致，8 张产品截图在 1440/390 均加载。
 - 站点明确写着“Phase 1、没有公开下载”，没有伪造下载按钮、版本号或用户文稿。安装包未来走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
