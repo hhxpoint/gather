@@ -12,7 +12,7 @@
     "preview": "electron-vite preview",
     "stage": "electron-vite build && node scripts/stage-portable.mjs",
     "package": "electron-vite build && electron-builder --dir",
-    "dist": "electron-vite build && electron-builder"
+    "dist": "electron-vite build && electron-builder --publish never"
   },
   "dependencies": {
     "@gather/core": "0.1.0-phase.0",
@@ -78,7 +78,16 @@
       ],
       "category": "Office",
       "synopsis": "Local-first Markdown writing workspace",
-      "description": "Gather is a local-first Markdown writing workspace with file safety, recovery, reading modes and first-class CLI."
+      "description": "Gather is a local-first Markdown writing workspace with file safety, recovery, reading modes and first-class CLI.",
+      "executableName": "gather",
+      "syncDesktopName": true,
+      "maintainer": "Gather contributors <hhxpoint@users.noreply.github.com>"
     }
-  }
+  },
+  "homepage": "https://hhxpoint.github.io/gather/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hhxpoint/gather.git"
+  },
+  "desktopName": "gather.desktop"
 }
