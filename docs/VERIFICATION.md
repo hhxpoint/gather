@@ -62,6 +62,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 Phase 1 CI 基线：
 
+- 阅读批次：PR CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 与 main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100)：Ubuntu 121 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 119 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。阅读/专注模式没有自动化 UI 测试，由真实窗口验收。
 - 会话批次：PR CI [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) 与 main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947)：Ubuntu 121 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 119 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。窗口/工作区恢复没有自动化 UI 测试，由真实重启/强杀验收。
 - 工作区搜索批次：PR CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 与 main CI [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935)：Ubuntu 111 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 109 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。`utilityProcess` 生命周期与搜索 UI 没有自动化测试，超时/跳转由真实窗口验收。
 - 搜索批次：PR CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 与 main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444)：Ubuntu 101 个测试全过（含 2 个真实 POSIX 只读目录测试）；Windows 99 通过、2 个 POSIX-only 跳过；typecheck、build 与 CLI `doctor --json` 均成功。搜索面板没有新增自动化 UI 测试，替换/撤销由真实窗口验收。
@@ -233,11 +234,11 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400/900，headless Edge/Chrome + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
-| 公网 Pages | build / deploy 两个 job | 会话批次 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功；工作区搜索 [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910)、搜索 [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 与预览批次 [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功 |
-| 公网内容 | `curl` + 本地构建对照 | 会话批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`f5ea5685…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 121 个测试与“窗口 / 工作区 / 文稿恢复”能力文案 |
-| 公网截图资源 | HTTP GET + SHA-256 | 8 张产品截图继续可访问；`gather-workspace-search.png` 61,289 bytes / `85a26ea2…`，`gather-search.png` 47,320 bytes / `1c1424d6…` |
+| 公网 Pages | build / deploy 两个 job | 阅读批次 [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功；会话 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 与工作区搜索 [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910) 成功 |
+| 公网内容 | `curl` + 本地构建对照 | 阅读批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`163bc0bc…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `09 / Reading`、121 个测试与 9 张产品截图 |
+| 公网截图资源 | HTTP GET + SHA-256 | `gather-reading.png` HTTP 200、94,878 bytes、SHA-256 `3c6dbcc4…`；`gather-workspace-search.png` 61,289 bytes / `85a26ea2…`；其余截图继续可访问 |
 | 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；9 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
-| 会话批次公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；121 测试文案与恢复能力项均存在，无横向溢出元素 |
+| 阅读批次公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；`09 / Reading` 加载为 1184×755，9 张产品截图全部加载，无横向溢出元素 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
 | 窄屏 QA 误判 | headless Chrome `--window-size=390` | 实际布局视口最小 500，截图被裁切；不作为移动端溢出证据 |

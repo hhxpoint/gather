@@ -66,7 +66,7 @@
 | 测试/类型检查 | 本地 Windows 与 Ubuntu/Windows CI 均通过 |
 | `npm run build` | 本地与双平台 CI 均成功 |
 | 官网 | `apps/site` 已构建并部署；公网 URL 浏览器验证通过 |
-| CI | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，会话批次 45110083947 全绿 |
+| CI | `.github/workflows/ci.yml` 覆盖 Ubuntu 与 Windows，阅读批次 45121313100 全绿 |
 | 安装包/签名 | 未开始 |
 
 Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩阵、字节保真与文件安全、性能/可访问性基线、安装包与签名。这些属于 beta 门槛，不会因为 CI 绿而自动成立。
@@ -119,7 +119,7 @@ Phase 0 的骨架闭环已经完成；剩余工作集中在 IME/Linux 真机矩�
 - [x] 工作区搜索已在真实窗口验收：`Ctrl+Shift+F`、8 处 / 4 个文稿、区分大小写 6 处 / 3 个文稿、正则 2 处 / 2 个文稿；点击结果打开文稿并定位第 4 行第 7 列；非法正则与 8 秒超时都不崩溃。工作区搜索批次 CI [45101872501](https://github.com/hhxpoint/gather/actions/runs/45101872501) 双平台通过。跨文稿替换未实现。
 - [x] 会话连续已在真实窗口验收：窗口 120,80,1000×700 重启恢复；最大化重启 1920×1032；工作区与 `nested/笔记.md` 自动恢复；最后文稿/根目录缺失时降级；强杀后恢复横幅仍出现；关闭工作区后不恢复。会话批次 CI [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) 双平台通过；多显示器拔插与 Linux 窗口恢复未跑。
 - [x] 单元测试覆盖 core/editor/桌面文件 I/O/恢复/watcher/故障注入/导出 HTML/预览与图片/外链/工作区目录与搜索、窗口/工作区会话的关键路径（15 个文件、121 个测试）；会话批次 [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613) Ubuntu 121 全过、Windows 119 通过 + 2 跳过。
-- [x] 专注与阅读模式已在真实窗口验收：专注模式 chrome 全隐藏、Esc 恢复；阅读模式 680px 版心、引用/代码/表格/本地图片、63.71% 进度、纸色/夜读与持久化；阅读时隐藏编辑器不可输入、退出后 Undo 仍在；远程图片在进入 DOM 前被替换为占位，`performance` 无请求。阅读全文查找、目录、标注与滚动同步未实现。
+- [x] 专注与阅读模式已在真实窗口验收：专注模式 chrome 全隐藏、Esc 恢复；阅读模式 680px 版心、引用/代码/表格/本地图片、63.71% 进度、纸色/夜读与持久化；阅读时隐藏编辑器不可输入、退出后 Undo 仍在；远程图片在进入 DOM 前被替换为占位，`performance` 无请求。阅读批次 CI [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938) 双平台通过；阅读全文查找、目录、标注与滚动同步未实现。
 - [x] 桌面端 PDF/HTML 导出已在真实窗口导出并回渲染核验：4 页 A4 PDF、中文、GFM 表格、代码块与本地图片；HTML 中本地图片为 data URI（远程图片仍为 URL）。CLI PDF 与 DOCX 仍未实现。
 
 ### 非目标

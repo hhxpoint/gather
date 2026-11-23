@@ -39,7 +39,7 @@ npm run dev       # electron-vite dev
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
 - `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入、导出、预览、工作区目录与搜索、窗口/工作区会话，共 15 个测试文件、121 个测试；Ubuntu CI 121 全过（含 2 个真实 POSIX 只读目录），Windows 119 通过 + 2 个 POSIX-only 跳过。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
-- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；最近 main CI [45110083947](https://github.com/hhxpoint/gather/actions/runs/45110083947) 全绿，会话代码批次为 [45109905613](https://github.com/hhxpoint/gather/actions/runs/45109905613)。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；最近 main CI [45121313100](https://github.com/hhxpoint/gather/actions/runs/45121313100) 全绿，阅读代码批次为 [45121158938](https://github.com/hhxpoint/gather/actions/runs/45121158938)。
 - CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示/20 MiB 拒绝已手工验证；Windows staging 目录包已验证可启动并保存；Linux 桌面与会话级验证仍未做。
 - `npm run stage -w @gather/desktop` 生成的是未签名 staging 目录包，只用于运行冒烟，不是发布物；不要把它上传到 Releases。
 - 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
