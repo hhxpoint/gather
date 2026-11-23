@@ -5,7 +5,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { bracketMatching, defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { highlightSelectionMatches, openSearchPanel, search, searchKeymap } from '@codemirror/search';
+import { closeSearchPanel, highlightSelectionMatches, openSearchPanel, search, searchKeymap } from '@codemirror/search';
 import { toggleLinePrefix, toggleWrap } from './text-commands';
 import { createLivePreviewExtensions } from './live-preview';
 import { gatherTheme } from './theme';
@@ -23,6 +23,8 @@ export interface MarkdownEditorProps {
   resolveImage?: (src: string) => Promise<string | null>;
   /** Changes when the document location changes and image previews must refresh. */
   previewContext?: string;
+  /** Reading mode keeps the editor mounted but blocks edits and commands. */
+  editable?: boolean;
 }
 
 export interface MarkdownEditorHandle {
@@ -34,6 +36,9 @@ export interface MarkdownEditorHandle {
   openReplace: () => void;
   /** Move the caret to a 1-based line/column, scroll it into view and focus. */
   revealLine: (line: number, column?: number) => void;
+  /** Re-measure after the editor was hidden by reading mode. */
+  refreshLayout: () => void;
+  closeSearch: () => void;
   getText: () => string;
 }
 
@@ -50,6 +55,7 @@ function openReplacePanel(view: EditorView): boolean {
 }
 
 const previewCompartment = new Compartment();
+const editableCompartment = new Compartment();
 
 export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(function MarkdownEditor(
   {
@@ -61,6 +67,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
     onOpenLink,
     resolveImage,
     previewContext = '',
+    editable = true,
   },
   ref,
 ) {
@@ -122,6 +129,10 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
       ]),
       gatherTheme,
       placeholder(placeholderText),
+      editableCompartment.of([
+        EditorView.editable.of(editable),
+        EditorState.readOnly.of(!editable),
+      ]),
       previewCompartment.of(livePreviewRef.current ? createPreviewExtensions() : []),
       EditorView.updateListener.of(update => {
         if (!update.docChanged) return;
@@ -187,6 +198,17 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [livePreview, previewContext]);
 
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch({
+      effects: editableCompartment.reconfigure([
+        EditorView.editable.of(editable),
+        EditorState.readOnly.of(!editable),
+      ]),
+    });
+  }, [editable]);
+
   useImperativeHandle(ref, () => ({
     focus() {
       viewRef.current?.focus();
@@ -249,6 +271,17 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         effects: EditorView.scrollIntoView(position, { y: 'center' }),
       });
       view.focus();
+    },
+    refreshLayout() {
+      const view = viewRef.current;
+      if (!view) return;
+      view.requestMeasure();
+      view.focus();
+    },
+    closeSearch() {
+      const view = viewRef.current;
+      if (!view) return;
+      closeSearchPanel(view);
     },
     getText() {
       return viewRef.current?.state.doc.toString() ?? '';

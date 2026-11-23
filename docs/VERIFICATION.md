@@ -105,6 +105,8 @@ Phase 1 CI 基线：
 - 会话恢复真实窗口：窗口调整为 120,80,1000×700 后重启，位置/尺寸一致；最大化后重启实际 1920×1032，普通 bounds 保留；工作区与 `nested/笔记.md` 自动恢复。
 - 会话降级：删除最后文稿后重启只恢复工作区并提示“上次文稿已不在文件夹”；重命名根目录后重启提示“记录已清除”；关闭工作区后重启不恢复。
 - 会话与恢复快照：编辑后强杀重启，工作区/文稿恢复且恢复横幅出现；点击“恢复”得到未保存内容并进入脏状态。
+- 专注模式真实窗口：header/toolbar/sidebar/footer 全部隐藏，编辑器可写，右上角退出胶囊存在；Esc 恢复，`Ctrl+Shift+Enter` 同样生效。
+- 阅读模式真实窗口：680px 版心、引用、代码、表格、本地图片 data URI、进度 63.71%、纸色/夜读与 localStorage 持久化；隐藏编辑器 contenteditable=false，聚焦后插入文本长度不变；退出后 Undo 历史仍可恢复。
 
 ## 预览与链接矩阵
 
@@ -165,6 +167,20 @@ Phase 1 CI 基线：
 | 损坏会话 | 单元测试 | 无效 JSON/版本/根/`../` 相对路径均返回空，不打开路径 |
 | Linux/多显示器 | 未执行 | 未做 X11/Wayland 与真实拔插矩阵 |
 
+## 专注与阅读矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 专注模式 | header 按钮 / `Ctrl+Shift+Enter` | 四块 chrome `display:none`；编辑器保持可写；`focus-exit` 可见；Esc 恢复 |
+| 阅读模式 | header 按钮 / `Ctrl+Shift+R` | `.reading-shell` 出现；正文 680px；header/toolbar/footer 隐藏 |
+| 阅读排版 | 1184×755 staging | 标题、引用、代码、表格（568px 内容宽）、本地图片 naturalWidth 1184；无横向溢出 |
+| 阅读进度 | 滚动到 1150px | `reading-progress` 63.71%，sticky 2px |
+| 夜读 | 阅读 bar 切换 | `data-reading-theme=night`，背景 `rgb(28,33,29)`、正文 `rgb(217,215,202)`；`localStorage` 持久化 |
+| 只读 | 阅读模式聚焦 `.cm-content` + `Input.insertText` | contenteditable=false；文本长度保持 524，无脏修改 |
+| 撤销保留 | 插入 `UNDO-MARKER` → 进入阅读 → 退出 → Ctrl+Z | 标记移除，长度回到 524；编辑器从未卸载 |
+| 远程图片 | 真实注入 `https://example.com/gather-remote.png` | DOM 无 http `img`，显示“远程图片未自动加载”占位；`performance.getEntriesByType("resource")` 无 example.com 请求 |
+| 表格/图片/链接 | 真实阅读页面 | 本地图片经主进程 data URI；链接仅 http/https；表格与代码块由清洗 HTML 渲染 |
+
 ## 工作区矩阵
 
 | 项 | 方式 | 结果 |
@@ -210,16 +226,17 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 8 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换、工作区搜索；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 9 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换、工作区搜索、阅读模式；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
 | 工作区搜索截图 | 1184×755，staged Windows + CDP | 61,289 bytes；侧栏 8 处 / 4 个文稿，清单文稿第 4 行激活，光标位于 `Gather` 前；SHA-256 `85a26ea2…` |
+| 阅读模式截图 | 1184×755，staged Windows + CDP | 94,878 bytes；纸色 680px 版心、引用、进度线、夜读/返回编辑；SHA-256 `3c6dbcc4…` |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400/900，headless Edge/Chrome + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | 会话批次 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功；工作区搜索 [45102037910](https://github.com/hhxpoint/gather/actions/runs/45102037910)、搜索 [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 与预览批次 [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功 |
 | 公网内容 | `curl` + 本地构建对照 | 会话批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`f5ea5685…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 121 个测试与“窗口 / 工作区 / 文稿恢复”能力文案 |
 | 公网截图资源 | HTTP GET + SHA-256 | 8 张产品截图继续可访问；`gather-workspace-search.png` 61,289 bytes / `85a26ea2…`，`gather-search.png` 47,320 bytes / `1c1424d6…` |
-| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；8 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
+| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；9 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
 | 会话批次公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；121 测试文案与恢复能力项均存在，无横向溢出元素 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
@@ -275,6 +292,7 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 - 最近工作区列表、单文件（无工作区）会话、滚动位置/光标恢复。
 - 工作区树形折叠、新建/重命名/删除、跨文稿替换、外部新增自动刷新。
 - 工作区搜索历史、包含/排除规则、流式结果与结果分组折叠。
+- 阅读模式全文查找、目录、标注、滚动/光标同步、打印/导出；全应用夜间主题；Linux 字体回退与 200% 缩放。
 - 工作区 2000 文件/深度 8 截断的真实目录与性能。
 
 ## 维护
