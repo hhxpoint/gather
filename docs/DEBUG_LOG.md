@@ -517,8 +517,8 @@
   - **不能用“链接存在”代替“资产可下载/可运行”。** GitHub API 的 `state=uploaded`、大小与 digest 已核对，`SHA256SUMS.txt` 可下载；但本机到 `release-assets.githubusercontent.com` 只完成清单下载，四个大文件因 TLS/速率失败未复核，不能写成“已从 Release 重新安装”。
 - **证据**：
   - Release 45140138861；资产 4 个安装包 + `SHA256SUMS.txt`；四个 SHA-256 与 API digest、清单一致。
-  - 站点 PR [#35](https://github.com/hhxpoint/gather/pull/35) 合并为 `8dbb908`；main CI [45144561882](https://github.com/hhxpoint/gather/actions/runs/45144561882)、Pages [45144561805](https://github.com/hhxpoint/gather/actions/runs/45144561805) 成功。
-  - 公网 `index.html` 56,069 bytes / LF 归一 `0ae7957d…`；`styles.css` 36,255 bytes / `f957b6a1…`，均与本地 `dist` 一致。
+  - 站点 PR [#35](https://github.com/hhxpoint/gather/pull/35) 合并为 `8dbb908`；补充安装说明的 PR [#37](https://github.com/hhxpoint/gather/pull/37) 合并为 `14d8ddd`；main CI [45146247228](https://github.com/hhxpoint/gather/actions/runs/45146247228)、Pages [45146247143](https://github.com/hhxpoint/gather/actions/runs/45146247143) 成功。
+  - 首版公网 `index.html` 56,069 bytes / LF 归一 `0ae7957d…`；补充 SmartScreen、`chmod +x` 与 deb 安装命令后为 56,241 bytes / `114e9f48…`。`styles.css` 36,255 bytes / `f957b6a1…`，均与本地 `dist` 一致。
   - 公网 CDP：桌面 1440 `scrollWidth=1425`，390 `scrollWidth=390`；下载区 4 个安装链接 + SHA256SUMS 链接；5 个按钮在 390 下宽度均 320；页面无 `Not published`/“还没有公开下载”；hero CTA 为“下载 Phase 1 预览版”。
 - **防回归**：站点只能链接真实存在的 Release 资产；发布核对必须比较 LF 归一哈希；1440/390 都要检查下载区溢出；资产 digest 与 `SHA256SUMS.txt` 必须同时核对；未下载/未安装的二进制不得写成已验证。
 

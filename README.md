@@ -678,7 +678,7 @@ https://hhxpoint.github.io/gather/
 - 2026-11-23 会话批次上线：窗口/工作区/最后文稿跨重启恢复，能力区更新 121 个测试；Pages [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功，公网 HTML/CSS SHA-256 与本地构建一致，1440/390 均无横向溢出。
 - 2026-11-23 阅读批次上线：新增 `09 / Reading`、专注/阅读/夜读与 760px 编辑版心；Pages [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 成功，公网 9 张产品截图在 1440/390 全部加载。
 - 2026-11-23 阅读工具批次上线：新增 `10 / Reading tools`、目录、全文查找、代码语法高亮与阅读导出；Pages [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功，10 张产品截图在 1440/390 全部加载。
-- 2026-11-23 下载页上线：hero 下载 CTA、Windows/Linux 四个安装包直链、真实大小与 SHA-256 详情；Pages [45144561805](https://github.com/hhxpoint/gather/actions/runs/45144561805) 成功，公网 HTML 按 LF 归一后的 SHA-256 `0ae7957d…`、CSS `f957b6a1…` 与本地 `dist` 一致，1440/390 无横向溢出，下载区 5 个链接都指向 `v0.1.0-phase.0` 的真实资产。
+- 2026-11-23 下载页上线：hero 下载 CTA、Windows/Linux 四个安装包直链、真实大小与 SHA-256 详情，并补 SmartScreen、AppImage `chmod +x` 与 deb 安装命令；Pages [45146247143](https://github.com/hhxpoint/gather/actions/runs/45146247143) 成功，公网 HTML 按 LF 归一后的 SHA-256 `114e9f48…`、CSS `f957b6a1…` 与本地 `dist` 一致，1440/390 无横向溢出，下载区 5 个链接都指向 `v0.1.0-phase.0` 的真实资产。
 - 站点现在列出真实存在的 `v0.1.0-phase.0` Release 资产、大小与 SHA-256，并明确标注未签名、无自动更新、Linux GUI 未实测；没有伪造下载按钮、版本号或用户文稿。二进制只走 GitHub Releases，不塞进 Pages。
 - 自定义域名需要 DNS、HTTPS 与商标/域名清障后再决定；在完成之前使用 `github.io` 子路径。
 - 页面中的 canonical 与 `og:url` 指向 `https://hhxpoint.github.io/gather/`，`og:image` 使用仓库内真实截图。若仓库改名，HTML、工作流与本文档必须同步修改。
