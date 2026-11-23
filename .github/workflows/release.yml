@@ -80,6 +80,7 @@ jobs:
           name: Gather ${{ env.RELEASE_TAG }}
           body_path: .github/release-body.md
           prerelease: true
+          overwrite_files: true
           fail_on_unmatched_files: true
           target_commitish: ${{ github.sha }}
           files: dist/*

@@ -86,6 +86,9 @@
     },
     "deb": {
       "packageName": "gather"
+    },
+    "portable": {
+      "artifactName": "Gather-Portable-${version}.${ext}"
     }
   },
   "homepage": "https://hhxpoint.github.io/gather/",
