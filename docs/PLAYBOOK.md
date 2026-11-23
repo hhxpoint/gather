@@ -321,7 +321,7 @@ POST pull request
 | 阅读与专注 | #25 / `b21ee48` | 45121313100 | 45121313093 | 只读派生阅读视图；隐藏编辑器只读；远程图片预剥离；版心与夜读 |
 | 阅读工具 | #27 / `9c233e1` | 45127144335 | 45127144374 | CSS Highlight 查找；目录/源行同步；Lezer 代码高亮；阅读导出 |
 | 图标与发行 | #29–#34 / `efe8cd6` | 45140133948 | — | SVG 图标；Actions 构建 NSIS/portable/AppImage/deb；Linux scoped 名/路径修复；Release 45140138861 |
-| 下载页与记录 | #35–#37 / `14d8ddd` | 45146247228 | 45146247143 | 真实资产/哈希上线；公网 LF 归一哈希；1440/390 无溢出；首运行安装说明 |
+| 下载页与记录 | #35–#39 / `7b380d1` | 45148678762 | 45148678830 | 真实资产/哈希上线；公网 LF 归一哈希；1440/390 无溢出；下载后上手指南 |
 
 ### 8.4 关键故障索引
 
@@ -345,6 +345,7 @@ POST pull request
 | P1-34 | 图标、安装包与 Release | SVG 单一源；NSIS 静默安装不能用 Git Bash 传 `/S`；unsigned 不能写成签名 |
 | P1-35 | Release Linux 构建 | scoped npm 名会进入 executable/artifact 路径；显式 `executableName`/`artifactName`；publish job 必须 checkout |
 | P1-36 | 下载页上线 | 公网 HTML CRLF 与本地不同；比较前按 LF 归一；链接存在不等于资产已下载 |
+| P1-37 | 下载后上手指南 | 下载页必须解释保存语义与恢复快照；桌面没有独立“新建”菜单时不要虚构 |
 
 ## 9. Windows / Linux 平台笔记
 
@@ -373,6 +374,7 @@ POST pull request
 - GitHub Actions 在同一提交构建 Windows NSIS/portable、Linux AppImage/deb 并发布 prerelease；四个包 SHA-256 与 Release API digest、`SHA256SUMS.txt` 一致。
 - Windows 安装器/便携版的本地构建安装、启动、卸载与图标嵌入。
 - 公网下载页链接到真实 Release 资产；1440/390 无溢出；HTML/CSS 与本地构建 LF 归一哈希一致。
+- 下载后上手指南覆盖 Windows/Linux 安装、首次打开、保存语义、快捷键、数据位置与卸载；站点三步引导链接到指南。
 
 ### 未验证
 
