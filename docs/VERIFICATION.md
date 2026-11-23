@@ -1,6 +1,6 @@
 # Gather 验证矩阵
 
-快照日期：2026-11-21。这里记录“实际执行过什么”，并明确哪些平台/场景没有执行。过时结果应更新或标注为历史基线，不能把计划写成结论。
+快照日期：2026-11-23。这里记录“实际执行过什么”，并明确哪些平台/场景没有执行。过时结果应更新或标注为历史基线，不能把计划写成结论。文中的 Phase 0/1 是历史里程碑标签；当前公开版本是 `0.1.0`。
 
 ## 环境
 
@@ -246,36 +246,36 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | 阅读工具批次 [45127144374](https://github.com/hhxpoint/gather/actions/runs/45127144374) 成功；阅读 [45121313093](https://github.com/hhxpoint/gather/actions/runs/45121313093) 与会话 [45110083883](https://github.com/hhxpoint/gather/actions/runs/45110083883) 成功 |
 | 公网内容 | `curl` + 本地构建对照 | 阅读工具批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`242551f7…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `10 / Reading tools`、126 个测试与 10 张产品截图 |
-| 公网 Pages（下载与上手指南） | [45148678830](https://github.com/hhxpoint/gather/actions/runs/45148678830) | 成功；main CI [45148678762](https://github.com/hhxpoint/gather/actions/runs/45148678762) 双平台通过 |
-| 公网下载页内容 | `curl` + CDP + 本地构建对照 | `index.html` 57,780 bytes，LF 归一 SHA-256 `0ecc3d7a…` 与本地一致；CSS 37,996 bytes / `bfc60401…` 一致；4 个安装包直链 + `SHA256SUMS.txt`；含 SmartScreen、AppImage `chmod +x`、deb `sudo apt install` 提示；“下载后怎么用”3 步、引导链接指向 `docs/QUICKSTART.md`；无 `Not published`/旧下载文案；1440 `scrollWidth=1425`，390 `scrollWidth=390`；5 个下载按钮在 390 下均为 320px 宽 |
+| 公网 Pages（Gather 0.1.0） | [45162824716](https://github.com/hhxpoint/gather/actions/runs/45162824716) | 成功；main CI [45162824811](https://github.com/hhxpoint/gather/actions/runs/45162824811) 双平台通过 |
+| 公网下载页内容 | `curl` + CDP + 本地构建对照 | `index.html` 57,429 bytes，LF 归一 SHA-256 `791d25ca…` 与本地一致；CSS 37,996 bytes / `bfc60401…` 一致；5 个 `v0.1.0` 资产链接 + `SHA256SUMS.txt`；含 SmartScreen、AppImage `chmod +x`、deb `sudo apt install` 与“下载后怎么用”；无 Phase/prerelease/旧版本文案；1440 `scrollWidth=1425`，390 `scrollWidth=390`；5 个下载按钮在 390 下均为 320px 宽 |
 | 公网截图资源 | HTTP GET + SHA-256 | `gather-reading-tools.png` HTTP 200、88,464 bytes、SHA-256 `b4462835…`；`gather-reading.png` 94,878 bytes / `3c6dbcc4…`；其余截图继续可访问 |
 | 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；10 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
 | 阅读工具公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；`10 / Reading tools` 加载为 1184×755，10 张产品截图全部加载，无横向溢出元素 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
-| 下载页桌面 | 本地构建 1440×1000，CDP | 标题“现在可以下载，Phase 1 预览版”；4 个安装包直链 + `SHA256SUMS.txt`；`scrollWidth=1425`、`innerWidth=1440`；SHA-256 详情展开后 4 行 |
+| 下载页桌面 | 本地构建 1440×1000，CDP | 标题“现在可以下载，Gather 0.1.0”；4 个安装包直链 + `SHA256SUMS.txt`；`scrollWidth=1425`、`innerWidth=1440`；SHA-256 详情展开后 4 行 |
 | 下载页移动 | CDP 390×844 | `scrollWidth=innerWidth=390`；5 个 `.release-button` 宽度均为 320；下载区无横向溢出 |
-| 下载页链接 | DOM + GitHub Release API | 4 个安装包链接与 Release 资产名完全一致；4 个 SHA-256 与 `SHA256SUMS.txt` 一致；页面不再包含 `Not published` 或“未发布”文案 |
+| 下载页链接 | DOM + GitHub Release API | 4 个 `v0.1.0` 安装包链接与 Release 资产名完全一致；4 个 SHA-256 与 `SHA256SUMS.txt` 一致；页面不含 `Not published`、Phase 或 prerelease 文案 |
 | 窄屏 QA 误判 | headless Chrome `--window-size=390` | 实际布局视口最小 500，截图被裁切；不作为移动端溢出证据 |
 
 ## 打包矩阵
 
 | 目标 | 方式 | 结果 |
 | --- | --- | --- |
-| 内部 staging 目录包 | `npm run stage -w @gather/desktop` | 通过：约 328 MB，`Gather.exe` 可运行并保存文稿；仅供内部冒烟，不是发布物 |
-| staging 可执行文件哈希 | 本地 Windows 构建 | `Gather.exe` 210,149,888 bytes；SHA-256 `62c62d17…`（重建会变化，不是发布校验和） |
-| 本地 NSIS 安装包 | electron-builder，Windows | `Gather-Setup-0.1.0-phase.0.exe` 107,158,982 bytes；未签名；ProductName Gather / ProductVersion 0.1.0.0；本地 SHA-256 `43eb057f…` |
-| 本地便携版 | electron-builder portable | `Gather 0.1.0-phase.0.exe` 97,381,784 bytes；启动到 1184×755 窗口，标题“未命名文稿 · Gather”；本地 SHA-256 `d492ffa8…` |
+| 内部未打包目录（历史） | `npm run stage -w @gather/desktop` | 通过：约 328 MB，`Gather.exe` 可运行并保存文稿；仅供内部冒烟，不是发布物 |
+| 未打包目录可执行文件哈希（历史） | 本地 Windows 构建 | `Gather.exe` 210,149,888 bytes；SHA-256 `62c62d17…`（重建会变化，不是发布校验和） |
+| 本地 NSIS 安装包（0.1.0-phase.0 时期） | electron-builder，Windows | `Gather-Setup-0.1.0-phase.0.exe` 107,158,982 bytes；未签名；ProductName Gather / ProductVersion 0.1.0.0；本地 SHA-256 `43eb057f…` |
+| 本地便携版（0.1.0-phase.0 时期） | electron-builder portable | `Gather 0.1.0-phase.0.exe` 97,381,784 bytes；启动到 1184×755 窗口，标题“未命名文稿 · Gather”；本地 SHA-256 `d492ffa8…` |
 | 本地安装/卸载 | PowerShell 静默 `/S` 到 `C:/Users/Public/GatherInstallQA` | 安装 exit 0；启动 installed app；卸载器 `/S` exit 0；临时目录删除 |
 | 应用图标 | SVG → Chrome 1024 PNG → Pillow ICO | 16–256 多尺寸；exe 关联 32×32 图标提取成功；`resources/icon.png` 598,018 bytes |
-| Release 工作流 | [45140138861](https://github.com/hhxpoint/gather/actions/runs/45140138861) | 成功：Windows 3m38s、Ubuntu 1m18s、publish 14s；prerelease `v0.1.0-phase.0` 创建并上传 5 个资产 |
-| Release 资产 | GitHub API + `SHA256SUMS.txt` | `Gather-Setup-0.1.0-phase.0.exe` 107,159,310 B；`Gather-Portable-0.1.0-phase.0.exe` 97,380,409 B；`Gather-0.1.0-phase.0-linux-x86_64.AppImage` 124,429,055 B；`Gather-0.1.0-phase.0-linux-amd64.deb` 96,985,132 B；`SHA256SUMS.txt` 409 B |
-| Release 哈希交叉核对 | GitHub API `asset.digest` vs `SHA256SUMS.txt` | 四个安装包的 SHA-256 完全一致；清单自身 SHA-256 为 `ef4af8e1…` |
-| Release 资产直链 | GitHub Release asset API | 5 个资产均为 `state=uploaded`，直链为 `https://github.com/hhxpoint/gather/releases/download/v0.1.0-phase.0/<name>`；本机到 release-assets 网络严重限速/TLS 失败，未完成四个大文件的独立下载复核 |
+| Release 工作流 | [45161110408](https://github.com/hhxpoint/gather/actions/runs/45161110408) | 成功：Windows 3m29s、Ubuntu 1m27s、publish 43s；正式版 `v0.1.0` 创建并上传 5 个资产 |
+| Release 资产 | GitHub API + `SHA256SUMS.txt` | `Gather-Setup-0.1.0.exe` 107,158,569 B；`Gather-Portable-0.1.0.exe` 97,381,791 B；`Gather-0.1.0-linux-x86_64.AppImage` 124,429,206 B；`Gather-0.1.0-linux-amd64.deb` 96,983,944 B；`SHA256SUMS.txt` 377 B |
+| Release 哈希交叉核对 | GitHub API `asset.digest` vs `SHA256SUMS.txt` | 四个安装包的 SHA-256 完全一致（Setup `0f1f3f7b…`、Portable `5329527a…`、AppImage `6b46b262…`、deb `ee5f8881…`）；清单自身 SHA-256 为 `0ceeb978…` |
+| Release 资产直链 | GitHub Release asset API | 5 个资产均为 `state=uploaded`，直链为 `https://github.com/hhxpoint/gather/releases/download/v0.1.0/<name>`；本机到 release-assets 网络严重限速/TLS 失败，未完成四个大文件的独立下载复核 |
 | Release Windows 重装 | 从 Release 重新下载并安装 | 未完成；仅验证了同一提交、同一配置的本地 Windows 构建，不能把本地安装结论等同于最终资产 |
-| Linux AppImage/deb | Ubuntu 24.04 runner，electron-builder 26.18 | AppImage 124,429,055 B；deb 96,985,132 B；已上传 Release；Linux 图形会话、IME、字体回退未运行 |
+| Linux AppImage/deb | Ubuntu 24.04 runner，electron-builder 26.18 | AppImage 124,429,206 B；deb 96,983,944 B；已上传 v0.1.0 Release；Linux 图形会话、IME、字体回退未运行 |
 | Linux 构建修复 | executableName / deb packageName / artifactName | 首次失败：`@gatherdesktop` 非法路径；第二次：deb 输出到不存在的 `release/@gather`；第三次：scoped 名仍进入 deb artifact path；最终显式命名后通过。详见 [DEBUG_LOG](DEBUG_LOG.md) P1-34/P1-35 |
-| 发布说明文件 | `.github/release-body.md` + publish checkout | 早期 publish job 没有 checkout，`body_path` 会缺失；已预防性补上 checkout，并随 45140138861 实际发布 |
+| 发布说明文件 | `.github/release-body.md` + publish checkout | publish job 保留 checkout 以读取发布说明；随 45161110408 实际发布 |
 | 代码签名 | — | 未做；无证书；安装包未签名，SmartScreen 可能警告 |
 | 自动更新 / 升级 / 回滚 | — | 未实现、未测试 |
 | 干净 VM 安装/卸载矩阵 | — | 未运行 |
