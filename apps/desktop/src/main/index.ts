@@ -9,6 +9,7 @@ import { RecoveryStore } from './recovery';
 import { exportDocument } from './document-export';
 import { resolvePreviewImage } from './image-preview';
 import { listWorkspace, resolveWorkspaceFile } from './workspace';
+import { cancelWorkspaceSearch, runWorkspaceSearch } from './workspace-search-service';
 import { safeExternalUrl } from '../shared/external-links';
 import type {
   DocumentExportRequest,
@@ -17,6 +18,7 @@ import type {
   RecoveryPayload,
   SaveAsRequest,
   SaveRequest,
+  WorkspaceSearchOptions,
 } from '../shared/files';
 
 const isDev = Boolean(process.env.ELECTRON_RENDERER_URL);
@@ -113,6 +115,17 @@ function parseDocumentExportRequest(payload: unknown): DocumentExportRequest {
   };
 }
 
+function parseWorkspaceSearchOptions(payload: unknown): WorkspaceSearchOptions {
+  const record = asRecord(payload);
+  if (typeof record.query !== 'string') throw new Error('搜索关键词无效。');
+  if (!record.query.trim()) throw new Error('请输入搜索关键词。');
+  return {
+    query: record.query,
+    caseSensitive: record.caseSensitive === true,
+    regex: record.regex === true,
+  };
+}
+
 function parseRecoveryPayload(payload: unknown): RecoveryPayload {
   const record = asRecord(payload);
   if (record.path !== null && (typeof record.path !== 'string' || !record.path)) {
@@ -182,6 +195,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
 
   handleIpc('workspace:open', async () => {
     if (!mainWindow || mainWindow.isDestroyed()) throw new Error('主窗口不可用。');
+    cancelWorkspaceSearch();
     const result = await dialog.showOpenDialog(mainWindow, {
       title: '打开 Markdown 工作区',
       properties: ['openDirectory'],
@@ -197,6 +211,11 @@ function registerIpc(recoveryStore: RecoveryStore) {
     return listWorkspace(workspaceRoot);
   });
 
+  handleIpc('workspace:search', async (_event, payload: unknown) => {
+    if (!workspaceRoot) throw new Error('当前没有打开的工作区。');
+    return runWorkspaceSearch(workspaceRoot, parseWorkspaceSearchOptions(payload));
+  });
+
   handleIpc('workspace:openFile', async (_event, payload: unknown) => {
     if (!workspaceRoot) throw new Error('当前没有打开的工作区。');
     if (typeof payload !== 'string') throw new Error('工作区文件路径无效。');
@@ -207,6 +226,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
   });
 
   handleIpc('workspace:close', async () => {
+    cancelWorkspaceSearch();
     workspaceRoot = null;
     return true;
   });
@@ -339,6 +359,7 @@ function createMenu() {
       submenu: [
         { label: '查找与替换…', accelerator: 'CmdOrCtrl+F', click: () => sendMenu('find') },
         { label: '替换…', accelerator: 'CmdOrCtrl+H', click: () => sendMenu('replace') },
+        { label: '在工作区中查找…', accelerator: 'CmdOrCtrl+Shift+F', click: () => sendMenu('workspaceSearch') },
         { type: 'separator' },
         { role: 'undo', label: '撤销' },
         { role: 'redo', label: '重做' },
@@ -441,6 +462,7 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => mainWindow?.show());
   mainWindow.on('closed', () => {
     stopActiveFileWatcher();
+    cancelWorkspaceSearch();
     mainWindow = null;
   });
   if (isDev) {
@@ -472,7 +494,10 @@ if (!lock) {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
   });
-  app.on('before-quit', stopActiveFileWatcher);
+  app.on('before-quit', () => {
+    stopActiveFileWatcher();
+    cancelWorkspaceSearch();
+  });
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });

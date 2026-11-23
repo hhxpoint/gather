@@ -334,7 +334,7 @@
 - **证据**：
   - 真实窗口打开 `C:\Users\Public\gather-workspace-qa`：侧栏 3 个文稿（`01-欢迎.md`、`nested/笔记.md`、`nested/清单.txt`），隐藏 `.private`、`node_modules` 与非 Markdown 图片未出现。
   - 打开 `nested/笔记.md` 后标题、嵌套路径与表格预览正常；修改后点击 `01-欢迎.md` 出现“当前文稿有未保存修改”确认；取消/确认路径均可用；保存状态显示“已保存 笔记.md · UTF-8 · LF”。
-  - 工作区测试 5 个；当前 13 个测试文件、101 个测试，本地 99 通过 + 2 个 POSIX-only 跳过。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) Ubuntu 101 全过、Windows 99 + 2 跳过；Windows 首轮 8.3 短路径失败，修复后通过。
+  - 工作区测试 5 个；当时 13 个测试文件、101 个测试，本地 99 通过 + 2 个 POSIX-only 跳过。工作区批次 CI [44983062214](https://github.com/hhxpoint/gather/actions/runs/44983062214) Ubuntu 101 全过、Windows 99 + 2 跳过；Windows 首轮 8.3 短路径失败，修复后通过。
   - 真实截图 `docs/images/gather-workspace.png`（1184×755）。PR #16 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功；公网 HTML/CSS SHA-256 与本地一致，6 张产品截图 naturalWidth 全非零。
 - **防回归**：工作区打开必须继续走相对路径 + 主进程边界；目录扫描不得跟随符号链接；快捷键分支必须显式检查 Shift；切换文稿前脏状态检查不能绕过。
 
@@ -354,6 +354,25 @@
   - 截图 `docs/images/gather-search.png`（1184×755）；面板包含区分大小写、正则、整词开关。
   - 批次闭环：PR #18 合并为 `a4c63f2`；PR CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467)、main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444) 与 Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 均成功；公网 HTML/CSS/截图 SHA-256 与本地一致，1440/390 视口无横向溢出。
 - **防回归**：`search()` 扩展不能被移除；打开查找后不能调用 `view.focus()` 抢焦点；替换必须使用 CodeMirror command，不能直接改 DOM 或另建文本模型。
+
+### P1-30 工作区搜索：工具进程 error 未监听会让整个应用退出
+
+- **现象/需求**：单文件搜索存在，但工作区里没有跨文稿查找。主进程直接扫描会阻塞窗口；用户正则可能灾难性回溯；点击结果还要打开正确文稿并跳到对应行。
+- **实现**：
+  - 新增 `workspace-search.ts` 纯扫描核心：字面量转义、正则 `gu/giu`、逐行匹配、预览定位、200 条结果 / 2 MiB 单文件 / 64 MiB 总量 / 每行 3 条。
+  - 新增 `workspace-search-worker.ts` 与 `workspace-search-service.ts`：`utilityProcess.fork` 独立扫描，8 秒超时终止；新查询、关闭工作区、关窗和退出都会取消旧进程。
+  - 每个候选文件读取前再次调用 `resolveWorkspaceFile`，防止列表生成后替换成符号链接逃逸。
+  - 侧栏新增 `Aa` / `.*` 开关、结果摘要与命中列表；`Ctrl/Cmd+Shift+F` 或编辑菜单打开；点击结果通过相对路径回到文件表，再由编辑器 `revealLine` 定位。
+- **实际踩坑**：
+  - **最严重：`UtilityProcess` 的 `error` 事件没有监听。** 灾难性正则让工具进程触发 V8 错误后，未处理的 `error` 直接冒泡到主进程，整个 Gather 窗口消失，任务栏进程归零，且没有 Crashpad 报告。补上 `child.on('error')` 后复测：`^(a+)+$` 扫描 60k 个 `a` 的文件在 8 秒被停止，UI 显示超时错误，应用继续存活。
+  - **点击结果只跳到第 1 行。** `openSearchHit` 在 `await openWorkspaceFile()` 之后用 `pathRef.current` 判断，但 ref 要到下一次 render 才更新，于是把刚设置的 pending reveal 清掉了。改为让 `openWorkspaceFile` 返回布尔值，并在 `documentVersion/path` 的 effect 中执行定位。
+  - QA 中刷新工作区后立刻点击结果会偶发找不到命中，因为 280ms 防抖与工具进程启动还没完成；等待结果出现后再点击即可。不是用户路径的数据错误。
+- **证据**：
+  - 真实窗口：`Ctrl+Shift+F` 打开侧栏搜索，`Gather` 返回 8 处 / 4 个文稿；区分大小写后 6 处 / 3 个文稿；正则 `2026-\d{2}-\d{2}` 返回 2 处 / 2 个文稿；非法正则显示错误；无匹配显示空状态。
+  - 点击 `nested/deep/清单.md:4:7` 打开文稿，active line 为第 4 行，DOM selection 位于 `Gather` 前，列号正确；760×600 视口无横向溢出。
+  - 截图 `docs/images/gather-workspace-search.png`（1184×755，真实 staging 构建）。
+  - 单元测试 `apps/desktop/test/workspace-search.test.ts` 10 个：大小写、正则、非法模式、BOM/CRLF 行号、每行/总量上限、二进制、超大文件、目录逃逸。
+- **防回归**：`utilityProcess` 必须同时监听 `message`、`error`、`exit` 和 `spawn`；结果定位必须等待文稿版本提交；搜索读取必须重新过工作区边界；8 秒超时不能移除。
 
 ---
 

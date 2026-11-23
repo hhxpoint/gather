@@ -7,6 +7,14 @@ export default defineConfig({
     // @gather/core is TypeScript source in this workspace, so bundle it into
     // the main process instead of asking Node to resolve its .ts entry.
     plugins: [externalizeDepsPlugin({ exclude: ['@gather/core'] })],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'src/main/index.ts'),
+          'workspace-search-worker': resolve(__dirname, 'src/main/workspace-search-worker.ts'),
+        },
+      },
+    },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],

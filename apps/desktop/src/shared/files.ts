@@ -97,6 +97,37 @@ export interface Workspace {
   truncated: boolean;
 }
 
+export interface WorkspaceSearchOptions {
+  query: string;
+  caseSensitive: boolean;
+  regex: boolean;
+}
+
+export interface WorkspaceSearchHit {
+  relativePath: string;
+  name: string;
+  /** 1-based line number in the file. */
+  line: number;
+  /** 1-based UTF-16 column in the line, matching CodeMirror positions. */
+  column: number;
+  preview: string;
+  /** Offset of the match inside `preview`. */
+  previewMatchStart: number;
+  matchLength: number;
+  matchText: string;
+}
+
+export interface WorkspaceSearchResult {
+  matches: WorkspaceSearchHit[];
+  filesScanned: number;
+  filesSkipped: number;
+  truncated: boolean;
+  timedOut: boolean;
+  durationMs: number;
+  /** Set for invalid patterns, timeouts or child-process failures. */
+  error?: string;
+}
+
 export type ExportFormat = 'pdf' | 'html';
 
 export interface DocumentExportRequest {

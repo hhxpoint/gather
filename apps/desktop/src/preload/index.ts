@@ -11,6 +11,8 @@ import type {
   SaveOutcome,
   SaveRequest,
   Workspace,
+  WorkspaceSearchOptions,
+  WorkspaceSearchResult,
 } from '../shared/files';
 
 const api = {
@@ -22,6 +24,8 @@ const api = {
   reloadActiveFile: (): Promise<OpenedFile> => ipcRenderer.invoke('file:reloadActive'),
   openWorkspace: (): Promise<Workspace | null> => ipcRenderer.invoke('workspace:open'),
   refreshWorkspace: (): Promise<Workspace> => ipcRenderer.invoke('workspace:refresh'),
+  searchWorkspace: (options: WorkspaceSearchOptions): Promise<WorkspaceSearchResult> =>
+    ipcRenderer.invoke('workspace:search', options),
   openWorkspaceFile: (relativePath: string): Promise<OpenedFile> =>
     ipcRenderer.invoke('workspace:openFile', relativePath),
   closeWorkspace: (): Promise<boolean> => ipcRenderer.invoke('workspace:close'),
@@ -75,4 +79,7 @@ export type {
   SavedFile,
   Workspace,
   WorkspaceFile,
+  WorkspaceSearchHit,
+  WorkspaceSearchOptions,
+  WorkspaceSearchResult,
 } from '../shared/files';

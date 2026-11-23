@@ -32,6 +32,8 @@ export interface MarkdownEditorHandle {
   insert: (text: string) => void;
   openSearch: () => void;
   openReplace: () => void;
+  /** Move the caret to a 1-based line/column, scroll it into view and focus. */
+  revealLine: (line: number, column?: number) => void;
   getText: () => string;
 }
 
@@ -234,6 +236,19 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
       if (!view) return;
       view.focus();
       openReplacePanel(view);
+    },
+    revealLine(line, column = 1) {
+      const view = viewRef.current;
+      if (!view) return;
+      const lineNumber = Math.min(Math.max(1, Math.floor(line)), view.state.doc.lines);
+      const info = view.state.doc.line(lineNumber);
+      const offset = Math.min(Math.max(0, Math.floor(column) - 1), info.length);
+      const position = info.from + offset;
+      view.dispatch({
+        selection: { anchor: position },
+        effects: EditorView.scrollIntoView(position, { y: 'center' }),
+      });
+      view.focus();
     },
     getText() {
       return viewRef.current?.state.doc.toString() ?? '';
