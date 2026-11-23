@@ -40,7 +40,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 
 ## 自动化测试清单
 
-当前 13 个测试文件、101 个测试（Windows 上 99 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
+当前 14 个测试文件、111 个测试（Windows 上 109 通过、2 个 POSIX-only 测试跳过；Ubuntu CI 预期全部执行）：
 
 | 文件 | 数量 | 覆盖 |
 | --- | --- | --- |
@@ -51,6 +51,7 @@ apps/desktop/release/win-unpacked/Gather.exe
 | `apps/desktop/test/image-preview.test.ts` | 5 | 本地图片 data URI、编码文件名、目录逃逸/绝对/远程/缺失拒绝、缓存 |
 | `apps/desktop/test/external-links.test.ts` | 10 | http/https 放行、危险协议/凭据/畸形值拒绝 |
 | `apps/desktop/test/workspace.test.ts` | 5 | 工作区递归/跳过目录/排序、目录边界、绝对路径/穿越/缺失/目录拒绝 |
+| `apps/desktop/test/workspace-search.test.ts` | 10 | 字面量大小写、正则/非法模式、BOM+CRLF 行号、每行/总量上限、二进制/超大文件跳过、预览 span、目录逃逸拒绝 |
 | `apps/desktop/test/file-io.test.ts` | 11 | 真实临时目录 round-trip、外部修改拒绝、Save As、20 MiB、POSIX 只读目录 |
 | `apps/desktop/test/file-watcher.test.ts` | 4 | 外部修改、自写忽略、删除/重建、轮询差异 |
 | `apps/desktop/test/recovery.test.ts` | 9 | 快照读写/覆盖/丢弃/损坏/写删串行、注入失败、POSIX 只读目录 |
@@ -96,6 +97,8 @@ Phase 1 CI 基线：
 - 工作区真实窗口：`gather-workspace-qa` 侧栏 3 个文稿，隐藏/依赖/非 Markdown 未出现；打开 `nested/笔记.md`、表格预览、脏状态确认与保存均成功。
 - `Ctrl+Shift+O` 真实快捷键打开“打开 Markdown 工作区”，不再误触文件对话框。
 - 查找替换真实窗口：`Ctrl+F` 打开中文面板，`Gather` 命中 7 处；`Ctrl+H` 聚焦替换；全部替换后正文更新；`Ctrl+Z` 恢复原文；Escape 关闭。
+- 工作区搜索真实窗口：`Ctrl+Shift+F` 打开侧栏搜索，`Gather` 返回 8 处 / 4 个文稿；区分大小写 6 处 / 3 个文稿；正则日期 2 处 / 2 个文稿；非法正则显示错误；点击结果打开 `清单.md` 并定位到第 4 行第 7 列；760×600 视口无横向溢出。
+- 搜索超时：60k 字符 `a` + `^(a+)+$` 在 8 秒被终止，UI 显示超时错误，应用继续运行；测试文件随后删除。
 
 ## 预览与链接矩阵
 
@@ -123,7 +126,23 @@ Phase 1 CI 基线：
 | 关闭 | Escape | 面板消失，正文保持 |
 | 中文文案 | `EditorState.phrases` | 查找/替换/上一个/下一个/全部/区分大小写/正则/整词/全部替换/关闭 |
 | 正则/大小写/整词组合 | 未逐项 | 开关可见；只用默认大小写不敏感搜索做了替换验收 |
-| 跨文稿搜索 | 未实现 | 仅当前文稿 |
+| 搜索范围 | 设计边界 | 单文件查找/替换只作用于当前文稿；跨文稿查找见下一节，跨文稿替换未实现 |
+
+## 工作区搜索矩阵
+
+| 项 | 方式 | 结果 |
+| --- | --- | --- |
+| 打开 | 真实 `Ctrl+Shift+F` / 编辑菜单 | 侧栏切换为搜索面板，输入框聚焦，文件列表隐藏 |
+| 字面量 | `Gather`，默认大小写不敏感 | 8 处 / 4 个文稿；包含 `GATHER` 与 `gather` |
+| 区分大小写 | `Aa` 开启 | 6 处 / 3 个文稿；排除全大写与全小写 |
+| 正则 | `2026-\d{2}-\d{2}` | 2 处 / 2 个文稿；行号 9 与 7 |
+| 非法正则 | `(未闭合` | 显示“正则表达式无效”，无结果，不崩溃 |
+| 空结果 | `不存在的词` | “0 处 · 0 个文稿”与空状态提示 |
+| 点击跳转 | `nested/deep/清单.md:4:7` | 打开清单文稿，active line 第 4 行为“2. 搜索 Gather”，DOM selection 位于 `Gather` 前；无脏标记 |
+| 关闭 | 侧栏搜索图标 | 搜索面板消失，恢复 4 个文稿列表 |
+| 超时 | `^(a+)+$` + 60k `a` | 8 秒后显示“搜索超过 8 秒”，应用继续运行；独立进程被终止 |
+| 预算 | 单元测试 | 200 条结果、2 MiB 单文件、64 MiB 总量、每行 3 条；二进制跳过并计数 |
+| 路径边界 | 单元测试 | 伪造 `../outside/secret.md` 被跳过，不读取工作区外内容 |
 
 ## 工作区矩阵
 
@@ -170,15 +189,16 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 
 | 项 | 方式 | 结果 |
 | --- | --- | --- |
-| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 7 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换；无窗口装饰、无真实用户路径 |
+| 产品截图 | staged Windows 应用 + CDP `Page.captureScreenshot` | 8 张真实截图：编辑器、恢复快照、外部修改拦截、表格预览、图片预览、文件夹工作区、查找替换、工作区搜索；无窗口装饰、无真实用户路径 |
 | 示例内容 | 合成 Markdown，公开示例目录 `C:\Users\Public\...` | 不含真实用户文稿或账户 ID |
+| 工作区搜索截图 | 1184×755，staged Windows + CDP | 61,289 bytes；侧栏 8 处 / 4 个文稿，清单文稿第 4 行激活，光标位于 `Gather` 前；SHA-256 `85a26ea2…` |
 | 本地站点构建 | `npm run build -w @gather/site` | 通过；静态页面、样式与 `images/` 截图复制到 `dist` |
 | 桌面视口 | 1440×1400/900，headless Edge/Chrome + CDP | hero、产品、能力、CLI、构建、路线图分段检查；`scrollWidth = clientWidth` |
 | 移动视口 | 390×844，CDP mobile emulation | top、product、download 检查；修复 Phase chip、状态栏与表头挤压 |
 | 公网 Pages | build / deploy 两个 job | 搜索批次 [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 成功；工作区 [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 与预览批次 [44981317068](https://github.com/hhxpoint/gather/actions/runs/44981317068) 成功 |
 | 公网内容 | `curl` + 本地构建对照 | 搜索批次公网 `index.html` SHA-256 与本地 `dist/index.html` 一致（`8624aade…`）；CSS 同样一致（`5b76a1b0…`）；页面包含 `07 / Find`、7 张产品截图与 101 个测试文案 |
 | 公网截图资源 | HTTP GET + SHA-256 | `gather-search.png` HTTP 200、47,320 bytes，SHA-256 与仓库一致（`1c1424d6…`）；`gather-workspace.png` 仍为 37,680 bytes / `5f31a579…`；表格/图片/PDF 截图继续可访问 |
-| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；7 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
+| 本地 390px 产品截图组 | CDP 设备模拟 390×844 | `scrollWidth = clientWidth = 390`；8 张产品截图 naturalWidth 全非零；公网 HTML/CSS/图片与本地字节一致，故本地渲染证据适用于公网 |
 | 搜索批次公网双视口 | CDP 1440×900 与 390×844 | 桌面 `scrollWidth = clientWidth = 1425`（1440 视口扣除滚动条），390 视口均为 390；`07 / Find` 截图加载为 1184×755，无横向溢出元素 |
 | 新导出卡片桌面 | 本地构建，1440 视口 | `scrollWidth = clientWidth = 1422`；PDF 预览图与 A4/PDF 标签可见 |
 | 新导出卡片窄屏 | CDP `Emulation.setDeviceMetricsOverride` 390×844 | `scrollWidth = clientWidth = 390`；四张图片 `naturalWidth` 均非零；导出卡片单列完整显示 |
@@ -230,7 +250,8 @@ docs/images/gather-pdf-export.png   # 952×1348，PDF 第 1 页
 - 导出 20 MiB 边界、真实磁盘满时 PDF/HTML 写盘、只读目标目录。
 - 图片缩放/平移、EXIF 方向、表格单元格富文本编辑、超大文稿表格虚拟化。
 - Windows/Linux IME 下表格/图片预览的输入与选择行为。
-- 最近工作区持久化、工作区树形折叠、新建/重命名/删除、跨文稿搜索、外部新增自动刷新。
+- 最近工作区持久化、工作区树形折叠、新建/重命名/删除、跨文稿替换、外部新增自动刷新。
+- 工作区搜索历史、包含/排除规则、流式结果与结果分组折叠。
 - 工作区 2000 文件/深度 8 截断的真实目录与性能。
 
 ## 维护

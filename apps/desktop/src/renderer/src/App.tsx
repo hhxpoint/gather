@@ -36,6 +36,8 @@ import type {
   SavedFile,
   Workspace,
   WorkspaceFile,
+  WorkspaceSearchHit,
+  WorkspaceSearchResult,
 } from '../../shared/files';
 
 const sample = `# 把想法，慢慢写清楚。
@@ -80,6 +82,7 @@ interface Actions {
   togglePreview: () => void;
   find: () => void;
   replace: () => void;
+  workspaceSearch: () => void;
   exportPdf: () => Promise<void>;
   exportHtml: () => Promise<void>;
 }
@@ -127,6 +130,12 @@ export default function App() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [workspaceBusy, setWorkspaceBusy] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCase, setSearchCase] = useState(false);
+  const [searchRegex, setSearchRegex] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<WorkspaceSearchResult | null>(null);
   const editorRef = useRef<MarkdownEditorHandle>(null);
   const actionsRef = useRef<Actions | null>(null);
   const docRef = useRef(doc);
@@ -140,6 +149,9 @@ export default function App() {
   const versionRef = useRef<FileVersion | null>(null);
   const workspaceRef = useRef<Workspace | null>(workspace);
   workspaceRef.current = workspace;
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchRequestRef = useRef(0);
+  const pendingRevealRef = useRef<{ path: string; line: number; column: number } | null>(null);
   const recoveryIdRef = useRef<string | null>(null);
   const snapshotInFlightRef = useRef(false);
   const savingRef = useRef(false);
@@ -148,6 +160,9 @@ export default function App() {
 
   const title = path ? path.split(/[\\/]/).pop() ?? '未命名' : '未命名文稿';
   const counts = countText(doc);
+  const searchFileCount = searchResult
+    ? new Set(searchResult.matches.map(hit => hit.relativePath)).size
+    : 0;
 
   function applySavedFile(file: SavedFile) {
     versionRef.current = versionOf(file);
@@ -241,6 +256,11 @@ export default function App() {
       if (!next) return;
       setWorkspace(next);
       setSidebarVisible(true);
+      setSearchOpen(false);
+      setSearchQuery('');
+      setSearchResult(null);
+      setSearching(false);
+      searchRequestRef.current += 1;
       setStatus(`已打开工作区 ${next.name} · ${next.files.length} 个文稿${next.truncated ? '（列表已截断）' : ''}`);
     } catch (error) {
       setStatus(errorMessage(error, '打开文件夹失败'));
@@ -276,8 +296,51 @@ export default function App() {
   async function closeWorkspace() {
     if (!window.gather) return;
     setWorkspace(null);
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResult(null);
+    setSearching(false);
+    searchRequestRef.current += 1;
+    pendingRevealRef.current = null;
     setStatus('已关闭工作区，当前文稿仍保持打开');
     await window.gather.closeWorkspace().catch(() => undefined);
+  }
+
+  function openWorkspaceSearch() {
+    if (!workspaceRef.current) {
+      setStatus('请先打开一个文件夹工作区。');
+      return;
+    }
+    setSidebarVisible(true);
+    setSearchOpen(true);
+    window.setTimeout(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }, 0);
+  }
+
+  function closeWorkspaceSearch() {
+    setSearchOpen(false);
+    setSearchResult(null);
+    setSearching(false);
+    searchRequestRef.current += 1;
+  }
+
+  async function openSearchHit(hit: WorkspaceSearchHit) {
+    const file = workspaceRef.current?.files.find(
+      item => item.relativePath === hit.relativePath,
+    );
+    if (!file) {
+      setStatus('这个文稿已不在工作区，请刷新后重试。');
+      return;
+    }
+    if (file.path === pathRef.current) {
+      editorRef.current?.revealLine(hit.line, hit.column);
+      return;
+    }
+    pendingRevealRef.current = { path: file.path, line: hit.line, column: hit.column };
+    const opened = await openWorkspaceFile(file);
+    if (!opened) pendingRevealRef.current = null;
   }
 
   async function discardCurrentRecovery() {
@@ -304,22 +367,24 @@ export default function App() {
     }
   }
 
-  async function openWorkspaceFile(file: WorkspaceFile) {
-    if (!window.gather) return;
+  async function openWorkspaceFile(file: WorkspaceFile): Promise<boolean> {
+    if (!window.gather) return false;
     if (file.path === pathRef.current) {
       editorRef.current?.focus();
-      return;
+      return true;
     }
     if (dirtyRef.current && !window.confirm('当前文稿有未保存修改。仍要打开工作区里的其他文件吗？')) {
-      return;
+      return false;
     }
     setStatus(`正在打开 ${file.relativePath}…`);
     try {
       const opened = await window.gather.openWorkspaceFile(file.relativePath);
       await discardCurrentRecovery();
       applyOpenedFile(opened);
+      return true;
     } catch (error) {
       setStatus(errorMessage(error, '打开工作区文件失败'));
+      return false;
     }
   }
 
@@ -538,6 +603,7 @@ export default function App() {
     togglePreview,
     find,
     replace,
+    workspaceSearch: openWorkspaceSearch,
     exportPdf: () => exportAs('pdf'),
     exportHtml: () => exportAs('html'),
   };
@@ -593,6 +659,7 @@ export default function App() {
       if (action === 'togglePreview') actions.togglePreview();
       if (action === 'find') actions.find();
       if (action === 'replace') actions.replace();
+      if (action === 'workspaceSearch') actions.workspaceSearch();
       if (action === 'exportPdf') void actions.exportPdf();
       if (action === 'exportHtml') void actions.exportHtml();
     });
@@ -610,6 +677,10 @@ export default function App() {
         event.preventDefault();
         if (event.shiftKey) void actionsRef.current?.openFolder();
         else void actionsRef.current?.open();
+      }
+      if (event.key.toLowerCase() === 'f' && event.shiftKey) {
+        event.preventDefault();
+        actionsRef.current?.workspaceSearch();
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -629,6 +700,60 @@ export default function App() {
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [dirty]);
+
+  useEffect(() => {
+    if (!searchOpen || !workspace || !searchQuery.trim()) {
+      setSearching(false);
+      setSearchResult(null);
+      return;
+    }
+    const request = ++searchRequestRef.current;
+    setSearching(true);
+    setSearchResult(null);
+    const timer = window.setTimeout(() => {
+      const api = window.gather;
+      if (!api) return;
+      void api.searchWorkspace({
+        query: searchQuery,
+        caseSensitive: searchCase,
+        regex: searchRegex,
+      })
+        .then(result => {
+          if (request === searchRequestRef.current) setSearchResult(result);
+        })
+        .catch(error => {
+          if (request !== searchRequestRef.current) return;
+          setSearchResult({
+            matches: [],
+            filesScanned: 0,
+            filesSkipped: 0,
+            truncated: false,
+            timedOut: false,
+            durationMs: 0,
+            error: errorMessage(error, '工作区搜索失败'),
+          });
+        })
+        .finally(() => {
+          if (request === searchRequestRef.current) setSearching(false);
+        });
+    }, 280);
+    return () => {
+      window.clearTimeout(timer);
+      searchRequestRef.current += 1;
+    };
+  }, [searchOpen, workspace, searchQuery, searchCase, searchRegex]);
+
+  useEffect(() => {
+    const pending = pendingRevealRef.current;
+    if (!pending || pathRef.current !== pending.path) return;
+    pendingRevealRef.current = null;
+    const frame = window.requestAnimationFrame(() => {
+      if (pathRef.current === pending.path) {
+        editorRef.current?.revealLine(pending.line, pending.column);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [documentVersion, path]);
 
   function updateDoc(value: string) {
     setDoc(value);
@@ -772,6 +897,15 @@ export default function App() {
                 <strong title={workspace.root}>{workspace.name}</strong>
               </span>
               <div className="workspace-heading-actions">
+                <button
+                  className={searchOpen ? 'active' : undefined}
+                  onClick={() => (searchOpen ? closeWorkspaceSearch() : openWorkspaceSearch())}
+                  title={searchOpen ? '返回文稿列表' : '在工作区中查找 (Ctrl/Cmd+Shift+F)'}
+                  aria-label={searchOpen ? '关闭工作区搜索' : '在工作区中查找'}
+                  aria-pressed={searchOpen}
+                >
+                  <Search size={13} />
+                </button>
                 <button onClick={() => void refreshWorkspace()} title="刷新工作区" aria-label="刷新工作区" disabled={workspaceBusy}>
                   <RefreshCw size={13} className={workspaceBusy ? 'spin' : undefined} />
                 </button>
@@ -780,32 +914,139 @@ export default function App() {
                 </button>
               </div>
             </div>
-            <div className="workspace-meta">
-              {workspace.files.length} 个文稿
-              {workspace.truncated ? ' · 列表已截断' : ''}
-            </div>
-            <div className="workspace-list">
-              {workspace.files.length === 0 && (
-                <p className="workspace-empty">这个文件夹里还没有 Markdown 文稿。</p>
-              )}
-              {workspace.files.map(file => {
-                const active = file.path === path;
-                return (
+            {searchOpen ? (
+              <div className="workspace-search" role="search">
+                <div className="workspace-search-field">
+                  <Search size={13} aria-hidden="true" />
+                  <input
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onChange={event => setSearchQuery(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === 'Escape') {
+                        event.preventDefault();
+                        closeWorkspaceSearch();
+                      }
+                    }}
+                    placeholder="在文件中查找…"
+                    aria-label="在工作区中查找"
+                    spellCheck={false}
+                  />
+                  {searching && <LoaderCircle className="spin" size={13} />}
+                  {!searching && searchQuery && (
+                    <button
+                      type="button"
+                      className="workspace-search-clear"
+                      onClick={() => setSearchQuery('')}
+                      title="清除关键词"
+                      aria-label="清除搜索关键词"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+                <div className="workspace-search-options">
                   <button
-                    key={file.path}
-                    className={`workspace-file${active ? ' active' : ''}`}
-                    onClick={() => void openWorkspaceFile(file)}
-                    title={file.relativePath}
+                    type="button"
+                    className={searchCase ? 'active' : undefined}
+                    onClick={() => setSearchCase(value => !value)}
+                    aria-pressed={searchCase}
+                    aria-label="区分大小写"
+                    title="区分大小写"
                   >
-                    <FileText size={14} />
-                    <span className="workspace-file-copy">
-                      <strong>{file.name}</strong>
-                      {file.relativePath !== file.name && <small>{file.relativePath}</small>}
-                    </span>
+                    Aa
                   </button>
-                );
-              })}
-            </div>
+                  <button
+                    type="button"
+                    className={searchRegex ? 'active' : undefined}
+                    onClick={() => setSearchRegex(value => !value)}
+                    aria-pressed={searchRegex}
+                    aria-label="使用正则表达式"
+                    title="使用正则表达式"
+                  >
+                    .*
+                  </button>
+                  <span className="workspace-search-summary" aria-live="polite">
+                    {!searchQuery.trim()
+                      ? '工作区搜索'
+                      : searching
+                        ? '搜索中…'
+                        : searchResult?.error
+                          ? '搜索失败'
+                          : searchResult
+                            ? `${searchResult.matches.length} 处 · ${searchFileCount} 个文稿${searchResult.truncated ? ' · 已截断' : ''}${searchResult.filesSkipped ? ` · 跳过 ${searchResult.filesSkipped}` : ''}`
+                            : ''}
+                  </span>
+                </div>
+                <div className="workspace-search-results">
+                  {!searchQuery.trim() && (
+                    <p className="workspace-search-hint">
+                      输入关键词，在当前工作区的 Markdown 文稿里查找。支持区分大小写与正则；点击结果跳到对应行。
+                    </p>
+                  )}
+                  {searchResult?.error && (
+                    <p className="workspace-search-error">{searchResult.error}</p>
+                  )}
+                  {searchResult && !searchResult.error && searchResult.matches.length === 0 && (
+                    <p className="workspace-search-hint">没有找到匹配。</p>
+                  )}
+                  {searchResult?.matches.map((hit, index) => {
+                    const before = hit.preview.slice(0, hit.previewMatchStart);
+                    const matched = hit.preview.slice(
+                      hit.previewMatchStart,
+                      hit.previewMatchStart + hit.matchLength,
+                    );
+                    const after = hit.preview.slice(hit.previewMatchStart + hit.matchLength);
+                    return (
+                      <button
+                        type="button"
+                        key={`${hit.relativePath}:${hit.line}:${hit.column}:${index}`}
+                        className="workspace-search-hit"
+                        onClick={() => void openSearchHit(hit)}
+                        title={`${hit.relativePath}:${hit.line}:${hit.column}`}
+                      >
+                        <span className="workspace-hit-file">
+                          <strong>{hit.name}</strong>
+                          <small>{hit.line}:{hit.column}</small>
+                        </span>
+                        <span className="workspace-hit-preview">
+                          {before}<mark>{matched || hit.matchText}</mark>{after}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="workspace-meta">
+                  {workspace.files.length} 个文稿
+                  {workspace.truncated ? ' · 列表已截断' : ''}
+                </div>
+                <div className="workspace-list">
+                  {workspace.files.length === 0 && (
+                    <p className="workspace-empty">这个文件夹里还没有 Markdown 文稿。</p>
+                  )}
+                  {workspace.files.map(file => {
+                    const active = file.path === path;
+                    return (
+                      <button
+                        key={file.path}
+                        className={`workspace-file${active ? ' active' : ''}`}
+                        onClick={() => void openWorkspaceFile(file)}
+                        title={file.relativePath}
+                      >
+                        <FileText size={14} />
+                        <span className="workspace-file-copy">
+                          <strong>{file.name}</strong>
+                          {file.relativePath !== file.name && <small>{file.relativePath}</small>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
             <div className="workspace-root" title={workspace.root}>{workspace.root}</div>
           </aside>
         )}

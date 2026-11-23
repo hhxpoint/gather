@@ -56,11 +56,15 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *查找/替换面板使用中文文案，支持上一个/下一个、全部选中、区分大小写、正则、整词与全部替换；匹配在正文中高亮。*
 
+<img src="docs/images/gather-workspace-search.png" alt="Gather 工作区搜索真实截图：侧栏显示 8 处 Gather 命中、4 个文稿，点击结果后清单笔记第 4 行处于激活状态" width="880">
+
+*工作区搜索在独立工具进程中扫描：结果列出文件、行列与高亮预览；点击命中打开对应文稿并把光标放到目标行。*
+
 <img src="docs/images/gather-pdf-export.png" alt="Gather 导出的 A4 PDF 真实渲染：中文标题、GFM 表格与页边距，图片来自 pdfjs 渲染结果" width="620">
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0008](docs/adr)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0009](docs/adr)。
 
 ## 项目状态
 
@@ -112,6 +116,7 @@ Gather 不打算做这些事：
 | Electron 主窗口 | 已验证（本地 Windows） | 1200×820，最小 760×520，单实例锁；生产构建可加载 |
 | 打开 Markdown | 已验证（本地 Windows） | 系统文件对话框打开仓库内 Markdown 并渲染成功 |
 | 文件夹工作区 | 已验证（本地 Windows） | 目录对话框打开工作区，递归列出 Markdown/TXT（最多 2000 个、深度 8），跳过隐藏目录、`node_modules`、构建目录与符号链接；侧栏切换、刷新、关闭；切换脏文稿前确认；打开文件时再次做目录边界校验 |
+| 工作区搜索 | 已验证（本地 Windows + 单元测试） | `Ctrl/Cmd+Shift+F` 在独立 `utilityProcess` 扫描当前文件夹；`Gather` 返回 8 处 / 4 个文稿，区分大小写 6 处 / 3 个文稿，正则日期 2 处 / 2 个文稿；200 条结果、2 MiB 单文件、64 MiB 总量、8 秒超时；点击结果打开文稿并跳到行列 |
 | 保存 / 另存为 | 已验证（本地 Windows） | 保留 LF/CRLF 与 BOM；临时文件写入 + `fsync` + `rename`；另存为恢复路径已验证 |
 | 导出 PDF / HTML | 已验证（本地 Windows） | 使用当前编辑器内容；隐藏窗口 `printToPDF` 输出 A4，中文/表格/代码块/本地图片进入 PDF；HTML 中本地图片嵌入为 data URI（远程图片仍保留原 URL）；原子写目标文件，失败不保留半个导出文件 |
 | 本地图片嵌入 | 已验证（本地 + 单元测试） | 相对路径 `png/jpg/jpeg/gif/webp/avif/bmp` 限制在文稿目录内并转 data URI；目录外绝对路径、SVG、缺失文件与超预算图片只告警，不阻止导出 |
@@ -124,8 +129,8 @@ Gather 不打算做这些事：
 | 错误提示 | 已验证 | ENOSPC/EACCES/EPERM/EROFS/EBUSY/ENOENT/EIO 映射为中文可操作提示；IPC 前缀会清理 |
 | 文件大小保护 | 已验证边界 | 单文件上限 20 MiB；读取超限、CRLF 编码膨胀超限都拒绝；POSIX 只读目录真实 EACCES 在 Ubuntu CI 通过，Windows 跳过 |
 | 进程隔离 | 已落盘 | `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false` |
-| 应用菜单 | 已验证（菜单结构） | 文件、视图、帮助菜单；打开/保存/另存为/导出 PDF/导出 HTML/切换预览；导出菜单项已在真实窗口显示 |
-| 快捷键 | 部分验证 | `Ctrl/Cmd+O`、`Ctrl/Cmd+S` 已实际操作；Shift+S / Shift+P / Shift+E 未逐项实测 |
+| 应用菜单 | 已验证（菜单结构） | 文件、编辑、视图、帮助菜单；打开/文件夹/保存/另存为/导出、查找/替换/工作区查找、预览切换；新增编辑菜单已在真实窗口显示 |
+| 快捷键 | 部分验证 | `Ctrl/Cmd+O`、`Ctrl/Cmd+S`、`Ctrl/Cmd+Shift+O`、`Ctrl/Cmd+Shift+F`、`Ctrl/Cmd+F`、`Ctrl/Cmd+H` 已实际操作；Shift+S / Shift+P / Shift+E 未逐项实测 |
 | 未保存提示 | 部分 | 标题栏脏标记、打开其他文件前确认、`beforeunload`；恢复快照见上一行 |
 | CSP 与导航防护 | CSP 已验证，导航已落盘 | 生产 `file://` 响应注入 CSP，内联脚本实测被阻止；新窗口/跨页导航被拦截 |
 
@@ -169,7 +174,7 @@ Gather 不打算做这些事：
 | --- | --- | --- |
 | 单元测试源码 | 部分 | `packages/core/test/*.test.ts`、`packages/editor/test/*.test.ts`、`apps/desktop/test/*.test.ts` |
 | 测试运行器配置 | 已落盘 | `vitest.config.ts` 匹配 `packages/**/test/**/*.test.ts` 与 `apps/desktop/test/**/*.test.ts` |
-| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：13 个测试文件、101 个测试，99 通过、2 个 POSIX-only 跳过；搜索批次 [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 与 main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444) 均为 Ubuntu 101 全过、Windows 99 通过 + 2 跳过 |
+| 测试实际执行 | 已通过（本地 + CI） | 本地 Electron Node 22：14 个测试文件、111 个测试，109 通过、2 个 POSIX-only 跳过；上一批搜索 CI [44985468467](https://github.com/hhxpoint/gather/actions/runs/44985468467) 为 101 个测试，本批新增 10 个工作区搜索测试 |
 | 文件 I/O 测试 | 已通过 | 临时目录真实写盘：BOM+CRLF round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一、20 MiB 边界 |
 | 导出 HTML 测试 | 已通过 | data URI 嵌入、URL 编码文件名、目录外路径拒绝、SVG/缺失图片告警、代码块不误处理、远程/data 图片不触碰、文稿目录消失告警、文件名清洗 |
 | 预览与链接测试 | 已通过 | 图片/链接语法解析、http/https 判定、本地图片解析/目录逃逸/缺失/缓存、外链协议/凭据/格式拒绝 |
@@ -219,8 +224,9 @@ Gather 不打算做这些事：
 - [x] **工作区批次已合并并部署。** PR [#16](https://github.com/hhxpoint/gather/pull/16) 合并为 `a874667`；main CI [44983351330](https://github.com/hhxpoint/gather/actions/runs/44983351330) 与 Pages [44983351367](https://github.com/hhxpoint/gather/actions/runs/44983351367) 成功。公网 `index.html` SHA-256 `34f289d4…`、CSS `5b76a1b0…` 与本地构建一致；工作区截图 37,680 bytes，HTTP 200，6 张产品截图均加载。
 - [x] **搜索批次已合并并部署。** PR [#18](https://github.com/hhxpoint/gather/pull/18) 合并为 `a4c63f2`；main CI [44985572444](https://github.com/hhxpoint/gather/actions/runs/44985572444) 与 Pages [44985572472](https://github.com/hhxpoint/gather/actions/runs/44985572472) 成功。公网 `index.html` SHA-256 `8624aade…`、CSS `5b76a1b0…` 与本地构建一致；查找截图 47,320 bytes、SHA-256 `1c1424d6…`，HTTP 200；公网 1440 与 390 视口无横向溢出，7 张产品截图 naturalWidth 全非零。
 - [x] **单文件查找/替换已在真实窗口验证。** `Ctrl/Cmd+F` 打开中文面板，`Ctrl/Cmd+H` 聚焦替换；搜索 `Gather` 命中 7 处并高亮，全部替换后正文更新，Ctrl+Z 恢复原文；Escape 关闭面板。正则/大小写/整词开关已在面板中可见，但尚未逐项做替换矩阵。
-- [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件或跨文稿搜索；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
-- [ ] **跨文稿搜索未实现。** 当前只在打开的单篇文稿内查找/替换；没有工作区级结果列表或替换。
+- [x] **工作区搜索已在真实窗口验证。** `Ctrl/Cmd+Shift+F` 打开侧栏搜索，`Gather` 返回 8 处 / 4 个文稿；区分大小写后 6 处 / 3 个文稿；正则 `2026-\d{2}-\d{2}` 返回 2 处 / 2 个文稿；非法正则显示错误；无匹配显示空状态。点击 `nested/deep/清单.md:4:7` 打开文稿，光标落在第 4 行第 7 列；760×600 视口无横向溢出。灾难性正则在 8 秒被独立进程超时终止，应用保持运行。
+- [ ] **工作区不会跨重启保留。** 没有最近文件夹、树形折叠、新建/重命名/删除文件；外部新增文件需要手动刷新。工作区只做导航，不改变 Markdown 作为唯一真相的边界。
+- [ ] **工作区搜索仍是只读的。** 没有跨文稿替换、搜索历史、包含/排除规则或流式结果；单文件超过 2 MiB、二进制文件会跳过并在摘要中计数；正则可能很慢，由 8 秒超时兜底。
 - [ ] **远程图片不会自动加载。** 预览只自动解析文档目录内位图；`http(s)` 图片保留为提示，避免打开文稿就产生网络请求。没有图片缩放/平移、EXIF 方向处理或图床上传。
 - [ ] **超大文稿的表格预览会退回源码。** 超过 1.5 MiB 的文稿、超过 50k 字符的单个表格不做 block widget；这是性能保护，不是完整虚拟化。
 - [ ] **没有签名安装包。** Windows staging 目录包已产出并实测；electron-builder 的 NSIS/portable 因第二次远程工具请求 600 秒超时未产出；没有签名、默认图标、自动更新、干净 VM 安装/卸载测试。
@@ -308,6 +314,9 @@ gather/
 │  │  ├─ src/main/export-html.ts    导出图片嵌入与目录/大小边界
 │  │  ├─ src/main/document-export.ts PDF/HTML 隐藏窗口与原子写目标
 │  │  ├─ src/main/workspace.ts  文件夹递归列举与工作区路径边界
+│  │  ├─ src/main/workspace-search.ts  工作区扫描核心、预算与预览
+│  │  ├─ src/main/workspace-search-service.ts  utilityProcess 启动、超时与取消
+│  │  ├─ src/main/workspace-search-worker.ts   独立进程入口
 │  │  ├─ src/shared/files.ts    主进程/preload/renderer 共享文件类型
 │  │  ├─ src/shared/external-links.ts  http/https 外链校验
 │  │  ├─ src/shared/errors.ts   IPC 错误前缀清理
@@ -321,6 +330,7 @@ gather/
 │  │  ├─ test/image-preview.test.ts 图片目录边界、编码路径与缓存
 │  │  ├─ test/external-links.test.ts http/https 与危险协议拒绝
 │  │  ├─ test/workspace.test.ts  工作区递归、跳过目录与路径边界
+│  │  ├─ test/workspace-search.test.ts  字面量/正则、行号、预算与逃逸拒绝
 │  │  ├─ electron.vite.config.ts
 │  │  ├─ scripts/stage-portable.mjs  未签名 Windows/Linux 目录 staging
 │  │  └─ package.json           electron-builder 目标：nsis/portable/AppImage/deb
@@ -353,6 +363,7 @@ gather/
 │  ├─ adr/0006-preview-and-images.md
 │  ├─ adr/0007-workspace.md
 │  ├─ adr/0008-search.md
+│  ├─ adr/0009-workspace-search.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
 │  ├─ images/                   真实产品截图（README 与站点共用）
@@ -423,7 +434,7 @@ npm run typecheck
 
 `npm test` 等价于 `vitest run`，匹配 `packages/**/test/**/*.test.ts`。`npm run typecheck` 会依次对 core、editor、desktop、CLI 执行 `tsc --noEmit`。
 
-**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（13 个测试文件、101 个测试；99 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
+**本地与 CI 验证**：本地 Windows 以 Electron 内置 Node 22 执行 Vitest（14 个测试文件、111 个测试；109 通过、2 个 POSIX-only 跳过）与四个 tsconfig 的 `tsc --noEmit`，均通过。系统 Node 20 不支持 `require(ESM)` 的 `sanitize-html` 依赖链，因此本地必须用 Node 22/24；CI 使用 Node 24，在 `ubuntu-latest` 与 `windows-latest` 上从干净 checkout 执行：
 
 ```bash
 npm ci
@@ -706,5 +717,6 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 - [ADR 0006：实时预览与图片边界](docs/adr/0006-preview-and-images.md)
 - [ADR 0007：文件夹工作区](docs/adr/0007-workspace.md)
 - [ADR 0008：单文件查找替换](docs/adr/0008-search.md)
+- [ADR 0009：工作区搜索](docs/adr/0009-workspace-search.md)
 
 Gather 还没有发布。这里记录的是一个进入 Phase 1 的开源工作区，以及把它做成可信写作工具所需的门槛。
