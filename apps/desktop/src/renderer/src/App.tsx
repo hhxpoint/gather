@@ -36,6 +36,7 @@ import type {
   SavedFile,
   Workspace,
   WorkspaceFile,
+  WorkspaceRestoreResult,
   WorkspaceSearchHit,
   WorkspaceSearchResult,
 } from '../../shared/files';
@@ -152,6 +153,8 @@ export default function App() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchRequestRef = useRef(0);
   const pendingRevealRef = useRef<{ path: string; line: number; column: number } | null>(null);
+  const restorePromiseRef = useRef<Promise<WorkspaceRestoreResult> | null>(null);
+  const pendingRestoreFileRef = useRef<string | null>(null);
   const recoveryIdRef = useRef<string | null>(null);
   const snapshotInFlightRef = useRef(false);
   const savingRef = useRef(false);
@@ -700,6 +703,55 @@ export default function App() {
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [dirty]);
+
+  useEffect(() => {
+    const api = window.gather;
+    if (!api) return;
+    let cancelled = false;
+    if (!restorePromiseRef.current) {
+      restorePromiseRef.current = api.restoreWorkspace().catch(error => ({
+        status: 'unavailable' as const,
+        message: errorMessage(error, '无法恢复上次工作区'),
+      }));
+    }
+    void restorePromiseRef.current.then(result => {
+      if (cancelled) return;
+      if (result.status === 'restored') {
+        if (workspaceRef.current || pathRef.current) return;
+        setWorkspace(result.workspace);
+        setSidebarVisible(true);
+        if (result.relativePath) {
+          pendingRestoreFileRef.current = result.relativePath;
+          setStatus(`已恢复上次工作区 ${result.workspace.name}，正在打开上次文稿…`);
+        } else if (result.fileMissing) {
+          setStatus(`已恢复工作区 ${result.workspace.name} · 上次文稿已不在文件夹`);
+        } else {
+          setStatus(`已恢复上次工作区 ${result.workspace.name} · ${result.workspace.files.length} 个文稿`);
+        }
+      } else if (result.status === 'unavailable') {
+        setStatus(result.message);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const relativePath = pendingRestoreFileRef.current;
+    if (!relativePath || !workspace) return;
+    pendingRestoreFileRef.current = null;
+    const file = workspace.files.find(item => item.relativePath === relativePath);
+    if (!file) {
+      setStatus('上次文稿已不在工作区，已恢复到文稿列表。');
+      return;
+    }
+    void openWorkspaceFile(file).then(opened => {
+      if (opened) setStatus(`已恢复上次工作区与文稿 ${file.name}`);
+    });
+    // openWorkspaceFile reads the current refs and is intentionally not a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspace]);
 
   useEffect(() => {
     if (!searchOpen || !workspace || !searchQuery.trim()) {

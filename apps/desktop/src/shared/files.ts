@@ -128,6 +128,18 @@ export interface WorkspaceSearchResult {
   error?: string;
 }
 
+export type WorkspaceRestoreResult =
+  | { status: 'none' }
+  | {
+      status: 'restored';
+      workspace: Workspace;
+      /** Last listed file, or null when the workspace had no active file. */
+      relativePath: string | null;
+      /** True when the saved file is no longer in the folder. */
+      fileMissing: boolean;
+    }
+  | { status: 'unavailable'; message: string };
+
 export type ExportFormat = 'pdf' | 'html';
 
 export interface DocumentExportRequest {

@@ -141,6 +141,16 @@ Workspace search worker (Node, no window, bounded scan)
 - 结果点击通过当前工作区文件表找回文件，再走 `workspace:openFile`；编辑器 `revealLine(line,column)` 用 transaction 设置光标并滚动。
 - 8 秒超时由主进程计时；超时/取消调用 `child.kill()`。**必须监听 `error`、`exit`、`spawn`、`message` 四个事件。** 未监听的 `UtilityProcess` `error` 会让主进程退出，这是本仓库实际踩过的坑。
 
+### 3.8 会话恢复
+
+- 窗口状态与工作区会话分两个版本化 JSON，放在 `userData`；一个损坏不影响另一个。
+- 窗口保存 `getNormalBounds` + `isMaximized`；启动时按当前显示器 `workArea` 归一化：最大重叠优先、夹紧到工作区、完全在屏外时主屏居中、最小 760×520。最大化在 `ready-to-show` 恢复，普通 bounds 保留。
+- 工作区会话只保存 `{root, relativePath}`，不保存内容、光标或滚动位置。恢复必须重新 `listWorkspace`，相对路径只作为文件表中的键；根目录 ENOENT/ENOTDIR 才清除记录，权限错误保留重试。
+- 文件打开、工作区切换、Save As 更新会话；关闭工作区清除。启动自动恢复，但若用户已经打开工作区/文件，忽略迟到的恢复结果。
+- 窗口关闭使用同步原子写（临时文件 + fsync + rename），异步保存有 300ms 防抖。
+- **会话恢复不等于恢复未保存内容。** 恢复文稿后，恢复快照横幅仍会出现；用户点击“恢复”才进入脏状态。
+- 已实测：1000×700 @120,80 重启恢复；最大化 1920×1032；工作区/最后文稿恢复；文稿或根缺失降级；关闭工作区不恢复；强杀后横幅与恢复内容都在。多显示器拔插、Linux 窗口恢复未跑。
+
 ## 4. Electron 安全与跨进程
 
 - `contextIsolation: true`、`sandbox: true`、`nodeIntegration: false`。
@@ -311,6 +321,7 @@ POST pull request
 | P1-28 | 工作区路径与快捷键 | 根先 `realpath`；8.3 短路径；`Ctrl+Shift+O` 显式检查 Shift |
 | P1-29 | 单文件搜索状态 | 只装 keymap 没有面板；打开面板后不要抢搜索框焦点 |
 | P1-30 | 工作区搜索进程 | 必须监听 `UtilityProcess` error；定位等待文稿版本提交 |
+| P1-31 | 会话恢复 | 窗口越界归一化；会话只存路径并重新列目录；恢复快照仍需用户确认 |
 
 ## 9. Windows / Linux 平台笔记
 
@@ -332,6 +343,7 @@ POST pull request
 - A4 PDF 与含本地图片 HTML 导出，真实回读。
 - GFM 表格/本地图片预览、安全外链。
 - 文件夹工作区、侧栏切换、脏文稿确认、工作区搜索与超时。
+- 窗口位置/尺寸/最大化、工作区与最后文稿跨重启恢复；缺失根/文稿降级；与恢复快照共存。
 - Windows staging 启动与真实窗口路径；GitHub Pages 部署与哈希回读。
 
 ### 未验证
@@ -343,7 +355,8 @@ POST pull request
 
 ### 未实现
 
-- 最近工作区持久化、树形折叠、新建/重命名/删除文件。
+- 最近工作区列表、单文件（无工作区）会话、滚动位置/光标恢复。
+- 工作区树形折叠、新建/重命名/删除文件。
 - 跨文稿替换、搜索历史、包含/排除规则、流式结果。
 - DOCX、CLI PDF、图片缩放/平移、EXIF 方向。
 - AI/Ollama/BYOK/diff 审阅/RAG、云同步、多人协作。
@@ -434,11 +447,11 @@ POST pull request
 
 优先候选：
 
-1. 最近工作区/最近文件跨重启恢复（需要处理根目录消失、恢复快照与启动状态）。
+1. 最近工作区列表、单文件会话、滚动位置/光标恢复。
 2. 工作区树形折叠、新建/重命名/删除（需要明确确认、回收站与路径边界）。
 3. 搜索历史、包含/排除规则、跨文稿替换的审阅边界。
 4. IME 真机矩阵、200% 缩放/屏幕阅读器、5 MiB/10 万字符性能基线。
-5. 安装包签名、自动更新、干净 VM 安装/卸载；Linux 图形会话。
+5. 安装包签名、自动更新、干净 VM 安装/卸载；Linux 图形会话与多显示器窗口恢复。
 6. CLI PDF/DOCX、本地 AI/Ollama/BYOK/diff 审阅/RAG；Tauri bake-off。
 
 主要风险：

@@ -1,6 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, session, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, screen, session, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import { join } from 'node:path';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { normalizeTextFormat } from '@gather/core/text-format';
 import { readFileVersion, readMarkdownFile, writeMarkdownFile } from './file-io';
 import { ActiveFileWatcher } from './file-watcher';
@@ -10,6 +10,12 @@ import { exportDocument } from './document-export';
 import { resolvePreviewImage } from './image-preview';
 import { listWorkspace, resolveWorkspaceFile } from './workspace';
 import { cancelWorkspaceSearch, runWorkspaceSearch } from './workspace-search-service';
+import {
+  normalizeWindowState,
+  WindowStateStore,
+  WorkspaceSessionStore,
+  type SavedWindowState,
+} from './session';
 import { safeExternalUrl } from '../shared/external-links';
 import type {
   DocumentExportRequest,
@@ -18,6 +24,7 @@ import type {
   RecoveryPayload,
   SaveAsRequest,
   SaveRequest,
+  WorkspaceRestoreResult,
   WorkspaceSearchOptions,
 } from '../shared/files';
 
@@ -167,7 +174,41 @@ function stopActiveFileWatcher() {
   activeFilePath = null;
 }
 
-function registerIpc(recoveryStore: RecoveryStore) {
+function relativeWorkspacePath(root: string, filePath: string): string | null {
+  const relativePath = relative(root, filePath);
+  if (
+    !relativePath
+    || relativePath === '..'
+    || relativePath.startsWith(`..${sep}`)
+    || isAbsolute(relativePath)
+  ) {
+    return null;
+  }
+  return relativePath.split(sep).join('/');
+}
+
+async function loadWindowState(store: WindowStateStore): Promise<SavedWindowState | null> {
+  const saved = await store.read().catch(() => null);
+  if (!saved) return null;
+  return normalizeWindowState(
+    saved,
+    screen.getAllDisplays().map(display => display.workArea),
+    screen.getPrimaryDisplay().workArea,
+  );
+}
+
+function registerIpc(recoveryStore: RecoveryStore, workspaceSessions: WorkspaceSessionStore) {
+  const rememberActiveFile = (filePath: string) => {
+    if (!workspaceRoot) {
+      void workspaceSessions.clear().catch(() => undefined);
+      return;
+    }
+    const relativePath = relativeWorkspacePath(workspaceRoot, filePath);
+    void workspaceSessions.write({ root: workspaceRoot, relativePath }).catch(error => {
+      console.error('Gather workspace session unavailable:', error);
+    });
+  };
+
   const handleIpc = (
     channel: string,
     listener: (event: IpcMainInvokeEvent, payload: unknown) => Promise<unknown>,
@@ -189,8 +230,41 @@ function registerIpc(recoveryStore: RecoveryStore) {
     });
     if (result.canceled || !result.filePaths[0]) return null;
     const file = await readMarkdownFile(result.filePaths[0]);
+    rememberActiveFile(file.path);
     watchActiveFile(file);
     return file;
+  });
+
+  handleIpc('workspace:restore', async (): Promise<WorkspaceRestoreResult> => {
+    if (workspaceRoot) return { status: 'none' };
+    const saved = await workspaceSessions.read();
+    if (!saved) return { status: 'none' };
+    try {
+      const workspace = await listWorkspace(saved.root);
+      workspaceRoot = workspace.root;
+      const relativePath = saved.relativePath
+        && workspace.files.some(file => file.relativePath === saved.relativePath)
+        ? saved.relativePath
+        : null;
+      const fileMissing = Boolean(saved.relativePath && !relativePath);
+      if (fileMissing) {
+        await workspaceSessions.write({
+          root: workspace.root,
+          relativePath: null,
+        }).catch(() => undefined);
+      }
+      return { status: 'restored', workspace, relativePath, fileMissing };
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'ENOENT' || code === 'ENOTDIR') {
+        await workspaceSessions.clear().catch(() => undefined);
+        return { status: 'unavailable', message: '上次工作区已不存在，记录已清除。' };
+      }
+      return {
+        status: 'unavailable',
+        message: '上次工作区暂时无法打开，记录已保留，下次启动会再试。',
+      };
+    }
   });
 
   handleIpc('workspace:open', async () => {
@@ -203,6 +277,16 @@ function registerIpc(recoveryStore: RecoveryStore) {
     if (result.canceled || !result.filePaths[0]) return null;
     const workspace = await listWorkspace(result.filePaths[0]);
     workspaceRoot = workspace.root;
+    if (activeFilePath) {
+      rememberActiveFile(activeFilePath);
+    } else {
+      await workspaceSessions.write({
+        root: workspace.root,
+        relativePath: null,
+      }).catch(error => {
+        console.error('Gather workspace session unavailable:', error);
+      });
+    }
     return workspace;
   });
 
@@ -221,6 +305,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
     if (typeof payload !== 'string') throw new Error('工作区文件路径无效。');
     const path = await resolveWorkspaceFile(workspaceRoot, payload);
     const file = await readMarkdownFile(path);
+    rememberActiveFile(path);
     watchActiveFile(file);
     return file;
   });
@@ -228,6 +313,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
   handleIpc('workspace:close', async () => {
     cancelWorkspaceSearch();
     workspaceRoot = null;
+    await workspaceSessions.clear().catch(() => undefined);
     return true;
   });
 
@@ -267,6 +353,7 @@ function registerIpc(recoveryStore: RecoveryStore) {
         await recoveryStore.discard(request.recoveryId).catch(() => undefined);
       }
       await recoveryStore.discardPath(outcome.file.path).catch(() => undefined);
+      rememberActiveFile(outcome.file.path);
       watchActiveFile(outcome.file);
     }
     return outcome;
@@ -442,10 +529,17 @@ function applyProductionCsp() {
   );
 }
 
-function createWindow() {
+function createWindow(savedState: SavedWindowState | null, windowStateStore: WindowStateStore) {
+  const bounds = savedState
+    ? {
+        x: savedState.x,
+        y: savedState.y,
+        width: savedState.width,
+        height: savedState.height,
+      }
+    : { width: 1200, height: 820 };
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 820,
+    ...bounds,
     minWidth: 760,
     minHeight: 520,
     backgroundColor: '#fbfaf5',
@@ -459,8 +553,55 @@ function createWindow() {
     },
   });
   hardenWindow(mainWindow);
-  mainWindow.once('ready-to-show', () => mainWindow?.show());
+
+  let windowSaveTimer: NodeJS.Timeout | undefined;
+  const captureWindowState = (): SavedWindowState | null => {
+    if (!mainWindow || mainWindow.isDestroyed()) return null;
+    const current = mainWindow.getNormalBounds();
+    return {
+      x: current.x,
+      y: current.y,
+      width: current.width,
+      height: current.height,
+      maximized: mainWindow.isMaximized(),
+    };
+  };
+  const scheduleWindowSave = () => {
+    const state = captureWindowState();
+    if (!state) return;
+    if (windowSaveTimer) clearTimeout(windowSaveTimer);
+    windowSaveTimer = setTimeout(() => {
+      windowSaveTimer = undefined;
+      void windowStateStore.write(state).catch(error => {
+        console.error('Gather window state unavailable:', error);
+      });
+    }, 300);
+  };
+  const flushWindowState = () => {
+    if (windowSaveTimer) {
+      clearTimeout(windowSaveTimer);
+      windowSaveTimer = undefined;
+    }
+    const state = captureWindowState();
+    if (!state) return;
+    try {
+      windowStateStore.writeSync(state);
+    } catch (error) {
+      console.error('Gather window state unavailable:', error);
+    }
+  };
+
+  mainWindow.on('resize', scheduleWindowSave);
+  mainWindow.on('move', scheduleWindowSave);
+  mainWindow.on('maximize', scheduleWindowSave);
+  mainWindow.on('unmaximize', scheduleWindowSave);
+  mainWindow.once('ready-to-show', () => {
+    if (savedState?.maximized) mainWindow?.maximize();
+    mainWindow?.show();
+  });
+  mainWindow.on('close', flushWindowState);
   mainWindow.on('closed', () => {
+    if (windowSaveTimer) clearTimeout(windowSaveTimer);
     stopActiveFileWatcher();
     cancelWorkspaceSearch();
     mainWindow = null;
@@ -483,15 +624,22 @@ if (!lock) {
   });
   app.whenReady().then(async () => {
     if (!isDev) applyProductionCsp();
-    const recoveryStore = new RecoveryStore(join(app.getPath('userData'), 'recovery'));
+    const userData = app.getPath('userData');
+    const recoveryStore = new RecoveryStore(join(userData, 'recovery'));
+    const workspaceSessionStore = new WorkspaceSessionStore(join(userData, 'workspace-session.json'));
+    const windowStateStore = new WindowStateStore(join(userData, 'window-state.json'));
     await recoveryStore.init().catch(error => {
       console.error('Gather recovery store unavailable:', error);
     });
-    registerIpc(recoveryStore);
+    registerIpc(recoveryStore, workspaceSessionStore);
     createMenu();
-    createWindow();
+    createWindow(await loadWindowState(windowStateStore), windowStateStore);
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (BrowserWindow.getAllWindows().length === 0) {
+        void loadWindowState(windowStateStore).then(state => {
+          if (BrowserWindow.getAllWindows().length === 0) createWindow(state, windowStateStore);
+        });
+      }
     });
   });
   app.on('before-quit', () => {
