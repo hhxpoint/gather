@@ -307,15 +307,29 @@ ol, ul { padding: 0; list-style: none; }
 .release-target p { color: var(--muted); font-size: 10px; margin-top: 4px; }
 .release-channel { color: var(--muted); font-size: 10px; }
 .release-channel span { display: block; color: #9b9e8d; font-family: var(--mono); font-size: 8px; text-transform: uppercase; margin-bottom: 4px; }
-.release-state { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+.release-state { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; width: 100%; }
 .release-note { color: #9c9f8e; font-size: 10px; }
-.release-button { display: flex; flex-direction: column; gap: 3px; width: 100%; max-width: 310px; border: 1px solid var(--line); padding: 8px 10px; background: var(--paper-2); transition: background .2s ease, border-color .2s ease; }
+.release-buttons { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 350px; }
+.release-button { display: flex; flex-direction: column; gap: 3px; width: 100%; max-width: 350px; border: 1px solid var(--line); padding: 8px 10px; background: var(--paper-2); transition: background .2s ease, border-color .2s ease; }
 .release-button:hover { background: #e5eadb; border-color: var(--sage); }
 .release-button-status { display: flex; align-items: center; gap: 6px; color: var(--ink-3); font-size: 10px; }
 .release-button-status i { width: 5px; height: 5px; border-radius: 50%; background: #b79a68; }
-.release-button-action { display: flex; align-items: center; gap: 5px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
-.release-button-action .icon { width: 11px; height: 11px; }
-.manifest-caption { color: #999b8a; font-size: 10px; margin-top: 11px; }
+.release-button-status.is-ready i { background: var(--sage); box-shadow: 0 0 0 3px rgba(121, 145, 105, .14); }
+.release-button-action { display: flex; align-items: center; gap: 5px; color: var(--muted); font-family: var(--mono); font-size: 9px; word-break: break-all; }
+.release-button-action .icon { flex: 0 0 auto; width: 11px; height: 11px; }
+.manifest-caption { color: #999b8a; font-size: 10px; margin-top: 11px; line-height: 1.8; }
+.manifest-caption a { color: var(--ink-3); border-bottom: 1px solid var(--line); }
+.release-checksums { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.release-checksums summary { display: flex; align-items: center; gap: 9px; cursor: pointer; color: var(--ink-3); font-family: var(--mono); font-size: 10px; }
+.release-checksums summary span { color: #999b8a; font-family: var(--sans); font-size: 10px; }
+.checksum-body { margin-top: 10px; color: var(--muted); font-size: 10px; line-height: 1.8; }
+.checksum-body code { font-family: var(--mono); font-size: 9px; color: var(--ink-3); }
+.checksum-list { display: grid; gap: 6px; margin: 10px 0 12px; }
+.checksum-list li { display: grid; grid-template-columns: minmax(190px, .9fr) minmax(0, 1.6fr); gap: 10px; align-items: baseline; border-top: 1px solid rgba(44, 58, 48, .08); padding-top: 6px; }
+.checksum-list span { color: var(--ink-3); font-family: var(--mono); font-size: 9px; word-break: break-all; }
+.checksum-list code { color: #999b8a; font-size: 8px; word-break: break-all; }
+.checksum-link { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-3); font-family: var(--mono); font-size: 9px; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+.checksum-link .icon { width: 11px; height: 11px; }
 .release-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 43px; }
 .release-facts > div { border-top: 1px solid var(--line); padding-top: 12px; }
 .release-facts p:last-child { color: var(--muted); font-size: 11px; line-height: 1.85; margin-top: 7px; }
@@ -462,7 +476,9 @@ ol, ul { padding: 0; list-style: none; }
   .release-row { grid-template-columns: 1fr; gap: 12px; }
   .release-note { display: none; }
   .release-state { width: 100%; }
+  .release-buttons { max-width: none; }
   .release-button { max-width: none; }
+  .checksum-list li { grid-template-columns: 1fr; gap: 2px; }
   .release-status-bar { flex-wrap: wrap; gap: 7px 12px; }
   .release-status-bar-state { flex-basis: 100%; }
   .release-facts { grid-template-columns: 1fr; gap: 16px; }

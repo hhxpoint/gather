@@ -340,6 +340,8 @@ POST pull request
 | P1-31 | 会话恢复 | 窗口越界归一化；会话只存路径并重新列目录；恢复快照仍需用户确认 |
 | P1-32 | 阅读与专注 | 隐藏编辑器仍须只读；阅读视图不得卸载编辑器；远程图片不得自动加载 |
 | P1-33 | 阅读查找/目录 | 代码高亮会重建 DOM；查找要重跑；表格要包滚动层；Esc 分层处理 |
+| P1-34 | 图标、安装包与 Release | SVG 单一源；NSIS 静默安装不能用 Git Bash 传 `/S`；unsigned 不能写成签名 |
+| P1-35 | Release Linux 构建 | scoped npm 名会进入 executable/artifact 路径；显式 `executableName`/`artifactName`；publish job 必须 checkout |
 
 ## 9. Windows / Linux 平台笔记
 
@@ -365,6 +367,8 @@ POST pull request
 - 专注模式、阅读模式、纸色/夜读、阅读进度、只读编辑器与 Undo 保留；远程图片在 HTML 进入 DOM 前被阻断，无网络请求。
 - 阅读目录、全文查找、当前/全部高亮、代码语法高亮、阅读 PDF/HTML 入口与标题级源行同步。
 - Windows staging 启动与真实窗口路径；GitHub Pages 部署与哈希回读。
+- GitHub Actions 在同一提交构建 Windows NSIS/portable、Linux AppImage/deb 并发布 prerelease；四个包 SHA-256 与 Release API digest、`SHA256SUMS.txt` 一致。
+- Windows 安装器/便携版的本地构建安装、启动、卸载与图标嵌入。
 
 ### 未验证
 
@@ -372,6 +376,7 @@ POST pull request
 - 真实断电/满盘/只读挂载、8 小时 dogfood、5 MiB 文稿性能基线。
 - asar 安装包中的工具进程、dev server 下的 worker、Linux worker。
 - 干净 VM 安装/卸载、签名、自动更新、回滚。
+- 从 Release 重新下载四个大文件并安装：本机到 release-assets 网络限速/TLS 失败，只有 API digest 与清单核对，不能算运行时复核。
 
 ### 未实现
 
@@ -381,11 +386,12 @@ POST pull request
 - 跨文稿替换、搜索历史、包含/排除规则、流式结果。
 - DOCX、CLI PDF、图片缩放/平移、EXIF 方向。
 - AI/Ollama/BYOK/diff 审阅/RAG、云同步、多人协作。
-- NSIS/portable/AppImage/deb 发布物、Tauri bake-off。
+- Tauri bake-off。
 
 ### 不要声称
 
-- “生产级安全安装包”已有。
+- “生产级安全安装包”已有；当前只有未签名预览。
+- “Release 资产已在本机重新下载安装”已有；当前只完成 API 摘要/清单核对。
 - “AI 已经能自动改稿”已有。
 - “所有平台稳定”已验证。
 - “CI 绿”等于“GUI/IME/打印/文件对话框已通过”。
@@ -429,6 +435,8 @@ POST pull request
 8. 文档 PR 是否记录本次运行号、哈希与边界？
 9. QA 合成目录、临时脚本、浏览器 profile 是否清理？
 10. 回滚 commit / 撤销路径是否写明？
+11. Release：资产名无空格/`@`，四个包与 `SHA256SUMS.txt` 都在，API digest 与清单一致，旧资产已删除？
+12. Release：站点/README 只链接真实资产，unsigned、SmartScreen 与 Linux 未实测边界是否写清？
 
 ### 安全审查
 
