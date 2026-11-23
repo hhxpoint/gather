@@ -64,7 +64,7 @@ Gather 把 Markdown 文件留在你的磁盘上，把编辑器的最终决定权
 
 *真实导出的 A4 PDF（4 页合成文稿）由 `pdfjs-dist` 渲染回图像核验：中文、表格、代码块与本地图片都在；不是 HTML 效果图。*
 
-更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0009](docs/adr)。
+更多截图与项目叙事见 [项目站](https://hhxpoint.github.io/gather/#product)。工程证据：[CI](https://github.com/hhxpoint/gather/actions/workflows/ci.yml)、[DEBUG_LOG](docs/DEBUG_LOG.md)、[VERIFICATION](docs/VERIFICATION.md)、[ADR 0001–0009](docs/adr)。跨批次的工程方法与踩坑索引见 [工程手册](docs/PLAYBOOK.md)。
 
 ## 项目状态
 
@@ -367,6 +367,7 @@ gather/
 │  ├─ adr/0009-workspace-search.md
 │  ├─ DEBUG_LOG.md              真实失败、根因、修复与防回归
 │  ├─ VERIFICATION.md           可复现命令、矩阵与未验证项
+│  ├─ PLAYBOOK.md               工程方法、失败模式、检查表与学习路径
 │  ├─ images/                   真实产品截图（README 与站点共用）
 │  └─ ROADMAP.md
 ├─ .github/workflows/
@@ -711,6 +712,7 @@ AGPL 的选择是为了让本地优先的桌面应用及其网络服务版本保
 
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [docs/ROADMAP.md](docs/ROADMAP.md)
+- [docs/PLAYBOOK.md：工程手册与踩坑索引](docs/PLAYBOOK.md)
 - [ADR 0001：桌面壳选择](docs/adr/0001-desktop-shell.md)
 - [ADR 0002：编辑器核心](docs/adr/0002-editor-core.md)
 - [ADR 0003：文件安全](docs/adr/0003-file-safety.md)

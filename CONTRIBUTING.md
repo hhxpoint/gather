@@ -37,9 +37,9 @@ npm run dev       # electron-vite dev
 先把边界说清楚，不要把 CI 绿当成发布结论：
 
 - `npm run build` 已在干净 Ubuntu 与 Windows CI runner 上通过，三个 workspace 产物均能生成。
-- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入与错误映射，共 8 个测试文件、65 个测试；Ubuntu CI 65 全过（含 2 个真实 POSIX 只读目录），Windows 63 通过 + 2 跳过。
+- `npm test` 当前包含 core、editor、桌面文件 I/O、恢复快照、watcher、原子写入故障注入、导出、预览、工作区目录与工作区搜索，共 14 个测试文件、111 个测试；Ubuntu CI 111 全过（含 2 个真实 POSIX 只读目录），Windows 109 通过 + 2 个 POSIX-only 跳过。
 - `npm ci` 已在双平台 CI 运行成功；仓库锁文件有效。
-- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；可复现性批次运行 44888732915 全绿，上一批基线为 44886639093。
+- `.github/workflows/ci.yml` 覆盖 `ubuntu-latest` 与 `windows-latest`；最近 main CI [45102465517](https://github.com/hhxpoint/gather/actions/runs/45102465517) 全绿，工作区搜索代码批次为 [45102037935](https://github.com/hhxpoint/gather/actions/runs/45102037935)。
 - CI 不启动图形桌面、不测真实文件对话框、不覆盖 IME、打印或安装包。Windows 上的打开/另存为/预览切换/CRLF-BOM 保存/冲突拒绝/快照恢复/外部变更提示/20 MiB 拒绝已手工验证；Windows staging 目录包已验证可启动并保存；Linux 桌面与会话级验证仍未做。
 - `npm run stage -w @gather/desktop` 生成的是未签名 staging 目录包，只用于运行冒烟，不是发布物；不要把它上传到 Releases。
 - 系统 Node 20 无法加载 `sanitize-html` 的 ESM 依赖链；本地请用 Node 22/24，或使用 Electron 内置 Node 运行 Vitest。
@@ -65,6 +65,7 @@ npm run build -w @gather/cli
 | `apps/desktop/renderer` | UI、状态、编辑器挂载 | 不启用 Node；不加载远程脚本/字体 |
 | `packages/cli` | `gather doctor/export/new` | 不依赖 Electron；与桌面端共享 `@gather/core` |
 | `apps/site` | 官网静态骨架 | 已有 `index.html`、`styles.css`、`build.mjs`、`package.json`；已部署到 GitHub Pages；不要复制桌面端密钥或内部配置 |
+| `docs` | ADR、DEBUG_LOG、VERIFICATION、PLAYBOOK、ROADMAP、真实截图 | 结论必须可追溯；经验回写 PLAYBOOK；公开截图只用合成内容 |
 
 跨层规则：
 
@@ -89,11 +90,17 @@ npm run build -w @gather/cli
 - `packages/core/test/markdown.test.ts`：GFM、HTML 清洗、链接/图片协议、文档模板、计数。
 - `packages/core/test/text-format.test.ts`：LF/CRLF/BOM、混合行尾、无结尾换行、跨 IPC 格式校验。
 - `packages/editor/test/text-commands.test.ts`：`toggleWrap`、`toggleLinePrefix`、`insertAroundSelection`。
+- `packages/editor/test/live-preview.test.ts`：图片/链接语法、转义 label、http/https 判定与畸形输入。
 - `apps/desktop/test/file-io.test.ts`：临时目录 round-trip、外部修改拒绝、文件删除拒绝、Save As、混合行尾归一。
 - `apps/desktop/test/recovery.test.ts`：路径/未命名快照、覆盖、列表、读取、丢弃、损坏文件与路径 ID。
 - `apps/desktop/test/file-watcher.test.ts`：外部修改、自写忽略、删除与重建、轮询差异。
 - `apps/desktop/test/atomic-write.test.ts`：ENOSPC/EIO/EACCES、sync/close/rename 失败、临时文件清理与原子替换。
 - `apps/desktop/test/file-errors.test.ts`：文件系统错误映射与 Electron IPC 前缀清理。
+- `apps/desktop/test/image-preview.test.ts`：本地图片 data URI、编码文件名、目录逃逸/绝对/远程/缺失拒绝与缓存。
+- `apps/desktop/test/external-links.test.ts`：http/https 放行、危险协议/凭据/畸形值拒绝。
+- `apps/desktop/test/workspace.test.ts`：工作区递归/跳过目录/排序与路径边界。
+- `apps/desktop/test/workspace-search.test.ts`：字面量/正则、非法模式、BOM+CRLF 行号、预算、二进制/超大文件与目录逃逸。
+- `apps/desktop/test/export-html.test.ts`：导出图片 data URI、目录逃逸、SVG/缺失告警、代码块与远程图片边界。
 
 提交恢复/文件监视相关改动时，至少覆盖：
 
@@ -110,6 +117,13 @@ npm run build -w @gather/cli
 - CRLF、BOM、无结尾换行、CJK、emoji、组合字符。
 - 表格、任务列表、代码围栏、frontmatter、原始 HTML 块在解析与导出中的行为。
 - 打开新文件后撤销栈是否重置；预览开关是否影响光标与选区。
+
+提交搜索/工作区改动时，至少覆盖：
+
+- 单文件查找、替换全部、撤销、Escape 与中文文案。
+- 工作区搜索的字面量/正则/大小写、无效正则、空结果、结果上限与超时。
+- 点击结果是否打开正确文稿并定位行列；脏文稿切换是否仍有确认。
+- 工作区路径是否经过 `realpath` 边界；工具进程结束后主进程是否仍存活。
 
 Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进入编辑器状态，再写出，比较字节。无法字节一致的场景必须写明规范化规则，并让用户可见。
 
@@ -137,6 +151,7 @@ Markdown 保真测试优先做“字节级 round-trip”：读取 fixture，进�
 - 功能或修复影响文件、恢复、CI、平台矩阵时，同步更新 [docs/VERIFICATION.md](docs/VERIFICATION.md)。
 - CI 写具体运行号；本地结果与 CI 结果分开；注入测试与真实环境分开。
 - 过时结论不要静默删除；追加“后续修正”，保留当时的判断和原因。
+- 跨模块、可复用的工程方法、失败模式、验收清单与学习路径维护在 [docs/PLAYBOOK.md](docs/PLAYBOOK.md)。新批次不要把“为什么这样做”只留在 PR 描述里；能复用的经验要回写到对应章节。
 
 ## 数据安全规则
 
@@ -197,7 +212,7 @@ PR 描述至少包含：
 5. 数据安全与隐私影响：是否读写文件、是否联网、是否接触文稿内容。
 6. 回滚方式或风险点。
 7. 截图/录屏（涉及界面时），必须是真实运行结果。
-8. 调试记录：是否更新 `docs/DEBUG_LOG.md` 与 `docs/VERIFICATION.md`；没有则说明为什么不需要。
+8. 调试记录：是否更新 `docs/DEBUG_LOG.md` 与 `docs/VERIFICATION.md`；是否有可复用经验需要进入 `docs/PLAYBOOK.md`；没有则说明为什么不需要。
 
 审查规则：
 
